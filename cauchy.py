@@ -2,16 +2,15 @@ from scipy.stats import cauchy
 from numpy import round, abs
 
 
-def roll(base, luck, n=None):
-    """Génère un entier aléatoire en suivant une loi de Cauchy
+def roll(loc, scale):
+    """Génère un entier aléatoire suivant une loi de Cauchy modifiée
+    à valeurs dans l'ensemble des entiers naturels
 
     Args:
-        base (int): Équivalent à la moyenne, là où les valeurs du tirage vont être centrée
-        luck (int): Équivalent à un étallement, plus la valeur sera grande, plus la probabilité autour de la moyenne s'étalle
-        n ([type], optional): Defaults to None.
+        loc (float): Centre de la distribution de probabilités
+        scale (float): Largeur de la distribution de probabilités
 
     Returns:
-        int: le nombre aléatoire généré par une loi de Cauchy
+        int: Nombre aléatoire généré
     """
-    x = round(cauchy.rvs(base, luck, n if n else 1))
-    return abs(x.astype(int, copy=False)[0])
+    return int(abs(round(cauchy.rvs(loc, scale))))
