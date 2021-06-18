@@ -1,6 +1,7 @@
 from scipy.stats import cauchy
 from numpy import round, abs
 
+
 def roll(base, luck, n=None):
     """Génère un entier aléatoire en suivant une loi de Cauchy
 
