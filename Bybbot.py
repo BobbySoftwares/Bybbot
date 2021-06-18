@@ -1,10 +1,4 @@
 import discord
-import glob
-
-from discord import user
-from discord import channel
-from discord.abc import Messageable
-from discord.client import Client
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger

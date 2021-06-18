@@ -3,7 +3,6 @@ from enum import Enum, auto
 import os.path
 import re
 from random import choice
-from typing_extensions import final
 
 def clear_string(s):
     """Nettoie un string de tout un tas de caractères,enlève les accents à des lettres, et transforme toutes les majuscules en minuscule.

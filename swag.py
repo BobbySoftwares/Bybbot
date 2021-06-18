@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 from enum import Enum, auto
-from math import exp, log
 
 import cauchy
 import pickle
