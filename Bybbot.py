@@ -161,40 +161,37 @@ def getGuildMemberName(general_username, guild, return_display_name=True):
 ############################## Fonction ajouté pour le Jukebox  ##############################
 
 
-def well_agligned_jukebox_tab(lst_sound, begginner_carac, end_carac):
-    """Fonction utilisé pour la fonctionnalité jukebox.
-        Affiche plusieurs ligne de son (numéro, [tag], transcription) correctement allignées
+def well_aligned_jukebox_tab(lst_sound, prefix="", suffix=""):
+    """Affiche sur plusieurs lignes les informations (numéro, [tag],
+    transcription) associées à la liste de sons spécifiée.
+
+    Fait partie de la fonctionnalité jukebox.
 
     Args:
-        lst_sound (Liste de sons (de type jukebox.son)): Liste comportant les sons à afficher
-        begginner_carac (String): Caractère à rajouter à chaque début de ligne (utile si on veut utiliser les couleurs)
-        end_carac (String): Caractère à rajouter à chaque fin de ligne
+        lst_sound (List[jukebox.son]): Liste des sons à afficher
+        prefix (str): Caractère préfixant chaque ligne (utile pour
+            utiliser les couleurs)
+        suffix (str): Caractère suffixant chaque ligne
 
     Returns:
-        String : Une chaîne de caractère à afficher
+        str : La chaîne de caractère à afficher
     """
+    # TODO: Check if replace("'", "") is needed
+    # TODO: Remove need for this list
+    tags = [str(sound.tags).replace("'", "") for sound in lst_sound]
+
     # Détermination de la chaîne de caractère la plus longue pour les tags
-    maxsize = 0
-    for sound in lst_sound:
-        tagsize = len(str(sound.tags).replace("'", ""))
-        if tagsize > maxsize:
-            maxsize = tagsize
+    width = max(len(tag) for tag in tags)
 
-    codeblock = ""  # initialisation de la chaîne de caractère à renvoyer
-    for sound in lst_sound:
-        if maxsize > 2:
-            codeblock += (
-                begginner_carac
-                + str(sound.tags).replace("'", "").ljust(maxsize)
-                + " || "
-                + str(sound.transcription)
-                + end_carac
-                + "\n"
-            )
-        else:  ## Si il n'y a que des sons sans aucun tag dans le tableau
-            codeblock += begginner_carac + str(sound.transcription) + end_carac + "\n"
-
-    return codeblock
+    if width > 2:
+        return "\n".join(
+            f"{prefix}{tag : <{width})} || {sound.transcription}{suffix}"
+            for sound, tag in zip(lst_sound, tags)
+        )
+    else:  ## Si il n'y a que des sons sans aucun tag dans le tableau
+        return "\n".join(
+            f"{prefix}{sound.transcription}{suffix}" for sound in lst_sound
+        )
 
 
 ############################## Fonctions ajouté pour le $wag #################################
@@ -427,7 +424,7 @@ def mini_help_message_string(sub_soundlst, current_page, nbr_pages, message_user
     """
     Message = "Voici tout ce que j'ai par rapport à la commande que tu as tappé <:cozmo:774656738469216287>\n"
     Message += "À toi de choisir le son de ton choix <:ris:800855908859117648>```fix\n"
-    Message += well_agligned_jukebox_tab(sub_soundlst, "", "")
+    Message += well_aligned_jukebox_tab(sub_soundlst)
     Message += "Page " + str(current_page) + "/" + str(nbr_pages) + "\n```"
 
     return Message
@@ -966,14 +963,14 @@ async def on_message(message):
 
         if search_code_success == jukebox.code_recherche.SOME_RESULT:
             Message = "Waa ! Voici ce que j'ai en stock <:charlieKane:771392220430860288> \n```fix\n"
-            Message += well_agligned_jukebox_tab(searchResult, "", "")
+            Message += well_aligned_jukebox_tab(searchResult)
             Message += "```\nSois plus précis pour lancer le bon son ! :notes:"
             await message.channel.send(Message)
             return
 
         if search_code_success == jukebox.code_recherche.TOO_MANY_RESULT:
             Message = "Waa ! J'ai trop de son qui correspondent à ce que tu as demandé ! <:gniknoht:781090046366187540> \n```diff\n"
-            Message += well_agligned_jukebox_tab(searchResult[:15], "-", "")
+            Message += well_aligned_jukebox_tab(searchResult[:15], "-")
             Message += (
                 "...et encore "
                 + str(len(searchResult) - 15)
@@ -991,7 +988,7 @@ async def on_message(message):
         if search_code_success == jukebox.code_recherche.ONE_RESULT:
             Message = (
                 "Lancement du son :radio: :musical_note:\n```bash\n"
-                + well_agligned_jukebox_tab(searchResult, '"', '"')
+                + well_aligned_jukebox_tab(searchResult, '"', '"')
                 + "```"
             )
             await message.channel.send(Message)
