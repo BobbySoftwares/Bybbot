@@ -88,7 +88,7 @@ def formatNumber(n):
     return format(n, ",").replace(",", " ")
 
 
-def chucks(lst, n):
+def chuncks(lst, n):
     """Permet de subdiviser des listes en plusieurs sous-liste de même taille.
 
     Args:
@@ -213,7 +213,7 @@ async def updateForbesClassement(guild):
     dico_classement = list(bot_SwagBank.getClassement().items())
 
     # Subdivision du dictionnaire en sous-liste de taille équitable
-    chucks_classement = list(chucks(dico_classement, Personne_par_message))
+    chuncks_classement = list(chuncks(dico_classement, Personne_par_message))
 
     # Récupération du nombre de message nécessaire pour écrire tout le classement (c'est le nombre de sous-listes)
     nbr_pages = math.ceil(len(dico_classement) / Personne_par_message)
@@ -235,7 +235,7 @@ async def updateForbesClassement(guild):
     async for message in channelForbes.history(oldest_first=True):
         await message.edit(
             content=mini_forbes_swag(
-                chucks_classement[cpt_message], cpt_message + 1, guild
+                chuncks_classement[cpt_message], cpt_message + 1, guild
             )
         )
         cpt_message += 1
@@ -348,12 +348,12 @@ async def reaction_message_building(
         Message: Le message interractif
     """
     sound_per_page = 15
-    chucks_sounds = list(chucks(lst_to_show, sound_per_page))
+    chuncks_sounds = list(chuncks(lst_to_show, sound_per_page))
     nbr_pages = math.ceil(len(lst_to_show) / sound_per_page)
     current_page = 1
 
     Message = fonction_message_builder(
-        chucks_sounds[current_page - 1], current_page, nbr_pages, message_user
+        chuncks_sounds[current_page - 1], current_page, nbr_pages, message_user
     )
 
     # Envoie du message crée par la fonction_message_builder, défini en entrée.
@@ -382,7 +382,7 @@ async def reaction_message_building(
                 current_page += 1
                 await message_bot.edit(
                     content=fonction_message_builder(
-                        chucks_sounds[current_page - 1],
+                        chuncks_sounds[current_page - 1],
                         current_page,
                         nbr_pages,
                         message_user,
@@ -394,7 +394,7 @@ async def reaction_message_building(
                 current_page -= 1
                 await message_bot.edit(
                     content=fonction_message_builder(
-                        chucks_sounds[current_page - 1],
+                        chuncks_sounds[current_page - 1],
                         current_page,
                         nbr_pages,
                         message_user,
