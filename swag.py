@@ -67,10 +67,10 @@ class SwagBank:
         """Un compte chez $wag bank"""
 
         class history_movement(Enum):
-            """Énumérateur qui permet d'indiquer si on a donné une monnaie (GIVE_TO) ou reçu (RECIEVE_FROM). Utilisé pour l'historique."""
+            """Énumérateur qui permet d'indiquer si on a donné une monnaie (GIVE_TO) ou reçu (RECEIVE_FROM). Utilisé pour l'historique."""
 
             GIVE_TO = auto()
-            RECIEVE_FROM = auto()
+            RECEIVE_FROM = auto()
 
         def __init__(
             self,
@@ -99,7 +99,7 @@ class SwagBank:
             """Écrit dans l'historique du compte
 
             Args:
-                h_movement (history_movement): Indiquer si l'argent à été donné (GIVE_TO) ou reçu (RECIEVE_FROM)
+                h_movement (history_movement): Indiquer si l'argent à été donné (GIVE_TO) ou reçu (RECEIVE_FROM)
                 account_name (account): l'autre compte en relation avec la transaction
                 value (int): Argent en jeu lors de la transaction
             """
@@ -132,7 +132,7 @@ class SwagBank:
             """Surchage de la fonction write_in_history du compte V1
 
             Args:
-                h_movement (history_movement): Indiquer si l'argent à été donné (GIVE_TO) ou reçu (RECIEVE_FROM)
+                h_movement (history_movement): Indiquer si l'argent à été donné (GIVE_TO) ou reçu (RECEIVE_FROM)
                 account_name (account): l'autre compte en relation avec la transaction
                 value (int): Argent en jeu lors de la transaction
                 currency (str, optional): Indique le type de monnaie qui a été échangé. Defaults to "$wag".
@@ -271,7 +271,7 @@ class SwagBank:
             self.account.history_movement.GIVE_TO, destinator_account_name, valueToGive
         )
         self.swagAccounts[destinator_account_name].write_in_history(
-            self.account.history_movement.RECIEVE_FROM,
+            self.account.history_movement.RECEIVE_FROM,
             expeditor_account_name,
             valueToGive,
         )
@@ -307,7 +307,7 @@ class SwagBank:
             account_name
         ].last_time_mining = date.today()  # Mise à jour de la date du dernier minage
         self.swagAccounts[account_name].write_in_history(
-            self.account.history_movement.RECIEVE_FROM, "$wag Mine ⛏", mining_booty
+            self.account.history_movement.RECEIVE_FROM, "$wag Mine ⛏", mining_booty
         )  # écriture dans l'historique
         self.saveAccounts()
 
@@ -476,7 +476,7 @@ class SwagBank:
             currency="$tyle",
         )
         self.swagAccounts[destinator_account_name].write_in_history(
-            self.account.history_movement.RECIEVE_FROM,
+            self.account.history_movement.RECEIVE_FROM,
             expeditor_account_name,
             valueToGive,
             currency="$tyle",
@@ -558,7 +558,7 @@ class SwagBank:
         )  # division pour gagner toute les heures
         self.moveStyle(account_name, block_booty)
         self.swagAccounts[account_name].write_in_history(
-            self.accountV2.history_movement.RECIEVE_FROM,
+            self.accountV2.history_movement.RECEIVE_FROM,
             "$tyle Generator Inc.",
             block_booty,
             currency="$tyle",
@@ -590,7 +590,7 @@ class SwagBank:
         self.moveMoney(account_name, returned_swag)
         self.swagAccounts[account_name].blockedSwag = 0
         self.swagAccounts[account_name].write_in_history(
-            self.accountV2.history_movement.RECIEVE_FROM,
+            self.accountV2.history_movement.RECEIVE_FROM,
             "$tyle Generator Inc.",
             returned_swag,
             currency="$wag",
