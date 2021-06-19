@@ -359,15 +359,15 @@ def mini_history_swag_message(chuck_transaction,current_page,nbr_pages,message_u
         if tailleNom > maxTailleNom:
             maxTailleNom = tailleNom
 
-    #On regarde si la transaction contient la partie "currency"
-    if len(transaction) == 4:
-        currency = transaction[3]
-    else:
-        currency = "$wag"
-
     #Écriture du message
     Message = "```ini\n" #on met ini pour la couleur
     for transaction in chuck_transaction:
+        #On regarde si la transaction contient la partie "currency"
+        if len(transaction) == 4:
+            currency = transaction[3]
+        else:
+            currency = "$wag"
+
         if transaction[0] == swag.SwagBank.account.history_movement.GIVE_TO:
             Message += "[ -->"
         else:
