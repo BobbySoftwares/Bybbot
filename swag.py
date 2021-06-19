@@ -17,7 +17,7 @@ class NoAccountRegistered(Exception):
 
     def __init__(self, name):
         self.name = name
-        message = name + "n'a pas de compte sur $wagBank"
+        message = f"{name} n'a pas de compte sur $wagBank"
         super().__init__(message)
 
 
@@ -32,7 +32,7 @@ class NotEnoughSwagInBalance(Exception):
 
     def __init__(self, name):
         self.name = name
-        message = name + "n'a pas assez d'argent sur son compte"
+        message = f"{name} n'a pas assez d'argent sur son compte"
         super().__init__(message)
 
 
@@ -71,6 +71,12 @@ class SwagBank:
 
             GIVE_TO = auto()
             RECEIVE_FROM = auto()
+
+            def __str__(self) -> str:
+                if self is self.GIVE_TO:
+                    return "-->"
+                else:
+                    return "<--"
 
         def __init__(
             self,

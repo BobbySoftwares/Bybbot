@@ -108,15 +108,15 @@ class son:
 
     def __repr__(self):
         if not self.tags:
-            return "Aucun Tags :" + self.transcription
+            return f"Aucun Tags : {self.transcription}"
         else:
-            return "Tags: " + str(self.tags) + " " + self.transcription
+            return f"Tags : {self.tags} {self.transcription}"
 
     def __str__(self):
         if not self.tags:
-            return "(Aucun Tags)\t" + self.transcription
+            return f"(Aucun Tags)\t{self.transcription}"
         else:
-            return str(self.tags) + "\t" + self.transcription
+            return f"{self.tags}\t{self.transcription}"
 
     def get_path_of_sound(self, sound_file_path, command):
         """Permet de récupérer le chemin du fichier contenant le son correspondant
@@ -132,17 +132,10 @@ class son:
             0
         ]  # le numéro est toujours la première chose avant le -
         if not self.tags:
-            return glob(sound_file_path + "/" + command + "/" + sound_number + "-*")[0]
+            return glob(f"{sound_file_path}/{command}/{sound_number}-*")[0]
         else:
             return glob(
-                sound_file_path
-                + "/"
-                + command
-                + "/"
-                + "/".join(self.tags)
-                + "/"
-                + sound_number
-                + "-*"
+                f"{sound_file_path}/{command}/{'/'.join(self.tags)}/{sound_number}-*"
             )[0]
 
 
@@ -152,13 +145,13 @@ class jukebox:
     def __init__(self, sound_file="."):
         self.dico_jukebox = {}
         self.sound_file_path = sound_file
-        for folder_path in glob(sound_file + "/*"):
+        for folder_path in glob(f"{sound_file}/*"):
 
             # Récupération du nom du fichier
             folder_name = os.path.basename(folder_path)
 
             # Génération de la liste des transcriptions
-            transcription_file_lst = glob(folder_path + "/**/*.tr", recursive=True)
+            transcription_file_lst = glob(f"{folder_path}/**/*.tr", recursive=True)
 
             soundTab = []
             for transcription_file in transcription_file_lst:
@@ -185,7 +178,7 @@ class jukebox:
             self.dico_jukebox[folder_name] = soundTab
 
         self.command_tuple = tuple(
-            ["!" + command + " " for command in list(self.dico_jukebox.keys())]
+            [f"!{command} " for command in list(self.dico_jukebox.keys())]
         )  # Liste des commandes dont le jukebox pourra être appelé (exemple (!aoe,!war3))
         print(self.dico_jukebox.keys())
 
@@ -274,7 +267,7 @@ class jukebox:
             return [
                 sound
                 for sound in result
-                if sound.transcription.startswith(recherche + "-")
+                if sound.transcription.startswith(f"{recherche}-")
             ]
 
         # Calcul des résulats
@@ -308,11 +301,7 @@ class jukebox:
         Returns:
             String: Information concernant le jukebox
         """
-        stat_info = ""
-
-        for key, lst in self.dico_jukebox.items():
-            stat_info += (
-                str(len(lst)) + " son(s) trouvé(s) pour la commande !" + key + ".\n"
-            )
-
-        return stat_info
+        return "\n".join(
+            f"{len(lst)} son(s) trouvé(s) pour la commande `!{key}`."
+            for key, lst in self.dico_jukebox.items()
+        )
