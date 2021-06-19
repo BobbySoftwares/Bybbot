@@ -99,7 +99,7 @@ def formatNumber(n):
     return format(n, ",").replace(",", " ")
 
 
-def chuncks(lst, n):
+def chunks(lst, n):
     """Permet de subdiviser des listes en plusieurs sous-liste de même taille.
 
     Args:
@@ -224,7 +224,7 @@ async def updateForbesClassement(guild):
     dico_classement = list(bot_SwagBank.getClassement().items())
 
     # Subdivision du dictionnaire en sous-liste de taille équitable
-    chuncks_classement = list(chuncks(dico_classement, Personne_par_message))
+    chunks_classement = list(chunks(dico_classement, Personne_par_message))
 
     # Récupération du nombre de message nécessaire pour écrire tout le classement (c'est le nombre de sous-listes)
     nbr_pages = math.ceil(len(dico_classement) / Personne_par_message)
@@ -246,7 +246,7 @@ async def updateForbesClassement(guild):
     async for message in channelForbes.history(oldest_first=True):
         await message.edit(
             content=mini_forbes_swag(
-                chuncks_classement[cpt_message], cpt_message + 1, guild
+                chunks_classement[cpt_message], cpt_message + 1, guild
             )
         )
         cpt_message += 1
@@ -357,12 +357,12 @@ async def reaction_message_building(
         Message: Le message interractif
     """
     sound_per_page = 15
-    chuncks_sounds = list(chuncks(lst_to_show, sound_per_page))
+    chunks_sounds = list(chunks(lst_to_show, sound_per_page))
     nbr_pages = math.ceil(len(lst_to_show) / sound_per_page)
     current_page = 1
 
     Message = fonction_message_builder(
-        chuncks_sounds[current_page - 1], current_page, nbr_pages, message_user
+        chunks_sounds[current_page - 1], current_page, nbr_pages, message_user
     )
 
     # Envoie du message crée par la fonction_message_builder, défini en entrée.
@@ -391,7 +391,7 @@ async def reaction_message_building(
                 current_page += 1
                 await message_bot.edit(
                     content=fonction_message_builder(
-                        chuncks_sounds[current_page - 1],
+                        chunks_sounds[current_page - 1],
                         current_page,
                         nbr_pages,
                         message_user,
@@ -403,7 +403,7 @@ async def reaction_message_building(
                 current_page -= 1
                 await message_bot.edit(
                     content=fonction_message_builder(
-                        chuncks_sounds[current_page - 1],
+                        chunks_sounds[current_page - 1],
                         current_page,
                         nbr_pages,
                         message_user,
@@ -440,12 +440,12 @@ def mini_help_message_string(sub_soundlst, current_page, nbr_pages, message_user
     )
 
 
-def mini_history_swag_message(chuck_transaction, current_page, nbr_pages, message_user):
+def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, message_user):
     """Fonction utilisé pour la fonctionnalité du $wag
         Appelée lorsqu'on veut afficher une partie de l'historique des transactions du $wag ou de $tyle
 
     Args:
-        chuck_transaction (lst): sous-liste de transaction
+        chunk_transaction (lst): sous-liste de transaction
         current_page (int): La page courante, utilisé pour l'afficher en bas du message
         nbr_pages (int): Le nombre de page total, utilisé pour l'afficher en bas du message
         message_user (Message): Message de l'utilisateur qui a demandé l'affichage de l'historique
@@ -460,7 +460,7 @@ def mini_history_swag_message(chuck_transaction, current_page, nbr_pages, messag
             getGuildMemberName(second_party, message_user.guild),
             currency if currency else "$wag",
         )
-        for (way, second_party, amount, *currency) in chuck_transaction
+        for (way, second_party, amount, *currency) in chunk_transaction
     ]
 
     # Besoin de connaître la valeur de swag la plus grande et le nom d'utilisateur le plus grand parmis
@@ -480,12 +480,12 @@ def mini_history_swag_message(chuck_transaction, current_page, nbr_pages, messag
     )
 
 
-def mini_forbes_swag(chuck_classement, nbr_pages, guild):
+def mini_forbes_swag(chunk_classement, nbr_pages, guild):
     """Fonction utilisé pour la fonctionnalité du $wag
         Appelé pour construire des parties du classement forbes sous forme de String
 
     Args:
-        chuck_classement (lst): sous-liste d'une partie du classement
+        chunk_classement (lst): sous-liste d'une partie du classement
         nbr_pages (int): Nombre de page totale du classement
         guild (Guild): Guilde où est affiché le classement
 
@@ -503,7 +503,7 @@ def mini_forbes_swag(chuck_classement, nbr_pages, guild):
             formatNumber(swag_amount),
             display_style_of(user),
         )
-        for (user, swag_amount) in chuck_classement
+        for (user, swag_amount) in chunk_classement
     ]
     # Besoin de connaître le nom, la valeur de $wag, et la valeur de $tyle le plus long pour l'aligement de chaque colonne
     col1 = max(len(user) for user, _, _ in forbes)
@@ -586,6 +586,286 @@ async def on_voice_state_update(member, before, after):
                     await botChan.disconnect()
 
 
+async def execute_swag_command(message):
+    command_swag = message.content.split()
+
+    if len(command_swag) > 1:
+        try:
+            if "créer" in command_swag:
+                bot_SwagBank.addAccount(str(message.author))
+                await message.channel.send(
+                    f"Bienvenue chez $wagBank™ {message.author.mention} !\n\n"
+                    "Tu peux maintenant miner du $wag avec la commande `!$wag miner` 💰"
+                )
+
+            elif "miner" in command_swag:
+                mining_booty = bot_SwagBank.mine(str(message.author))
+                await message.channel.send(
+                    f"⛏ {message.author.mention} a miné `{formatNumber(mining_booty)} $wag` !"
+                )
+                await updateForbesClassement(message.guild)
+
+            elif "solde" in command_swag:
+                montant_swag = bot_SwagBank.getBalanceOf(str(message.author))
+                await message.channel.send(
+                    "```diff\n"
+                    f"$wag de {message.author.display_name} : {formatNumber(montant_swag)}\n"
+                    "```"
+                )
+
+            elif "historique" in command_swag:
+                history = bot_SwagBank.getHistory(str(message.author))
+                await message.channel.send(
+                    f"{message.author.mention}, voici l'historique de tes transactions de $wag :\n"
+                )
+                await reaction_message_building(
+                    history, message, mini_history_swag_message
+                )
+
+            elif "payer" in command_swag:
+                # Récupération du destinataire
+                destinataire = message.mentions
+                if len(destinataire) != 1:
+                    await message.channel.send(
+                        "Merci de mentionner un destinataire (@Bobby Machin) pour lui donner de ton $wag !"
+                    )
+                    return
+
+                # Récupération de la valeur envoyé
+                valeur = [argent for argent in command_swag if argent.isnumeric()]
+                if len(valeur) != 1:
+                    raise swag.InvalidValue
+
+                # envoie du swag
+                bot_SwagBank.giveSwag(
+                    str(message.author),
+                    str(destinataire[0]),
+                    int(valeur[0]),
+                )
+                await message.channel.send(
+                    "Transaction effectué avec succès ! \n"
+                    "```ini\n"
+                    f"[{message.author.display_name}\t{formatNumber(int(valeur[0]))} $wag\t-->\t{destinataire[0].display_name}]\n"
+                    "```"
+                )
+                await updateForbesClassement(message.guild)
+
+        except (swag.NotEnoughSwagInBalance):
+            await message.channel.send(
+                f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour faire cette transaction, vérifie ton solde avec `!$wag solde`"
+            )
+            return
+        except (swag.InvalidValue):
+            await message.channel.send(
+                f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0 et entière, car le $wag est **indivisible** !"
+            )
+            return
+        except (swag.AlreadyMineToday):
+            await message.channel.send(
+                f"Désolé {message.author.mention}, mais tu as déjà miné du $wag aujourd'hui 😮 ! Reviens donc demain !"
+            )
+        except (swag.NoAccountRegistered) as e:
+            no_account_guy = "NO_NAME"
+            if e.name == str(message.author):
+                no_account_guy = message.author.mention
+            elif e.name == str(destinataire[0]):
+                no_account_guy = destinataire[0]
+            await message.channel.send(
+                f"{no_account_guy}, tu ne possèdes pas de compte chez $wagBank™ <:rip:817165391846703114> !\n\n"
+                "Remédie à ce problème en lançant la commande `!$wag créer` et devient véritablement $wag 😎!"
+            )
+            return
+
+    # Si l'utilisateur se trompe de commande, ce message s'envoie par défaut
+    await message.channel.send(
+        f"{message.author.mention}, tu sembles perdu, voici les commandes que tu peux utiliser avec ton $wag :\n"
+        "```HTTP\n"
+        "!$wag créer ~~ Crée un compte chez $wagBank™\n"
+        "!$wag solde ~~ Voir ton solde de $wag sur ton compte\n"
+        "!$wag miner ~~ Gagner du $wag gratuitement tout les jours\n"
+        "!$wag payer [montant] [@destinataire] ~~ Envoie un *montant* de $wag au *destinataire* spécifié\n"
+        "!$wag historique ~~ Visualiser l'ensemble des transactions effectuées sur ton compte\n"
+        "```"
+    )
+    await updateForbesClassement(message.guild)
+
+
+async def execute_style_command(message):
+    command_style = message.content.split()
+
+    try:
+        if len(command_style) > 1:
+            if "info" in command_style:
+                style_amount = bot_SwagBank.getStyleBalanceOf(str(message.author))
+                growth_rate = bot_SwagBank.getStyleTotalGrowthRate(str(message.author))
+                blocked_swag = bot_SwagBank.getBlokedSwag(str(message.author))
+                # TODO : Changer l'affichage pour avoir une affichage à la bonne heure, et en français
+                release_info = (
+                    f"-Date du déblocage sur $wag : {bot_SwagBank.getDateOfUnblockingSwag(str(message.author))}\n"
+                    if bot_SwagBank.isBlockingSwag(str(message.author))
+                    else ""
+                )
+                await message.channel.send(
+                    "```diff\n"
+                    f"$tyle de {message.author.display_name} : {formatNumber(style_amount)}\n"
+                    f"-Taux de bloquage : {formatNumber(growth_rate)} %\n"
+                    f"-$wag actuellement bloqué : {formatNumber(blocked_swag)}\n"
+                    f"{release_info}"
+                    "```"
+                )
+
+            elif "bloquer" in command_style:
+                # Récupération de la valeur envoyé
+                valeur = [argent for argent in command_style if argent.isnumeric()]
+                if len(valeur) != 1:
+                    raise swag.InvalidValue
+
+                bot_SwagBank.blockSwagToGetStyle(str(message.author), int(valeur[0]))
+                await message.channel.send(
+                    f"{message.author.mention}, vous venez de bloquer `{formatNumber(int(valeur[0]))}$wag` vous les récupérerez dans **{swag.TIME_OF_BLOCK} jours** à la même heure\n"
+                )
+                await updateForbesClassement(message.guild)
+
+            elif "payer" in command_style:
+                # Récupération du destinataire
+                destinataire = message.mentions
+                if len(destinataire) != 1:
+                    Message = "Merci de mentionner un destinataire (@Bobby Machin) pour lui donner de ton $tyle !"
+                    await message.channel.send(Message)
+                    return
+
+                # Récupération de la valeur envoyé
+                valeur = [
+                    argent
+                    for argent in command_style
+                    if argent.replace(".", "").replace(",", "").isnumeric()
+                ]
+                if len(valeur) != 1:
+                    raise swag.InvalidValue
+
+                # envoie du style
+                bot_SwagBank.giveStyle(
+                    str(message.author),
+                    str(destinataire[0]),
+                    float(valeur[0]),
+                )
+                await message.channel.send(
+                    "Transaction effectué avec succès ! \n"
+                    "```ini\n"
+                    f"[{message.author.display_name}\t{formatNumber(float(valeur[0]))} $tyle\t-->\t{destinataire[0].display_name}]\n"
+                    "```"
+                )
+                await updateForbesClassement(message.guild)
+    except (
+        swag.InvalidValue,
+        swag.NotEnoughSwagInBalance,
+        swag.StyleStillBlocked,
+    ) as e:
+        if isinstance(e, swag.InvalidValue):
+            Message = f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0 et entière, car le $wag est **indivisible** !"
+        elif isinstance(e, swag.NotEnoughSwagInBalance):
+            Message = f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour faire cette transaction, vérifie ton solde avec `!$wag solde`"
+        elif isinstance(e, swag.StyleStillBlocked):
+            Message = f"{message.author.mention}, du $wag est déjà bloqué à ton compte chez $tyle Generatoc Inc. ! Attends leurs déblocage pour pouvoir en bloquer de nouveau !"
+        await message.channel.send(Message)
+    except (swag.NotEnoughStyleInBalance):
+        await message.channel.send(
+            f"{message.author.mention} ! Tu ne possèdes pas assez de $tyle pour faire cette transaction, vérifie ton solde avec `!$tyle solde`"
+        )
+    except (swag.InvalidValue):
+        await message.channel.send(
+            f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0, car le $tyle est **toujours positif** !"
+        )
+    except (swag.NoAccountRegistered) as e:
+        no_account_guy = "NO_NAME"
+        if e.name == str(message.author):
+            no_account_guy = message.author.mention
+        elif e.name == str(destinataire[0]):
+            no_account_guy = destinataire[0]
+        await message.channel.send(
+            f"{no_account_guy}, tu ne possèdes pas de compte chez $wagBank™ <:rip:817165391846703114> !\n\n"
+            "Remédie à ce problème en lançant la commande `!$wag créer` et devient véritablement $wag 😎!"
+        )
+
+    await message.channel.send(
+        f"{message.author.mention}, tu sembles perdu, voici les commandes que tu peux utiliser avec en relation avec ton $tyle :\n"
+        "```HTTP\n"
+        "!$tyle info ~~ Voir ton solde de $tyle, ton bonus de bloquage, le $wag que tu as bloqué, et la date de déblocage \n"
+        "!$tyle payer [montant] [@destinataire] ~~ Envoie un *montant* de $tyle au *destinataire* spécifié\n"
+        "!$tyle bloquer [montant] ~~ Bloque un *montant* de $wag pour générer du $tyle pendant quelques jours\n"
+        "```"
+    )
+
+
+async def execute_jukebox_command(message):
+    ##Channel finding
+    if message.author.voice is None:
+        await message.channel.send(
+            "Hey ! Connecte toi sur un canal vocal avant de m'importuner !"
+        )
+        return
+    chanToGo = message.author.voice.channel
+
+    ##Command Processing
+    commande = message.content.split(maxsplit=1)
+
+    file_path, searchResult, search_code_success = bot_jukebox.searchWithTheCommand(
+        commande[0][1:], commande[1]
+    )
+
+    # Gestion des erreurs
+    if search_code_success == jukebox.code_recherche.NO_RESULT:
+        await message.channel.send(
+            "Aucun son n'a été trouvé <:rip:817165391846703114> Essaye avec d'autres mots/Tags !"
+        )
+        return
+
+    if search_code_success == jukebox.code_recherche.SOME_RESULT:
+        await message.channel.send(
+            "Waa ! Voici ce que j'ai en stock <:charlieKane:771392220430860288> \n"
+            "```fix\n"
+            f"{well_aligned_jukebox_tab(searchResult)}\n"
+            "```Sois plus précis pour lancer le bon son ! :notes:"
+        )
+        return
+
+    if search_code_success == jukebox.code_recherche.TOO_MANY_RESULT:
+        await message.channel.send(
+            "Waa ! J'ai trop de son qui correspondent à ce que tu as demandé ! <:gniknoht:781090046366187540> \n"
+            "```diff\n"
+            f"{well_aligned_jukebox_tab(searchResult[:15], '-')}\n"
+            f"...et encore {len(searchResult) - 15} autres !\n"
+            "```\n"
+            "Sois plus précis, n'hésite pas à utiliser les **tags** <:hellguy:809774898665881610> !"
+        )
+        return
+
+    if search_code_success == jukebox.code_recherche.REQUEST_HELP:
+        await reaction_message_building(searchResult, message, mini_help_message_string)
+        return
+
+    if search_code_success == jukebox.code_recherche.ONE_RESULT:
+        await message.channel.send(
+            "Lancement du son :radio: :musical_note:\n"
+            "```bash\n"
+            f'"{well_aligned_jukebox_tab(searchResult)}"\n'
+            "```"
+        )
+
+    fileToPlay = file_path
+
+    vc = await connect_to_chan(chanToGo)
+
+    # Si un autre son est actuellement entrain d'être joué, on endors le tread pendant 1 secondes
+    while vc.is_playing():
+        time.sleep(1)
+
+    # Lorsque aucun son n'est joué dans le canal vocal actuel, on lance le son !
+    if not vc.is_playing():
+        soundToPlay = discord.FFmpegPCMAudio(fileToPlay)
+        vc.play(soundToPlay, after=None)
+
+
 @client.event
 async def on_message(message):
     """Fonction appelé à chaque fois qu'un message est envoyé sur un serveur où celui-ci est connecté
@@ -602,319 +882,15 @@ async def on_message(message):
 
     # Commandes liées au $wag
     if message.content.startswith("!$wag"):
-        command_swag = message.content.split()
-
-        if len(command_swag) > 1:
-
-            if "créer" in command_swag:
-                try:
-                    bot_SwagBank.addAccount(str(message.author))
-                    await message.channel.send(
-                        f"Bienvenue chez $wagBank™ {message.author.mention} !\n\n"
-                        "Tu peux maintenant miner du $wag avec la commande `!$wag miner` 💰"
-                    )
-                except (swag.AccountAlreadyExist):
-                    await message.channel.send(
-                        f"{message.author.mention}, tu possèdes déjà un compte chez $wagBank™ !"
-                    )
-                return
-
-            try:
-                if "miner" in command_swag:
-                    try:
-                        mining_booty = bot_SwagBank.mine(str(message.author))
-                        await message.channel.send(
-                            f"⛏ {message.author.mention} a miné `{formatNumber(mining_booty)} $wag` !"
-                        )
-                        await updateForbesClassement(message.guild)
-                    except (swag.AlreadyMineToday):
-                        await message.channel.send(
-                            f"Désolé {message.author.mention}, mais tu as déjà miné du $wag aujourd'hui 😮 ! Reviens donc demain !"
-                        )
-                    return
-
-                if "solde" in command_swag:
-                    montant_swag = bot_SwagBank.getBalanceOf(str(message.author))
-                    await message.channel.send(
-                        "```diff\n"
-                        f"$wag de {message.author.display_name} : {formatNumber(montant_swag)}\n"
-                        "```"
-                    )
-                    return
-
-                if "historique" in command_swag:
-                    history = bot_SwagBank.getHistory(str(message.author))
-                    await message.channel.send(
-                        f"{message.author.mention}, voici l'historique de tes transactions de $wag :\n"
-                    )
-                    await reaction_message_building(
-                        history, message, mini_history_swag_message
-                    )
-                    return
-
-                if "payer" in command_swag:
-
-                    try:
-
-                        # Récupération du destinataire
-                        destinataire = message.mentions
-                        if len(destinataire) != 1:
-                            await message.channel.send(
-                                "Merci de mentionner un destinataire (@Bobby Machin) pour lui donner de ton $wag !"
-                            )
-                            return
-
-                        # Récupération de la valeur envoyé
-                        valeur = [
-                            argent for argent in command_swag if argent.isnumeric()
-                        ]
-                        if len(valeur) != 1:
-                            raise swag.InvalidValue
-
-                        # envoie du swag
-                        try:
-                            bot_SwagBank.giveSwag(
-                                str(message.author),
-                                str(destinataire[0]),
-                                int(valeur[0]),
-                            )
-                            await message.channel.send(
-                                "Transaction effectué avec succès ! \n"
-                                "```ini\n"
-                                f"[{message.author.display_name}\t{formatNumber(int(valeur[0]))} $wag\t-->\t{destinataire[0].display_name}]\n"
-                                "```"
-                            )
-                            await updateForbesClassement(message.guild)
-                            return
-                        except (swag.NotEnoughSwagInBalance):
-                            await message.channel.send(
-                                f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour faire cette transaction, vérifie ton solde avec `!$wag solde`"
-                            )
-                            return
-                    except (swag.InvalidValue):
-                        await message.channel.send(
-                            f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0 et entière, car le $wag est **indivisible** !"
-                        )
-                        return
-            except (swag.NoAccountRegistered) as e:
-                no_account_guy = "NO_NAME"
-                if e.name == str(message.author):
-                    no_account_guy = message.author.mention
-                elif e.name == str(destinataire[0]):
-                    no_account_guy = destinataire[0]
-                await message.channel.send(
-                    f"{no_account_guy}, tu ne possèdes pas de compte chez $wagBank™ <:rip:817165391846703114> !\n\n"
-                    "Remédie à ce problème en lançant la commande `!$wag créer` et devient véritablement $wag 😎!"
-                )
-                return
-
-        # Si l'utilisateur se trompe de commande, ce message s'envoie par défaut
-        await message.channel.send(
-            f"{message.author.mention}, tu sembles perdu, voici les commandes que tu peux utiliser avec ton $wag :\n"
-            "```HTTP\n"
-            "!$wag créer ~~ Crée un compte chez $wagBank™\n"
-            "!$wag solde ~~ Voir ton solde de $wag sur ton compte\n"
-            "!$wag miner ~~ Gagner du $wag gratuitement tout les jours\n"
-            "!$wag payer [montant] [@destinataire] ~~ Envoie un *montant* de $wag au *destinataire* spécifié\n"
-            "!$wag historique ~~ Visualiser l'ensemble des transactions effectuées sur ton compte\n"
-            "```"
-        )
-        await updateForbesClassement(message.guild)
+        execute_swag_command(message)
 
     # Commande liées au $tyle
-    if message.content.startswith("!$tyle"):
-        command_style = message.content.split()
-
-        if len(command_style) > 1:
-            try:
-                if "info" in command_style:
-                    style_amount = bot_SwagBank.getStyleBalanceOf(str(message.author))
-                    growth_rate = bot_SwagBank.getStyleTotalGrowthRate(
-                        str(message.author)
-                    )
-                    blocked_swag = bot_SwagBank.getBlokedSwag(str(message.author))
-                    # TODO : Changer l'affichage pour avoir une affichage à la bonne heure, et en français
-                    release_info = (
-                        f"-Date du déblocage sur $wag : {bot_SwagBank.getDateOfUnblockingSwag(str(message.author))}\n"
-                        if bot_SwagBank.isBlockingSwag(str(message.author))
-                        else ""
-                    )
-                    await message.channel.send(
-                        "```diff\n"
-                        f"$tyle de {message.author.display_name} : {formatNumber(style_amount)}\n"
-                        f"-Taux de bloquage : {formatNumber(growth_rate)} %\n"
-                        f"-$wag actuellement bloqué : {formatNumber(blocked_swag)}\n"
-                        f"{release_info}"
-                        "```"
-                    )
-                    return
-
-                if "bloquer" in command_style:
-                    try:
-                        # Récupération de la valeur envoyé
-                        valeur = [
-                            argent for argent in command_style if argent.isnumeric()
-                        ]
-                        if len(valeur) != 1:
-                            raise swag.InvalidValue
-
-                        bot_SwagBank.blockSwagToGetStyle(
-                            str(message.author), int(valeur[0])
-                        )
-                        await message.channel.send(
-                            f"{message.author.mention}, vous venez de bloquer `{formatNumber(int(valeur[0]))}$wag` vous les récupérerez dans **{swag.TIME_OF_BLOCK} jours** à la même heure\n"
-                        )
-                        await updateForbesClassement(message.guild)
-                        return
-                    except (
-                        swag.InvalidValue,
-                        swag.NotEnoughSwagInBalance,
-                        swag.StyleStillBlocked,
-                    ) as e:
-                        if isinstance(e, swag.InvalidValue):
-                            Message = f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0 et entière, car le $wag est **indivisible** !"
-                        elif isinstance(e, swag.NotEnoughSwagInBalance):
-                            Message = f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour faire cette transaction, vérifie ton solde avec `!$wag solde`"
-                        elif isinstance(e, swag.StyleStillBlocked):
-                            Message = f"{message.author.mention}, du $wag est déjà bloqué à ton compte chez $tyle Generatoc Inc. ! Attends leurs déblocage pour pouvoir en bloquer de nouveau !"
-                        await message.channel.send(Message)
-                        return
-
-                if "payer" in command_style:
-                    try:
-                        # Récupération du destinataire
-                        destinataire = message.mentions
-                        if len(destinataire) != 1:
-                            Message = "Merci de mentionner un destinataire (@Bobby Machin) pour lui donner de ton $tyle !"
-                            await message.channel.send(Message)
-                            return
-
-                        # Récupération de la valeur envoyé
-                        valeur = [
-                            argent
-                            for argent in command_style
-                            if argent.replace(".", "").replace(",", "").isnumeric()
-                        ]
-                        if len(valeur) != 1:
-                            raise swag.InvalidValue
-
-                        # envoie du style
-                        try:
-                            bot_SwagBank.giveStyle(
-                                str(message.author),
-                                str(destinataire[0]),
-                                float(valeur[0]),
-                            )
-                            await message.channel.send(
-                                "Transaction effectué avec succès ! \n"
-                                "```ini\n"
-                                f"[{message.author.display_name}\t{formatNumber(float(valeur[0]))} $tyle\t-->\t{destinataire[0].display_name}]\n"
-                                "```"
-                            )
-                            await updateForbesClassement(message.guild)
-                            return
-                        except (swag.NotEnoughStyleInBalance):
-                            await message.channel.send(
-                                f"{message.author.mention} ! Tu ne possèdes pas assez de $tyle pour faire cette transaction, vérifie ton solde avec `!$tyle solde`"
-                            )
-                            return
-                    except (swag.InvalidValue):
-                        await message.channel.send(
-                            f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0, car le $tyle est **toujours positif** !"
-                        )
-                        return
-            except (swag.NoAccountRegistered) as e:
-                no_account_guy = "NO_NAME"
-                if e.name == str(message.author):
-                    no_account_guy = message.author.mention
-                elif e.name == str(destinataire[0]):
-                    no_account_guy = destinataire[0]
-                await message.channel.send(
-                    f"{no_account_guy}, tu ne possèdes pas de compte chez $wagBank™ <:rip:817165391846703114> !\n\n"
-                    "Remédie à ce problème en lançant la commande `!$wag créer` et devient véritablement $wag 😎!"
-                )
-                return
-
-        await message.channel.send(
-            f"{message.author.mention}, tu sembles perdu, voici les commandes que tu peux utiliser avec en relation avec ton $tyle :\n"
-            "```HTTP\n"
-            "!$tyle info ~~ Voir ton solde de $tyle, ton bonus de bloquage, le $wag que tu as bloqué, et la date de déblocage \n"
-            "!$tyle payer [montant] [@destinataire] ~~ Envoie un *montant* de $tyle au *destinataire* spécifié\n"
-            "!$tyle bloquer [montant] ~~ Bloque un *montant* de $wag pour générer du $tyle pendant quelques jours\n"
-            "```"
-        )
+    elif message.content.startswith("!$tyle"):
+        execute_style_command(message)
 
     # Commandes liées aux Jukebox (aoe, war3, kaa etc...)
     if message.content.startswith(bot_jukebox.command_tuple):
-
-        ##Channel finding
-        if message.author.voice == None:
-            await message.channel.send(
-                "Hey ! Connecte toi sur un canal vocal avant de m'importuner !"
-            )
-            return
-        chanToGo = message.author.voice.channel
-
-        ##Command Processing
-        commande = message.content.split(maxsplit=1)
-
-        file_path, searchResult, search_code_success = bot_jukebox.searchWithTheCommand(
-            commande[0][1:], commande[1]
-        )
-
-        # Gestion des erreurs
-        if search_code_success == jukebox.code_recherche.NO_RESULT:
-            await message.channel.send(
-                "Aucun son n'a été trouvé <:rip:817165391846703114> Essaye avec d'autres mots/Tags !"
-            )
-            return
-
-        if search_code_success == jukebox.code_recherche.SOME_RESULT:
-            await message.channel.send(
-                "Waa ! Voici ce que j'ai en stock <:charlieKane:771392220430860288> \n"
-                "```fix\n"
-                f"{well_aligned_jukebox_tab(searchResult)}\n"
-                "```Sois plus précis pour lancer le bon son ! :notes:"
-            )
-            return
-
-        if search_code_success == jukebox.code_recherche.TOO_MANY_RESULT:
-            await message.channel.send(
-                "Waa ! J'ai trop de son qui correspondent à ce que tu as demandé ! <:gniknoht:781090046366187540> \n"
-                "```diff\n"
-                f"{well_aligned_jukebox_tab(searchResult[:15], '-')}\n"
-                f"...et encore {len(searchResult) - 15} autres !\n"
-                "```\n"
-                "Sois plus précis, n'hésite pas à utiliser les **tags** <:hellguy:809774898665881610> !"
-            )
-            return
-
-        if search_code_success == jukebox.code_recherche.REQUEST_HELP:
-            await reaction_message_building(
-                searchResult, message, mini_help_message_string
-            )
-            return
-
-        if search_code_success == jukebox.code_recherche.ONE_RESULT:
-            await message.channel.send(
-                "Lancement du son :radio: :musical_note:\n"
-                "```bash\n"
-                f'"{well_aligned_jukebox_tab(searchResult)}"\n'
-                "```"
-            )
-
-        fileToPlay = file_path
-
-        vc = await connect_to_chan(chanToGo)
-
-        # Si un autre son est actuellement entrain d'être joué, on endors le tread pendant 1 secondes
-        while vc.is_playing():
-            time.sleep(1)
-
-        # Lorsque aucun son n'est joué dans le canal vocal actuel, on lance le son !
-        if not vc.is_playing():
-            soundToPlay = discord.FFmpegPCMAudio(fileToPlay)
-            vc.play(soundToPlay, after=None)
+        execute_jukebox_command(message)
 
 
 import json
