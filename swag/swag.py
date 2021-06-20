@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 from enum import Enum, auto
 
-import cauchy
+from .cauchy import roll
 import pickle
 
 
@@ -305,7 +305,7 @@ class SwagBank:
         ):  # On vérifie si la date de la dernière fois qu'on a miné est bien inférieure à la date d'aujourd'hui
             raise AlreadyMineToday
 
-        mining_booty = cauchy.roll(
+        mining_booty = roll(
             SWAG_BASE, SWAG_LUCK
         )  # Génération d'un nombre aléatoire, en suivant une loi de Cauchy
         self.moveMoney(account_name, mining_booty)  # Ajout de cet argent au compte
@@ -351,8 +351,8 @@ class SwagBank:
         Returns:
             String: Nom de compte de celui qui a le plus de $wag
         """
-        swaggest = list(self.getClassement().items())[0][0]
-        return swaggest
+        for user in self.getClassement().keys():
+            return user
 
     ############################## Fonctions ajouté pour le $tyle ################################
 
@@ -544,7 +544,7 @@ class SwagBank:
         nbr_partcipant = len(classement)
         for account_name in classement.keys():
             self.swagAccounts[account_name].styleBonusRate = round(
-                (10 / 3) * (1 - pow(16, x / nbr_partcipant)), 2
+                (10 / 3) * (pow(16, x / nbr_partcipant) - 1), 2
             )  # Fonction mathématique, qui permet au premier d'avoir toujours 50%, et à celui à la moitié du classement 10%
             x += 1
         self.saveAccounts()
