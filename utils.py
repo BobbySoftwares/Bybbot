@@ -5,18 +5,22 @@ import asyncio
 
 ROLE_ID_BOBBY_SWAG = 856280663392649257
 GUILD_ID_BOBBYCRATIE = 856278929296195602
-# ROLE_ID_BOBBY_SWAG = 846736189310238751  # Identifiant unique du rôle "Le bobby swag"
-# GUILD_ID_BOBBYCRATIE = 487244765558210580  # ID unique du serveur Bobbycratie
+# Identifiant unique du rôle "Le bobby swag"
+# ROLE_ID_BOBBY_SWAG = 846736189310238751
+# ID unique du serveur Bobbycratie
+# GUILD_ID_BOBBYCRATIE = 487244765558210580
 
 FORBES_CHANNEL_ID_BOBBYCRATIE = 856279732009304074
 COMMAND_CHANNEL_ID_BOBBYCRATIE = 856278929869242380
-# FORBES_CHANNEL_ID_BOBBYCRATIE = 848313360306536448  # ID unique du canal du swag forbes
-# COMMAND_CHANNEL_ID_BOBBYCRATIE = 848302082150760508  # ID unique du canal swag-command
+# ID unique du canal du swag forbes
+# FORBES_CHANNEL_ID_BOBBYCRATIE = 848313360306536448
+# ID unique du canal swag-command
+# COMMAND_CHANNEL_ID_BOBBYCRATIE = 848302082150760508
 
 
 def format_number(n):
-    """Fonction qui permet de rajouter des espaces fin entre chaque millier d'un nombre
-        100000 -> 100 000
+    """Fonction qui permet de rajouter des espaces fin entre chaque
+    millier d'un nombre 100000 -> 100 000
 
     Args:
         n (int/float): le nombre à formater
@@ -28,7 +32,8 @@ def format_number(n):
 
 
 def chunks(lst, n):
-    """Permet de subdiviser des listes en plusieurs sous-liste de même taille.
+    """Permet de subdiviser des listes en plusieurs sous-liste de même
+    taille.
 
     Args:
         lst (liste): La liste à subdiviser
@@ -41,24 +46,31 @@ def chunks(lst, n):
 
 
 def get_guild_member_name(general_username, guild, return_display_name=True):
-    """Permet de récupérer l'objet User en donnant le nom d'utilisateur général discord de quelqu'un
+    """Permet de récupérer l'objet User en donnant le nom d'utilisateur
+    général discord de quelqu'un
 
-        Le nom d'utilisateur général est le pseudo sous la forme GlitchiKun#4950 (celui qui est impossible de changer)
+    Le nom d'utilisateur général est le pseudo sous la forme
+    GlitchiKun#4950 (celui qui est impossible de changer)
 
-        Si l'option return_display_name est à True, la fonction renvoie directement le nom d'utilisateur local au serveur
-        (Exemple : pour GlitchiKun#4950, son nom d'utilisateur local sur la Bobbycratie est Bobby Ingénieur)
+    Si l'option return_display_name est à True, la fonction renvoie
+    directement le nom d'utilisateur local au serveur (Exemple : pour
+    GlitchiKun#4950, son nom d'utilisateur local sur la Bobbycratie
+    est Bobby Ingénieur)
 
     Args:
         general_username (String): Nom d'utilisateur général (GlitchiKun#4950)
         guild (Guild): Serveur discord
-        return_display_name (bool, optional) :  True -> renvoie un string : le nom d'utilisateur local (Bobby Ingénieur).
-                                                False -> renvoie l'objet User correspondant à l'utilisateur
+        return_display_name (bool, optional) :
+            True -> renvoie un string : le nom d'utilisateur local (Bobby Ingénieur).
+            False -> renvoie l'objet User correspondant à l'utilisateur
 
     Returns:
-        User ou String: Objet User, ou nom local de l'utilisateur (en fonction du return_display_name)
+        User ou String: Objet User, ou nom local de l'utilisateur (en
+            fonction du return_display_name)
     """
 
-    # Cette fonction est utilisé pour l'historique, il ne faut donc pas prendre en compte $wag mine et $style generator
+    # Cette fonction est utilisé pour l'historique, il ne faut donc pas
+    # prendre en compte $wag mine et $style generator
     if general_username == "$wag Mine ⛏" or general_username == "$tyle Generator Inc.":
         return general_username
     split_username = general_username.split("#")
@@ -78,14 +90,18 @@ async def reaction_message_building(
     client, lst_to_show, message_user, fonction_message_builder
 ):
     """Utilisé par toutes les fonctionnalités du bot (Jukebox et $wag)
-        Permet de créer un message interactif avec des réactions, pour pouvoir naviguer entre une énorme liste
-        d'élément quelconque.
+        Permet de créer un message interactif avec des réactions, pour
+        pouvoir naviguer entre une énorme liste d'élément quelconque.
 
     Args:
-        lst_to_show (lst): La grande liste de chose à afficher, qui sera subdiviser en sous-liste
-        message_user (Message): Le message de l'utilisateur qui a demandé l'affichage de ce message interactif
-        fonction_message_builder (Function): Fonction à appelé pour la création du message approprié pour chaque sous-liste de lst_to_shw.
-        Par convention, cette fonction doit commencer par "mini_"
+        lst_to_show (lst): La grande liste de chose à afficher, qui
+            sera subdiviser en sous-liste
+        message_user (Message): Le message de l'utilisateur qui a
+            demandé l'affichage de ce message interactif
+        fonction_message_builder (Function): Fonction à appelé pour la
+            création du message approprié pour chaque sous-liste de
+            lst_to_shw.
+            Par convention, cette fonction doit commencer par "mini_"
 
     Returns:
         Message: Le message interractif
@@ -146,7 +162,8 @@ async def reaction_message_building(
 
             # On retire la réaction faites par l'utilisateur
             await message_bot.remove_reaction(reaction, user)
-        # Passé le time out défini dans le client.wait_for, on empêche les gens de continuer de naviguer.
+        # Passé le time out défini dans le client.wait_for, on empêche les
+        # gens de continuer de naviguer.
         except asyncio.TimeoutError:
             await message_bot.clear_reactions()
             active = False
@@ -160,14 +177,16 @@ async def connect_to_chan(client, chan_to_go):
         chan_to_go (VoiceChannel): Le canal vocal où il faut aller
 
     Returns:
-        VoiceClient: l'instance de connexion vocale que le bot utilise pour le canal vocal chan_to_go
+        VoiceClient: l'instance de connexion vocale que le bot utilise
+            pour le canal vocal chan_to_go
     """
     for actual_voice_client in client.voice_clients:
         if actual_voice_client.guild == chan_to_go.guild:
             if actual_voice_client.channel == chan_to_go:
                 return actual_voice_client
             else:
-                # close the old voiceClient in wrong channel, and move to the new channel
+                # close the old voiceClient in wrong channel, and move to the new
+                # channel
                 await actual_voice_client.move_to(chan_to_go)
                 return actual_voice_client
 

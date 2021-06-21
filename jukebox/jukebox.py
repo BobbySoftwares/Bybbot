@@ -6,7 +6,9 @@ from random import choice
 
 
 def clear_string(s):
-    """Nettoie un string de tout un tas de caractères,enlève les accents à des lettres, et transforme toutes les majuscules en minuscule.
+    """Nettoie un string de tout un tas de caractères, enlève les
+    accents à des lettres, et transforme toutes les majuscules en
+    minuscule.
 
     Args:
         s (String): String à nettoyer
@@ -40,7 +42,8 @@ def clear_string(s):
 
 
 def clear_all_string(lst):
-    """Permet d'utiliser la fonction clear_string dans l'ensemble de string dans une liste
+    """Permet d'utiliser la fonction clear_string dans l'ensemble de
+    string dans une liste
 
     Args:
         lst (list): Liste de String
@@ -52,33 +55,37 @@ def clear_all_string(lst):
 
 
 def deep_is_inside(s, lst_string):
-    """Permet de voir si une chaîne de caractère est inclut dans une des chaînes de caractères d'une liste de string
+    """Permet de voir si une chaîne de caractère est inclut dans une
+    des chaînes de caractères d'une liste de string
 
     Args:
         s (String): chaîne de caractère à trouver
         lst_string (List): Liste de chaîne de caractère
 
     Returns:
-        Bool: True si s est au moins dans une des chaînes de caractères de lst_string, False sinon.
+        Bool: True si s est au moins dans une des chaînes de caractères
+            de lst_string, False sinon.
     """
     return any(s in string for string in lst_string)
 
 
 def attr_to_tags_and_transcription(attr):
-    """Permet de récupérer les tags et la transcription écrit dans les attributs d'une commande pour lancer un son
+    """Permet de récupérer les tags et la transcription écrit dans les
+    attributs d'une commande pour lancer un son
 
     Args:
-        attr (String): Attribut d'une commande de son lancé par un utilisateur
+        attr (str): Attribut d'une commande de son lancé par un
+            utilisateur
 
     Returns:
-        (List[String],String): tableau de tags et transcription en string
+        (List[str], str): tableau de tags et transcription en str
     """
     tags = []
     recherche = ""
 
-    for tag in re.findall(
-        " *\\[.*?\\] *", attr
-    ):  # Je fais un for each si jamais il y en a en plusieurs en mode [Humain][Arthas]
+    # Je fais un for each si jamais il y en a en plusieurs en mode
+    # [Humain][Arthas]
+    for tag in re.findall(" *\\[.*?\\] *", attr):
         tag_without_bracket = tag[tag.find("[") + 1 : tag.find("]")]
         tags = tags + tag_without_bracket.replace(", ", ",").replace(" ,", ",").split(
             ","
@@ -90,7 +97,10 @@ def attr_to_tags_and_transcription(attr):
 
 
 class CodeRecherche(Enum):
-    """Énumérateur utilisé pour indiqué si la recherche de son à donné aucun résultat, 1 seul résultat, plusieurs résultats, trop de résultats, ou si l'utilisateur a demandé de l'aide"""
+    """Énumérateur utilisé pour indiqué si la recherche de son à donné
+    aucun résultat, 1 seul résultat, plusieurs résultats, trop de
+    résultats, ou si l'utilisateur a demandé de l'aide
+    """
 
     NO_RESULT = auto()
     ONE_RESULT = auto()
@@ -100,7 +110,10 @@ class CodeRecherche(Enum):
 
 
 class Son:
-    """Un Son est composé de plusieurs tags ainsi que d'une transcription, avec ces informations, il est facile d'en trouver le chemin"""
+    """Un Son est composé de plusieurs tags ainsi que d'une
+    transcription, avec ces informations, il est facile d'en trouver
+    le chemin
+    """
 
     def __init__(self, lst_tags, trans):
         self.tags = lst_tags.copy()
@@ -119,10 +132,12 @@ class Son:
             return f"{self.tags}\t{self.transcription}"
 
     def get_path_of_sound(self, sound_file_path, command):
-        """Permet de récupérer le chemin du fichier contenant le son correspondant
+        """Permet de récupérer le chemin du fichier contenant le son
+        correspondant
 
         Args:
-            sound_file_path (String): Dossier qui contient tout les sons (par défaut sounds)
+            sound_file_path (String): Dossier qui contient tout les
+                sons (par défaut sounds)
             command (String): la commande utilisé (aoe, war3, kaa...)
 
         Returns:
@@ -135,12 +150,15 @@ class Son:
             return glob(f"{sound_file_path}/{command}/{sound_number}-*")[0]
         else:
             return glob(
-                f"{sound_file_path}/{command}/{'/'.join(self.tags)}/{sound_number}-*"
+                f"{sound_file_path}/{command}/{'/'.join(self.tags)}"
+                f"/{sound_number}-*"
             )[0]
 
 
 class Jukebox:
-    """Représentation abstraite de l'ensemble des sons à rechercher et à jouer"""
+    """Représentation abstraite de l'ensemble des sons à rechercher et
+    à jouer
+    """
 
     def __init__(self, sound_file="."):
         self.dico_jukebox = {}
@@ -177,9 +195,10 @@ class Jukebox:
 
             self.dico_jukebox[folder_name] = sound_tab
 
+        # Liste des commandes dont le jukebox pourra être appelé (exemple (!aoe,!war3))
         self.command_tuple = tuple(
             [f"!{command} " for command in list(self.dico_jukebox.keys())]
-        )  # Liste des commandes dont le jukebox pourra être appelé (exemple (!aoe,!war3))
+        )
         print(self.dico_jukebox.keys())
 
     def search_with_the_command(self, command, attr):
@@ -187,12 +206,16 @@ class Jukebox:
 
         Args:
             command (String): aoe, kaa, war3 ...
-            attr (String): attribut donné à la commande (que la lumière soit avec nous, OU, [Uther] que la lumière soit avec nous)
+            attr (String): attribut donné à la commande (que la lumière
+                soit avec nous, OU, [Uther] que la lumière soit avec nous)
 
         Returns:
-            file_path (String): Chemin du Son qui a été trouvé (None si non trouvé)
-            search_result (List[Son]) : Ensemble des sons qui correspondent à la recherche
-            search_code_success (CodeRecherche) : Code indiquant une information concernant la requête de l'utilisateur
+            file_path (String): Chemin du Son qui a été trouvé (None si
+                non trouvé)
+            search_result (List[Son]) : Ensemble des sons qui
+                correspondent à la recherche
+            search_code_success (CodeRecherche) : Code indiquant une
+                information concernant la requête de l'utilisateur
         """
         tags, recherche = attr_to_tags_and_transcription(attr)
 
@@ -284,7 +307,8 @@ class Jukebox:
             )
         ]
 
-        # check if final_result is not the same sound but different version, in that case, play a random sound.
+        # check if final_result is not the same sound but different version, in that
+        # case, play a random sound.
         if final_result:
             if final_result[0].transcription[-1].isnumeric():
                 intermediate = []
@@ -298,7 +322,9 @@ class Jukebox:
         return final_result
 
     def jukebox_stat(self):
-        """Envoie différente statistique du jukebox (Quels sont les commandes disponibles, et combien chaque commande a de sons à disposition)
+        """Envoie différente statistique du jukebox (Quels sont les
+        ommandes disponibles, et combien chaque commande a de sons à
+        disposition)
 
         Returns:
             String: Information concernant le jukebox

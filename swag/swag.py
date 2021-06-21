@@ -67,7 +67,9 @@ class SwagBank:
         """Un compte chez $wag bank"""
 
         class HistoryMovement(Enum):
-            """Énumérateur qui permet d'indiquer si on a donné une monnaie (GIVE_TO) ou reçu (RECEIVE_FROM). Utilisé pour l'historique."""
+            """Énumérateur qui permet d'indiquer si on a donné une
+            monnaie (GIVE_TO) ou reçu (RECEIVE_FROM). Utilisé pour l'historique.
+            """
 
             GIVE_TO = auto()
             RECEIVE_FROM = auto()
@@ -88,10 +90,14 @@ class SwagBank:
             """Création du compte V1, avec le solde de $wag
 
             Args:
-                balance (int, optional):             Nombre de $wag à la création du compte. Defaults to 0.
-                history ([type], optional):          historique de transaction à l'initialisation du compte. Defaults to None.
-                last_time_mining ([type], optional): Date du dernier minage, à l'initialisation du compte. Defaults to date.min.
-                date_of_creation ([type], optional): Date de création, à l'initialisation du compte. Defaults to date.today().
+                balance (int, optional): Nombre de $wag à la création
+                    du compte. Defaults to 0.
+                history ([type], optional):  historique de transaction
+                    à l'initialisation du compte. Defaults to None.
+                last_time_mining ([type], optional): Date du dernier
+                    minage, à l'initialisation du compte. Defaults to date.min.
+                date_of_creation ([type], optional): Date de création, à
+                    l'initialisation du compte. Defaults to date.today().
             """
             self.balance = balance
             if history is None:
@@ -105,8 +111,10 @@ class SwagBank:
             """Écrit dans l'historique du compte
 
             Args:
-                h_movement (HistoryMovement): Indiquer si l'argent à été donné (GIVE_TO) ou reçu (RECEIVE_FROM)
-                account_name (Account): l'autre compte en relation avec la transaction
+                h_movement (HistoryMovement): Indiquer si l'argent a
+                    été donné (GIVE_TO) ou reçu (RECEIVE_FROM)
+                account_name (Account): l'autre compte en relation avec
+                    la transaction
                 value (int): Argent en jeu lors de la transaction
             """
             self.history.insert(
@@ -114,10 +122,13 @@ class SwagBank:
             )  # Une transaction est représenté par un tuple
 
     class AccountV2(Account):
-        """Évolution de du compte V1 qui ajoute le $tyle. Hérite du compte V1."""
+        """Évolution de du compte V1 qui ajoute le $tyle. Hérite du
+        compte V1.
+        """
 
         def __init__(self, account_v1):
-            """La création d'un compte V2 se fait à partir d'un compte V1 pour assurer le transfert entre les comptes V1 et V2.
+            """La création d'un compte V2 se fait à partir d'un compte
+            V1 pour assurer le transfert entre les comptes V1 et V2.
 
             Args:
                 AccountV1 (Account): compte V1
@@ -138,10 +149,13 @@ class SwagBank:
             """Surchage de la fonction write_in_history du compte V1
 
             Args:
-                h_movement (HistoryMovement): Indiquer si l'argent à été donné (GIVE_TO) ou reçu (RECEIVE_FROM)
-                account_name (Account): l'autre compte en relation avec la transaction
+                h_movement (HistoryMovement): Indiquer si l'argent à
+                    été donné (GIVE_TO) ou reçu (RECEIVE_FROM)
+                account_name (Account): l'autre compte en relation avec
+                    la transaction
                 value (int): Argent en jeu lors de la transaction
-                currency (str, optional): Indique le type de monnaie qui a été échangé. Defaults to "$wag".
+                currency (str, optional): Indique le type de monnaie
+                    qui a été échangé. Defaults to "$wag".
             """
             self.history.insert(0, (h_movement, account_name, value, currency))
 
@@ -161,32 +175,39 @@ class SwagBank:
 
             self.save_accounts()
 
+        # Si le fichier des comptes n'existe pas, on crée un dictionnaire
+        # de compte vide, et on crée le fichier des comptes.
         except (
             OSError,
             IOError,
-        ) as e:  # Si le fichier des comptes n'existe pas, on crée un dictionnaire de compte vide, et on crée le fichier des comptes.
+        ):
             self.swag_accounts = {}
             pickle.dump(self.swag_accounts, open("bank.swag", "wb"))
 
         # Check the must swag
         self.the_swaggest = None
 
-        # On regarde si le dictionnaire des comptes n'est pas vide, si c'est le cas, on met à jour le plus swag.
+        # On regarde si le dictionnaire des comptes n'est pas vide, si c'est
+        # le cas, on met à jour le plus swag.
         if self.swag_accounts:
             self.the_swaggest = self.get_the_new_swaggest()
 
     def save_accounts(self):
-        """Permet de sauvegarder le dictionnaire des comptes dans un fichier système."""
+        """Permet de sauvegarder le dictionnaire des comptes dans un
+        fichier système.
+        """
         pickle.dump(self.swag_accounts, open("bank.swag", "wb"))
 
     def add_account(self, account_name):
         """Crée un nouveau compte chez $wagBank
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            AccountAlreadyExist: Levée si un compte à ce nom existe déjà
+            AccountAlreadyExist: Levée si un compte à ce nom existe
+                déjà
         """
         if account_name not in self.swag_accounts.keys():
             self.swag_accounts[account_name] = self.AccountV2(self.Account())
@@ -198,10 +219,12 @@ class SwagBank:
         """Récupère le montant de $wag dans un compte
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            NoAccountRegistered: Levée si il n'existe pas de compte au nom donné
+            NoAccountRegistered: Levée si il n'existe pas de compte au
+                nom donné
 
         Returns:
             int: Montant de $wag
@@ -215,10 +238,12 @@ class SwagBank:
         """Récupère l'historique des transaction du compte
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            NoAccountRegistered: Levée si il n'existe pas de compte au nom donné
+            NoAccountRegistered: Levée si il n'existe pas de compte
+                au nom donné
 
         Returns:
             List[tuple]: Liste des transactions
@@ -229,14 +254,18 @@ class SwagBank:
             raise NoAccountRegistered(account_name)
 
     def move_money(self, account_name, howmany):
-        """Permet d'ajouter ou d'enlever (en utilisant un howmany négatif) du $wag dans un compte
+        """Permet d'ajouter ou d'enlever (en utilisant un howmany
+            négatif) du $wag dans un compte
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
-            howmany (int): valeur de $wag à ajouter (ou enlever si négatif !)
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
+            howmany (int): valeur de $wag à ajouter (ou enlever si
+                négatif !)
 
         Raises:
-            NoAccountRegistered: Levée si il n'existe pas de compte au nom donné
+            NoAccountRegistered: Levée si il n'existe pas de compte au
+                nom donné
         """
         if account_name in self.swag_accounts.keys():
             self.swag_accounts[account_name].balance = (
@@ -286,10 +315,12 @@ class SwagBank:
         """Appelé lorsqu'un minage de $wag est demandé
 
         Args:
-            account_name ([type]): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name ([type]): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            AlreadyMineToday: Levée si la personne a déjà miné dans la journée
+            AlreadyMineToday: Levée si la personne a déjà miné dans la
+                journée
 
         Returns:
             int: la quantité de $wag gagné par le minage
@@ -299,21 +330,19 @@ class SwagBank:
         )  # petit tricks pour vérifier si le compte existe bien
 
         # On ne peut miner qu'une fois par jour
-        if (
-            not self.swag_accounts[account_name].last_time_mining < date.today()
-        ):  # On vérifie si la date de la dernière fois qu'on a miné est bien inférieure à la date d'aujourd'hui
+        if not self.swag_accounts[account_name].last_time_mining < date.today():
             raise AlreadyMineToday
 
-        mining_booty = roll(
-            SWAG_BASE, SWAG_LUCK
-        )  # Génération d'un nombre aléatoire, en suivant une loi de Cauchy
-        self.move_money(account_name, mining_booty)  # Ajout de cet argent au compte
-        self.swag_accounts[
-            account_name
-        ].last_time_mining = date.today()  # Mise à jour de la date du dernier minage
+        # Génération d'un nombre aléatoire, en suivant une loi de Cauchy
+        mining_booty = roll(SWAG_BASE, SWAG_LUCK)
+        # Ajout de cet argent au compte
+        self.move_money(account_name, mining_booty)
+        # Mise à jour de la date du dernier minage
+        self.swag_accounts[account_name].last_time_mining = date.today()
+        # écriture dans l'historique
         self.swag_accounts[account_name].write_in_history(
             self.Account.HistoryMovement.RECEIVE_FROM, "$wag Mine ⛏", mining_booty
-        )  # écriture dans l'historique
+        )
         self.save_accounts()
 
         return mining_booty
@@ -327,10 +356,13 @@ class SwagBank:
         return self.swag_accounts.keys()
 
     def get_classement(self, premier_en_premier=True):
-        """Récupère la liste des comptes de $wagbank, classé en fonction de leur fortune en $wag
+        """Récupère la liste des comptes de $wagbank, classé en
+        fonction de leur fortune en $wag
 
         Args:
-            premier_en_premier (bool, optional): Si à True, le premier sera rangé en tête de la liste, Si False, il sera dernier de la liste. Defaults to True.
+            premier_en_premier (bool, optional): Si à True, le premier
+                sera rangé en tête de la liste, Si False, il sera
+                dernier de la liste. Defaults to True.
 
         Returns:
             Dict: Dictionnaire des comptes classé en fonction du $wag
@@ -357,10 +389,12 @@ class SwagBank:
         """Récupère la quantité de $tyle dans le compte
 
         Args:
-            account_name ([type]): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name ([type]): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            NoAccountRegistered: Levée si il n'existe pas de compte au nom donné
+            NoAccountRegistered: Levée si il n'existe pas de compte au
+                nom donné
 
         Returns:
             Float: Quantité de $tyle dans le compte
@@ -371,13 +405,16 @@ class SwagBank:
             raise NoAccountRegistered(account_name)
 
     def get_bloked_swag(self, account_name):
-        """Recupère le nombre de $wag actuellement bloqué pour la génération de $tyle pour un compte spécifique
+        """Recupère le nombre de $wag actuellement bloqué pour la
+        génération de $tyle pour un compte spécifique
 
         Args:
-            account_name ([type]): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name ([type]): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            NoAccountRegistered: Levée si il n'existe pas de compte au nom donné
+            NoAccountRegistered: Levée si il n'existe pas de compte au
+                nom donné
 
         Returns:
             int: quantité de $wag bloqué
@@ -391,10 +428,12 @@ class SwagBank:
         """Récupère le taux de blocage total du $tyle actuel du compte
 
         Args:
-            account_name ([type]): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name ([type]): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            NoAccountRegistered: Levée si il n'existe pas de compte au nom donné
+            NoAccountRegistered: Levée si il n'existe pas de compte au
+                nom donné
 
         Returns:
             Float: Taux de blocage (100% + bonus de blocage)
@@ -411,10 +450,12 @@ class SwagBank:
         """Récupère la date de fin de blocage du $wag
 
         Args:
-            account_name ([type]): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name ([type]): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            NoAccountRegistered: Levée si il n'existe pas de compte au nom donné
+            NoAccountRegistered: Levée si il n'existe pas de compte au
+                nom donné
 
         Returns:
             datetime: jour et heure du déblocage du $wag
@@ -429,14 +470,18 @@ class SwagBank:
             raise NoAccountRegistered(account_name)
 
     def move_style(self, account_name, howmany):  # peut être utiliser pour le négatif
-        """Permet d'ajouter ou d'enlever (en utilisant un howmany négatif) du $tyle dans un compte
+        """Permet d'ajouter ou d'enlever (en utilisant un howmany
+        négatif) du $tyle dans un compte
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
-            howmany (float): valeur de $tyle à ajouter (ou enlever si négatif !)
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
+            howmany (float): valeur de $tyle à ajouter (ou enlever
+                si négatif !)
 
         Raises:
-            NoAccountRegistered: Levée si il n'existe pas de compte au nom donné
+            NoAccountRegistered: Levée si il n'existe pas de compte au
+                nom donné
         """
         if account_name in self.swag_accounts.keys():
             self.swag_accounts[account_name].balance_style = (
@@ -449,11 +494,14 @@ class SwagBank:
     def give_style(
         self, expeditor_account_name, destinator_account_name, value_to_give
     ):
-        """Appelé pour réaliser une transaction de $tyle complète entre deux comptes.
+        """Appelé pour réaliser une transaction de $tyle complète entre
+        deux comptes.
 
         Args:
-            expeditor_account_name (String): Nom du compte de celui qui donne du $tyle.
-            destinator_account_name (String): Nom du compte de celui qui reçoit du $tyle.
+            expeditor_account_name (String): Nom du compte de celui
+                qui donne du $tyle.
+            destinator_account_name (String): Nom du compte de celui
+                qui reçoit du $tyle.
             value_to_give (float): quantité de $tyle à échanger.
 
         Raises:
@@ -489,16 +537,22 @@ class SwagBank:
         self.save_accounts()
 
     def block_swag_to_get_style(self, account_name, amount_of_swag):
-        """Appelée lorsqu'un utilisateur souhaite bloquer du $wag pour gagner du $tyle
+        """Appelée lorsqu'un utilisateur souhaite bloquer du $wag
+        pour gagner du $tyle
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
-            amount_of_swag (int): quantité de $wag que l'utilisateur souhaite bloquer
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
+            amount_of_swag (int): quantité de $wag que l'utilisateur
+                souhaite bloquer
 
         Raises:
-            InvalidValue: Levée si la quantité de $wag n'est pas un entier positif
-            NotEnoughSwagInBalance: Levée si l'utilisateur n'a pas assez de $wag dans son compte
-            StyleStillBlocked: Levée si l'utilisateur a toujours du $wag bloqué
+            InvalidValue: Levée si la quantité de $wag n'est pas un
+                entier positif
+            NotEnoughSwagInBalance: Levée si l'utilisateur n'a pas
+                assez de $wag dans son compte
+            StyleStillBlocked: Levée si l'utilisateur a toujours du
+                $wag bloqué
         """
 
         # Check if the valueIsNotNegative or not int
@@ -528,7 +582,8 @@ class SwagBank:
         """Indique si un compte est actuellement entrain de bloquer du $wag ou non
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Returns:
             Bool: True si blocage en cours, False sinon
@@ -542,17 +597,21 @@ class SwagBank:
         x = 1
         nbr_partcipant = len(classement)
         for account_name in classement.keys():
+            # Fonction mathématique, qui permet au premier d'avoir toujours
+            # 50%, et à celui à la moitié du classement 10%
             self.swag_accounts[account_name].styleBonusRate = round(
                 (10 / 3) * (pow(16, x / nbr_partcipant) - 1), 2
-            )  # Fonction mathématique, qui permet au premier d'avoir toujours 50%, et à celui à la moitié du classement 10%
+            )
             x += 1
         self.save_accounts()
 
     def earn_style(self, account_name):
-        """Lance la génération de $tyle en fonction du bonus et du $wag bloqué
+        """Lance la génération de $tyle en fonction du bonus et du
+        $wag bloqué
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
         """
         block_booty = (
             self.get_bloked_swag(account_name)
@@ -580,10 +639,12 @@ class SwagBank:
         """Fonction qui débloque le $wag si la date de déblocage est passé
 
         Args:
-            account_name (String): Nom de compte, souvent le nom d'utilisateur général (ex : GlichiKun#4059)
+            account_name (String): Nom de compte, souvent le nom
+                d'utilisateur général (ex : GlichiKun#4059)
 
         Raises:
-            StyleStillBlocked: Levée si l'utilisateur a toujours du $wag bloqué
+            StyleStillBlocked: Levée si l'utilisateur a toujours du
+                $wag bloqué
         """
         if datetime.now() < self.get_date_of_unblocking_swag(
             account_name

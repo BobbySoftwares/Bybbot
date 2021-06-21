@@ -64,14 +64,16 @@ class SwagClient(Module):
                 message.author = message.mentions[0]
                 mining_booty = self.swag_bank.mine(str(message.author))
                 await message.channel.send(
-                    f"⛏ {message.author.mention} a miné `{format_number(mining_booty)} $wag` !"
+                    f"⛏ {message.author.mention} a miné "
+                    f"`{format_number(mining_booty)} $wag` !"
                 )
                 await update_forbes_classement(message.guild, self.swag_bank)
 
             elif "miner" in command_swag:
                 mining_booty = self.swag_bank.mine(str(message.author))
                 await message.channel.send(
-                    f"⛏ {message.author.mention} a miné `{format_number(mining_booty)} $wag` !"
+                    f"⛏ {message.author.mention} a miné "
+                    f"`{format_number(mining_booty)} $wag` !"
                 )
                 await update_forbes_classement(message.guild, self.swag_bank)
 
@@ -79,14 +81,16 @@ class SwagClient(Module):
                 montant_swag = self.swag_bank.get_balance_of(str(message.author))
                 await message.channel.send(
                     "```diff\n"
-                    f"$wag de {message.author.display_name} : {format_number(montant_swag)}\n"
+                    f"$wag de {message.author.display_name} : "
+                    f"{format_number(montant_swag)}\n"
                     "```"
                 )
 
             elif "historique" in command_swag:
                 history = self.swag_bank.get_history(str(message.author))
                 await message.channel.send(
-                    f"{message.author.mention}, voici l'historique de tes transactions de $wag :\n"
+                    f"{message.author.mention}, voici l'historique de "
+                    "tes transactions de $wag :\n"
                 )
                 await reaction_message_building(
                     self.client, history, message, mini_history_swag_message
@@ -97,7 +101,8 @@ class SwagClient(Module):
                 destinataire = message.mentions
                 if len(destinataire) != 1:
                     await message.channel.send(
-                        "Merci de mentionner un destinataire (@Bobby Machin) pour lui donner de ton $wag !"
+                        "Merci de mentionner un destinataire (@Bobby Machin) "
+                        "pour lui donner de ton $wag !"
                     )
                     return
 
@@ -115,39 +120,50 @@ class SwagClient(Module):
                 await message.channel.send(
                     "Transaction effectué avec succès ! \n"
                     "```ini\n"
-                    f"[{message.author.display_name}\t{format_number(int(valeur[0]))} $wag\t-->\t{destinataire[0].display_name}]\n"
+                    f"[{message.author.display_name}\t"
+                    f"{format_number(int(valeur[0]))} $wag\t"
+                    f"-->\t{destinataire[0].display_name}]\n"
                     "```"
                 )
                 await update_forbes_classement(message.guild, self.swag_bank)
             else:
                 # Si l'utilisateur se trompe de commande, ce message s'envoie par défaut
                 await message.channel.send(
-                    f"{message.author.mention}, tu sembles perdu, voici les commandes que tu peux utiliser avec ton $wag :\n"
+                    f"{message.author.mention}, tu sembles perdu, "
+                    "voici les commandes que tu peux utiliser avec ton $wag :\n"
                     "```HTTP\n"
                     "!$wag créer ~~ Crée un compte chez $wagBank™\n"
                     "!$wag solde ~~ Voir ton solde de $wag sur ton compte\n"
                     "!$wag miner ~~ Gagner du $wag gratuitement tout les jours\n"
-                    "!$wag payer [montant] [@destinataire] ~~ Envoie un *montant* de $wag au *destinataire* spécifié\n"
-                    "!$wag historique ~~ Visualiser l'ensemble des transactions effectuées sur ton compte\n"
+                    "!$wag payer [montant] [@destinataire] ~~ Envoie un *montant* "
+                    "de $wag au *destinataire* spécifié\n"
+                    "!$wag historique ~~ Visualiser l'ensemble des transactions "
+                    "effectuées sur ton compte\n"
                     "```"
                 )
 
         except NotEnoughSwagInBalance:
             await message.channel.send(
-                f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour faire cette transaction, vérifie ton solde avec `!$wag solde`"
+                f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour "
+                "faire cette transaction, vérifie ton solde avec `!$wag solde`"
             )
         except InvalidValue:
             await message.channel.send(
-                f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0 et entière, car le $wag est **indivisible** !"
+                f"{message.author.mention}, la valeur que tu as écrite est "
+                "incorrecte, elle doit être supérieur à 0 et entière, car le "
+                "$wag est **indivisible** !"
             )
         except AlreadyMineToday:
             await message.channel.send(
-                f"Désolé {message.author.mention}, mais tu as déjà miné du $wag aujourd'hui 😮 ! Reviens donc demain !"
+                f"Désolé {message.author.mention}, mais tu as déjà miné du $wag "
+                "aujourd'hui 😮 ! Reviens donc demain !"
             )
         except NoAccountRegistered as e:
             await message.channel.send(
-                f"{e.name}, tu ne possèdes pas de compte chez $wagBank™ <:rip:817165391846703114> !\n\n"
-                "Remédie à ce problème en lançant la commande `!$wag créer` et devient véritablement $wag 😎!"
+                f"{e.name}, tu ne possèdes pas de compte chez $wagBank™ "
+                "<:rip:817165391846703114> !\n\n"
+                "Remédie à ce problème en lançant la commande `!$wag créer` "
+                "et devient véritablement $wag 😎!"
             )
         await update_forbes_classement(message.guild, self.swag_bank)
 
@@ -161,15 +177,18 @@ class SwagClient(Module):
                     str(message.author)
                 )
                 blocked_swag = self.swag_bank.get_bloked_swag(str(message.author))
-                # TODO : Changer l'affichage pour avoir une affichage à la bonne heure, et en français
+                # TODO : Changer l'affichage pour avoir une affichage à la bonne heure,
+                # et en français
                 release_info = (
-                    f"-Date du déblocage sur $wag : {self.swag_bank.get_date_of_unblocking_swag(str(message.author))}\n"
+                    "-Date du déblocage sur $wag : "
+                    f"{self.swag_bank.get_date_of_unblocking_swag(str(message.author))}\n"
                     if self.swag_bank.is_blocking_swag(str(message.author))
                     else ""
                 )
                 await message.channel.send(
                     "```diff\n"
-                    f"$tyle de {message.author.display_name} : {format_number(style_amount)}\n"
+                    f"$tyle de {message.author.display_name} : "
+                    f"{format_number(style_amount)}\n"
                     f"-Taux de bloquage : {format_number(growth_rate)} %\n"
                     f"-$wag actuellement bloqué : {format_number(blocked_swag)}\n"
                     f"{release_info}"
@@ -186,7 +205,10 @@ class SwagClient(Module):
                     str(message.author), int(valeur[0])
                 )
                 await message.channel.send(
-                    f"{message.author.mention}, vous venez de bloquer `{format_number(int(valeur[0]))}$wag` vous les récupérerez dans **{TIME_OF_BLOCK} jours** à la même heure\n"
+                    f"{message.author.mention}, vous venez de bloquer "
+                    f"`{format_number(int(valeur[0]))} $wag`, vous les "
+                    f"récupérerez dans **{TIME_OF_BLOCK} jours** à la même "
+                    "heure\n"
                 )
                 await update_forbes_classement(message.guild, self.swag_bank)
 
@@ -195,7 +217,8 @@ class SwagClient(Module):
                 destinataire = message.mentions
                 if len(destinataire) != 1:
                     await message.channel.send(
-                        "Merci de mentionner un destinataire (@Bobby Machin) pour lui donner de ton $tyle !"
+                        "Merci de mentionner un destinataire (@Bobby Machin) pour "
+                        "lui donner de ton $tyle !"
                     )
                     return
 
@@ -217,41 +240,59 @@ class SwagClient(Module):
                 await message.channel.send(
                     "Transaction effectué avec succès ! \n"
                     "```ini\n"
-                    f"[{message.author.display_name}\t{format_number(float(valeur[0]))} $tyle\t-->\t{destinataire[0].display_name}]\n"
+                    f"[{message.author.display_name}\t"
+                    f"{format_number(float(valeur[0]))} $tyle\t"
+                    f"-->\t{destinataire[0].display_name}]\n"
                     "```"
                 )
                 await update_forbes_classement(message.guild, self.swag_bank)
             else:
                 await message.channel.send(
-                    f"{message.author.mention}, tu sembles perdu, voici les commandes que tu peux utiliser avec en relation avec ton $tyle :\n"
+                    f"{message.author.mention}, tu sembles perdu, voici les "
+                    "commandes que tu peux utiliser avec en relation avec ton "
+                    "$tyle :\n"
                     "```HTTP\n"
-                    "!$tyle info ~~ Voir ton solde de $tyle, ton bonus de bloquage, le $wag que tu as bloqué, et la date de déblocage \n"
-                    "!$tyle payer [montant] [@destinataire] ~~ Envoie un *montant* de $tyle au *destinataire* spécifié\n"
-                    "!$tyle bloquer [montant] ~~ Bloque un *montant* de $wag pour générer du $tyle pendant quelques jours\n"
+                    "!$tyle info ~~ Voir ton solde de $tyle, ton bonus de bloquage, "
+                    "le $wag que tu as bloqué, et la date de déblocage \n"
+                    "!$tyle payer [montant] [@destinataire] ~~ Envoie un *montant* "
+                    "de $tyle au *destinataire* spécifié\n"
+                    "!$tyle bloquer [montant] ~~ Bloque un *montant* de $wag pour "
+                    "générer du $tyle pendant quelques jours\n"
                     "```"
                 )
         except StyleStillBlocked:
             await message.channel.send(
-                f"{message.author.mention}, du $wag est déjà bloqué à ton compte chez $tyle Generatoc Inc. ! Attends leurs déblocage pour pouvoir en bloquer de nouveau !"
+                f"{message.author.mention}, du $wag est déjà bloqué à ton compte "
+                "chez $tyle Generatoc Inc. ! Attends leurs déblocage pour pouvoir "
+                "en bloquer de nouveau !"
             )
         except InvalidValue:
             await message.channel.send(
-                f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0 et entière, car le $wag est **indivisible** !"
+                f"{message.author.mention}, la valeur que tu as écrite est "
+                "incorrecte, elle doit être supérieur à 0 et entière, car le "
+                "$wag est **indivisible** !"
             )
         except NotEnoughSwagInBalance:
             await message.channel.send(
-                f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour faire cette transaction, vérifie ton solde avec `!$wag solde`"
+                f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour "
+                "faire cette transaction, vérifie ton solde avec `!$wag solde`"
             )
         except NotEnoughStyleInBalance:
             await message.channel.send(
-                f"{message.author.mention} ! Tu ne possèdes pas assez de $tyle pour faire cette transaction, vérifie ton solde avec `!$tyle solde`"
+                f"{message.author.mention} ! Tu ne possèdes pas assez de $tyle "
+                "pour faire cette transaction, vérifie ton solde avec "
+                "`!$tyle solde`"
             )
         except (InvalidValue):
             await message.channel.send(
-                f"{message.author.mention}, la valeur que tu as écrite est incorrecte, elle doit être supérieur à 0, car le $tyle est **toujours positif** !"
+                f"{message.author.mention}, la valeur que tu as écrite est "
+                "incorrecte, elle doit être supérieur à 0, car le $tyle est "
+                "**toujours positif** !"
             )
         except (NoAccountRegistered) as e:
             await message.channel.send(
-                f"{e.name}, tu ne possèdes pas de compte chez $wagBank™ <:rip:817165391846703114> !\n\n"
-                "Remédie à ce problème en lançant la commande `!$wag créer` et devient véritablement $wag 😎!"
+                f"{e.name}, tu ne possèdes pas de compte chez $wagBank™ "
+                "<:rip:817165391846703114> !\n\n"
+                "Remédie à ce problème en lançant la commande `!$wag créer` "
+                "et devient véritablement $wag 😎!"
             )

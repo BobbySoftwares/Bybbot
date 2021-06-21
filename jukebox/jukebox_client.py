@@ -43,13 +43,15 @@ class JukeboxClient(Module):
         # Gestion des erreurs
         if search_code_success == CodeRecherche.NO_RESULT:
             await message.channel.send(
-                "Aucun son n'a été trouvé <:rip:817165391846703114> Essaye avec d'autres mots/Tags !"
+                "Aucun son n'a été trouvé <:rip:817165391846703114> !"
+                "Essaye avec d'autres mots/Tags !"
             )
             return
 
         if search_code_success == CodeRecherche.SOME_RESULT:
             await message.channel.send(
-                "Waa ! Voici ce que j'ai en stock <:charlieKane:771392220430860288> \n"
+                "Waa ! Voici ce que j'ai en stock"
+                "<:charlieKane:771392220430860288> \n"
                 "```fix\n"
                 f"{well_aligned_jukebox_tab(search_result)}\n"
                 "```Sois plus précis pour lancer le bon son ! :notes:"
@@ -58,12 +60,14 @@ class JukeboxClient(Module):
 
         if search_code_success == CodeRecherche.TOO_MANY_RESULT:
             await message.channel.send(
-                "Waa ! J'ai trop de son qui correspondent à ce que tu as demandé ! <:gniknoht:781090046366187540> \n"
+                "Waa ! J'ai trop de son qui correspondent à ce que tu as"
+                "demandé ! <:gniknoht:781090046366187540> \n"
                 "```diff\n"
                 f"{well_aligned_jukebox_tab(search_result[:15], '-')}\n"
                 f"...et encore {len(search_result) - 15} autres !\n"
                 "```\n"
-                "Sois plus précis, n'hésite pas à utiliser les **tags** <:hellguy:809774898665881610> !"
+                "Sois plus précis, n'hésite pas à utiliser les **tags**"
+                "<:hellguy:809774898665881610> !"
             )
             return
 
@@ -85,11 +89,13 @@ class JukeboxClient(Module):
 
         vc = await connect_to_chan(chan_to_go)
 
-        # Si un autre son est actuellement entrain d'être joué, on endors le tread pendant 1 secondes
+        # Si un autre son est actuellement entrain d'être joué, on
+        # endors le tread pendant 1 secondes
         while vc.is_playing():
             sleep(1)
 
-        # Lorsque aucun son n'est joué dans le canal vocal actuel, on lance le son !
+        # Lorsque aucun son n'est joué dans le canal vocal actuel, on
+        # lance le son !
         if not vc.is_playing():
             sound_to_play = discord.FFmpegPCMAudio(file_to_play)
             vc.play(sound_to_play, after=None)

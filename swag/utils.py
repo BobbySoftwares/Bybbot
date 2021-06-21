@@ -18,13 +18,17 @@ from .swag import StyleStillBlocked
 
 def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, message_user):
     """Fonction utilisé pour la fonctionnalité du $wag
-        Appelée lorsqu'on veut afficher une partie de l'historique des transactions du $wag ou de $tyle
+        Appelée lorsqu'on veut afficher une partie de l'historique des
+        transactions du $wag ou de $tyle
 
     Args:
         chunk_transaction (lst): sous-liste de transaction
-        current_page (int): La page courante, utilisé pour l'afficher en bas du message
-        nbr_pages (int): Le nombre de page total, utilisé pour l'afficher en bas du message
-        message_user (Message): Message de l'utilisateur qui a demandé l'affichage de l'historique
+        current_page (int): La page courante, utilisé pour l'afficher
+            en bas du message
+        nbr_pages (int): Le nombre de page total, utilisé pour
+            l'afficher en bas du message
+        message_user (Message): Message de l'utilisateur qui a demandé
+            l'affichage de l'historique
 
     Returns:
         String : message à envoyer pour visualiser une sous-partie de l'historique
@@ -39,8 +43,9 @@ def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, messag
         for (way, second_party, amount, *currency) in chunk_transaction
     ]
 
-    # Besoin de connaître la valeur de swag la plus grande et le nom d'utilisateur le plus grand parmis
-    # l'ensemble de la sous liste pour un affichage au top
+    # Besoin de connaître la valeur de swag la plus grande et le nom
+    # d'utilisateur le plus grand parmis l'ensemble de la sous liste
+    # pour un affichage au top
     col1 = max(len(amount) for _, amount, _, _ in transactions)
     col2 = max(len(second_party) for _, second_party, _, _ in transactions)
 
@@ -82,7 +87,8 @@ def mini_forbes_swag(chunk_classement, nbr_pages, guild, swag_bank):
         )
         for (user, swag_amount) in chunk_classement
     ]
-    # Besoin de connaître le nom, la valeur de $wag, et la valeur de $tyle le plus long pour l'aligement de chaque colonne
+    # Besoin de connaître le nom, la valeur de $wag, et la valeur de $tyle
+    # le plus long pour l'aligement de chaque colonne
     col1 = max(len(user) for user, _, _, _ in forbes)
     col2 = max(len(swag_amount) for _, swag_amount, _, _ in forbes)
     col3 = max(len(style_amount) for _, _, style_amount, _ in forbes)
@@ -102,8 +108,11 @@ def mini_forbes_swag(chunk_classement, nbr_pages, guild, swag_bank):
 
 
 async def update_the_style(client, swag_bank):  # appelé toute les heures
-    """Appelée de manière périodique en fonction des paramètres choisi dans la fonction "on_ready"
-    Permet de faire gagner du $tyle à tout les utilisateurs qui ont bloqué leurs $wag, et débloque les comptes déblocables
+    """Appelée de manière périodique en fonction des paramètres choisi
+    dans la fonction "on_ready"
+
+    Permet de faire gagner du $tyle à tout les utilisateurs qui ont
+    bloqué leurs $wag, et débloque les comptes déblocables
     """
 
     bobbycratie_guild = client.get_guild(id=GUILD_ID_BOBBYCRATIE)
@@ -114,7 +123,8 @@ async def update_the_style(client, swag_bank):  # appelé toute les heures
 
     for account_name in swag_bank.get_list_of_account():
         if swag_bank.is_blocking_swag(account_name):
-            # On essaye de débloquer le comptes. Cela sera refusé systématiquement si le blocage n'est pas terminé
+            # On essaye de débloquer le comptes. Cela sera refusé systématiquement
+            # si le blocage n'est pas terminé
             try:
                 blocked_swag = swag_bank.get_bloked_swag(account_name)
                 swag_bank.deblock_swag(account_name)
@@ -137,10 +147,8 @@ async def update_the_swaggest(guild, swag_bank):
     """Met à jour l'attribution du rôle "Le Bobby $wag"
 
     Args:
-        guild (Guild): Serveur discord (inutile car c'est uniquement pour la Bobbycratie pour le moment)
-
-    Returns:
-        void
+        guild (Guild): Serveur discord (inutile car c'est uniquement
+            pour la Bobbycratie pour le moment)
     """
 
     # Récupération du nouveau premier au classement
@@ -182,7 +190,9 @@ async def update_forbes_classement(guild, swag_bank):
     """Met à jour le classement Forbes dans le #swag-forbes
 
     Args:
-        guild (Guild): Guilde où écrire le classement (Ne sert à rien en soit, car on le fait toujours que en bobbycratie pour le moment)
+        guild (Guild): Guilde où écrire le classement (Ne sert à rien
+            en soit, car on le fait toujours que en bobbycratie pour
+            le moment)
     """
 
     personne_par_message = 15  # Chaque message du $wag forbes ne contient que 15 places
@@ -196,7 +206,8 @@ async def update_forbes_classement(guild, swag_bank):
     # Subdivision du dictionnaire en sous-liste de taille équitable
     chunks_classement = list(chunks(dico_classement, personne_par_message))
 
-    # Récupération du nombre de message nécessaire pour écrire tout le classement (c'est le nombre de sous-listes)
+    # Récupération du nombre de message nécessaire pour écrire tout le
+    # classement (c'est le nombre de sous-listes)
     nbr_pages = math.ceil(len(dico_classement) / personne_par_message)
 
     # On compte le nombre de message posté dans le $wag forbes

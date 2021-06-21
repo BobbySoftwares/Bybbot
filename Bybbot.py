@@ -24,7 +24,9 @@ modules = [SwagClient(client), JukeboxClient(client)]
 @client.event
 async def on_ready():
     """Fonction lancé lorsque le bot se lance.
-    Utilisé pour programmer les fonctions récurrentes, comme la mise à jour du $tyle
+
+    Utilisé pour programmer les fonctions récurrentes, comme la mise
+    à jour du $tyle
     """
     await client.change_presence(status=discord.Status.online)
     print("Le bot est loggué avec les id {0.user}".format(client))
@@ -65,12 +67,15 @@ async def on_voice_state_update(member, before, after):
         before ([type]): L'ancien statut vocal du membre
         after ([type]) : Le nouveau statut vocal
     """
-    # Si l'utilisateur reste au même endroit, pas besoin de faire quoi que ce soit
+    # Si l'utilisateur reste au même endroit, pas besoin de faire quoi
+    # que ce soit
     if before == after:
         return
     else:
-        if client.voice_clients:  # si le bot est connecté à des voices chat
-            # on vérifie, dans tout les channels vocaux où le bot est présent, si le bot est tout seul
+        # si le bot est connecté à des voiceschat
+        if client.voice_clients:
+            # on vérifie, dans tout les channels vocaux où le bot est
+            # présent, si le bot est tout seul
             for bot_chan in client.voice_clients:
                 # un gars est parti et le bot est tout seul
                 if (
@@ -82,8 +87,10 @@ async def on_voice_state_update(member, before, after):
 
 @client.event
 async def on_message(message):
-    """Fonction appelé à chaque fois qu'un message est envoyé sur un serveur où celui-ci est connecté
-        C'est ici qu'il détecte et traite les différentes commandes
+    """Fonction appelé à chaque fois qu'un message est envoyé sur un
+    serveur où celui-ci est connecté
+
+    C'est ici qu'il détecte et traite les différentes commandes
 
     Args:
         message (Message): Le message qui a activé le bot

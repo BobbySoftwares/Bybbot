@@ -33,16 +33,21 @@ def well_aligned_jukebox_tab(lst_sound, prefix="", suffix=""):
 
 def mini_help_message_string(sub_soundlst, current_page, nbr_pages, message_user=None):
     """Fonction utilisé par la fonctionnalité du Jukebox
-        Appelée lorsqu'on veut afficher un message d'aide pour l'affichage du catalogue est son disponible en fonction de la commande
+    Appelée lorsqu'on veut afficher un message d'aide pour l'affichage
+    du catalogue est son disponible en fonction de la commande
 
     Args:
         sub_soundlst (lst): sous-liste de son
-        current_page (int): La page courante, utilisé pour l'afficher en bas du message
-        nbr_pages (int): Le nombre de page total, utilisé pour l'afficher en bas du message
-        message_user ([type], optional): Ce paramètre n'a aucune incidence ici. Defaults to None.
+        current_page (int): La page courante, utilisé pour l'afficher
+            en bas du message
+        nbr_pages (int): Le nombre de page total, utilisé pour
+            l'afficher en bas du message
+        message_user ([type], optional): Ce paramètre n'a aucune
+            incidence ici. Defaults to None.
 
     Returns:
-        String: Une chaîne de caractère correspondant à un message d'aide pour le jukebox
+        String: Une chaîne de caractère correspondant à un message
+            d'aide pour le jukebox
     """
     return (
         "Voici ce que j'ai en stock <:cozmo:774656738469216287>.\n"
