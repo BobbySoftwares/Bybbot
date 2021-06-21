@@ -52,29 +52,32 @@ async def on_disconnect():
 
 @client.event
 async def on_voice_state_update(member, before, after):
-    """Fonction appelé lorsque n'importe quel membre d'un serveur où le bot est présent change de statut vocal
-        (Changer de canal vocal, de déconnecter d'un canal vocal, se connecter d'un canal vocal, se mute etc...)
+    """Fonction appelé lorsque n'importe quel membre d'un serveur où
+    le bot est présent change de statut vocal (Changer de canal vocal,
+    de déconnecter d'un canal vocal, se connecter d'un canal vocal, se
+    mute etc...)
 
-        Utilisée pour deconnecter automatiquement le bot si il se retrouve tout seul
+    Utilisée pour déconnecter automatiquement le bot si il se retrouve
+    tout seul.
 
     Args:
         member (Member): Le membre qui vient de changer de statut vocal
         before ([type]): L'ancien statut vocal du membre
         after ([type]) : Le nouveau statut vocal
     """
-    ## Si l'utilisateur reste au même endroit, pas besoin de faire quoi que ce soit
+    # Si l'utilisateur reste au même endroit, pas besoin de faire quoi que ce soit
     if before == after:
         return
     else:
         if client.voice_clients:  # si le bot est connecté à des voices chat
             # on vérifie, dans tout les channels vocaux où le bot est présent, si le bot est tout seul
-            for botChan in client.voice_clients:
+            for bot_chan in client.voice_clients:
                 # un gars est parti et le bot est tout seul
                 if (
-                    before.channel == botChan.channel
-                    and len(botChan.channel.members) == 1
+                    before.channel == bot_chan.channel
+                    and len(bot_chan.channel.members) == 1
                 ):
-                    await botChan.disconnect()
+                    await bot_chan.disconnect()
 
 
 @client.event

@@ -10,9 +10,9 @@ from .swag import (
     SwagBank,
     TIME_OF_BLOCK,
 )
-from .utils import mini_history_swag_message, updateForbesClassement, update_the_style
+from .utils import mini_history_swag_message, update_forbes_classement, update_the_style
 
-from utils import GUILD_ID_BOBBYCRATIE, formatNumber, reaction_message_building
+from utils import GUILD_ID_BOBBYCRATIE, format_number, reaction_message_building
 from module import Module
 
 
@@ -24,7 +24,7 @@ class SwagClient(Module):
 
     async def setup(self):
         print("Mise à jour du classement et des bonus de blocage\n\n")
-        await updateForbesClassement(
+        await update_forbes_classement(
             self.client.get_guild(GUILD_ID_BOBBYCRATIE), self.swag_bank
         )
 
@@ -47,14 +47,14 @@ class SwagClient(Module):
 
         try:
             if "créer" in command_swag:
-                self.swag_bank.addAccount(str(message.author))
+                self.swag_bank.add_account(str(message.author))
                 await message.channel.send(
                     f"Bienvenue chez $wagBank™ {message.author.mention} !\n\n"
                     "Tu peux maintenant miner du $wag avec la commande `!$wag miner` 💰"
                 )
 
             elif "bourrer" in command_swag:
-                self.swag_bank.addAccount(str(message.mentions[0]))
+                self.swag_bank.add_account(str(message.mentions[0]))
                 await message.channel.send(
                     f"Bienvenue chez $wagBank™ {message.mentions[0]} !\n\n"
                     "Tu peux maintenant miner du $wag avec la commande `!$wag miner` 💰"
@@ -64,27 +64,27 @@ class SwagClient(Module):
                 message.author = message.mentions[0]
                 mining_booty = self.swag_bank.mine(str(message.author))
                 await message.channel.send(
-                    f"⛏ {message.author.mention} a miné `{formatNumber(mining_booty)} $wag` !"
+                    f"⛏ {message.author.mention} a miné `{format_number(mining_booty)} $wag` !"
                 )
-                await updateForbesClassement(message.guild, self.swag_bank)
+                await update_forbes_classement(message.guild, self.swag_bank)
 
             elif "miner" in command_swag:
                 mining_booty = self.swag_bank.mine(str(message.author))
                 await message.channel.send(
-                    f"⛏ {message.author.mention} a miné `{formatNumber(mining_booty)} $wag` !"
+                    f"⛏ {message.author.mention} a miné `{format_number(mining_booty)} $wag` !"
                 )
-                await updateForbesClassement(message.guild, self.swag_bank)
+                await update_forbes_classement(message.guild, self.swag_bank)
 
             elif "solde" in command_swag:
-                montant_swag = self.swag_bank.getBalanceOf(str(message.author))
+                montant_swag = self.swag_bank.get_balance_of(str(message.author))
                 await message.channel.send(
                     "```diff\n"
-                    f"$wag de {message.author.display_name} : {formatNumber(montant_swag)}\n"
+                    f"$wag de {message.author.display_name} : {format_number(montant_swag)}\n"
                     "```"
                 )
 
             elif "historique" in command_swag:
-                history = self.swag_bank.getHistory(str(message.author))
+                history = self.swag_bank.get_history(str(message.author))
                 await message.channel.send(
                     f"{message.author.mention}, voici l'historique de tes transactions de $wag :\n"
                 )
@@ -107,7 +107,7 @@ class SwagClient(Module):
                     raise InvalidValue
 
                 # envoie du swag
-                self.swag_bank.giveSwag(
+                self.swag_bank.give_swag(
                     str(message.author),
                     str(destinataire[0]),
                     int(valeur[0]),
@@ -115,10 +115,10 @@ class SwagClient(Module):
                 await message.channel.send(
                     "Transaction effectué avec succès ! \n"
                     "```ini\n"
-                    f"[{message.author.display_name}\t{formatNumber(int(valeur[0]))} $wag\t-->\t{destinataire[0].display_name}]\n"
+                    f"[{message.author.display_name}\t{format_number(int(valeur[0]))} $wag\t-->\t{destinataire[0].display_name}]\n"
                     "```"
                 )
-                await updateForbesClassement(message.guild, self.swag_bank)
+                await update_forbes_classement(message.guild, self.swag_bank)
             else:
                 # Si l'utilisateur se trompe de commande, ce message s'envoie par défaut
                 await message.channel.send(
@@ -149,29 +149,29 @@ class SwagClient(Module):
                 f"{e.name}, tu ne possèdes pas de compte chez $wagBank™ <:rip:817165391846703114> !\n\n"
                 "Remédie à ce problème en lançant la commande `!$wag créer` et devient véritablement $wag 😎!"
             )
-        await updateForbesClassement(message.guild, self.swag_bank)
+        await update_forbes_classement(message.guild, self.swag_bank)
 
     async def execute_style_command(self, message):
         command_style = message.content.split()
 
         try:
             if "info" in command_style:
-                style_amount = self.swag_bank.getStyleBalanceOf(str(message.author))
-                growth_rate = self.swag_bank.getStyleTotalGrowthRate(
+                style_amount = self.swag_bank.get_style_balance_of(str(message.author))
+                growth_rate = self.swag_bank.get_style_total_growth_rate(
                     str(message.author)
                 )
-                blocked_swag = self.swag_bank.getBlokedSwag(str(message.author))
+                blocked_swag = self.swag_bank.get_bloked_swag(str(message.author))
                 # TODO : Changer l'affichage pour avoir une affichage à la bonne heure, et en français
                 release_info = (
-                    f"-Date du déblocage sur $wag : {self.swag_bank.getDateOfUnblockingSwag(str(message.author))}\n"
-                    if self.swag_bank.isBlockingSwag(str(message.author))
+                    f"-Date du déblocage sur $wag : {self.swag_bank.get_date_of_unblocking_swag(str(message.author))}\n"
+                    if self.swag_bank.is_blocking_swag(str(message.author))
                     else ""
                 )
                 await message.channel.send(
                     "```diff\n"
-                    f"$tyle de {message.author.display_name} : {formatNumber(style_amount)}\n"
-                    f"-Taux de bloquage : {formatNumber(growth_rate)} %\n"
-                    f"-$wag actuellement bloqué : {formatNumber(blocked_swag)}\n"
+                    f"$tyle de {message.author.display_name} : {format_number(style_amount)}\n"
+                    f"-Taux de bloquage : {format_number(growth_rate)} %\n"
+                    f"-$wag actuellement bloqué : {format_number(blocked_swag)}\n"
                     f"{release_info}"
                     "```"
                 )
@@ -182,18 +182,21 @@ class SwagClient(Module):
                 if len(valeur) != 1:
                     raise InvalidValue
 
-                self.swag_bank.blockSwagToGetStyle(str(message.author), int(valeur[0]))
-                await message.channel.send(
-                    f"{message.author.mention}, vous venez de bloquer `{formatNumber(int(valeur[0]))}$wag` vous les récupérerez dans **{TIME_OF_BLOCK} jours** à la même heure\n"
+                self.swag_bank.block_swag_to_get_style(
+                    str(message.author), int(valeur[0])
                 )
-                await updateForbesClassement(message.guild, self.swag_bank)
+                await message.channel.send(
+                    f"{message.author.mention}, vous venez de bloquer `{format_number(int(valeur[0]))}$wag` vous les récupérerez dans **{TIME_OF_BLOCK} jours** à la même heure\n"
+                )
+                await update_forbes_classement(message.guild, self.swag_bank)
 
             elif "payer" in command_style:
                 # Récupération du destinataire
                 destinataire = message.mentions
                 if len(destinataire) != 1:
-                    Message = "Merci de mentionner un destinataire (@Bobby Machin) pour lui donner de ton $tyle !"
-                    await message.channel.send(Message)
+                    await message.channel.send(
+                        "Merci de mentionner un destinataire (@Bobby Machin) pour lui donner de ton $tyle !"
+                    )
                     return
 
                 # Récupération de la valeur envoyé
@@ -206,7 +209,7 @@ class SwagClient(Module):
                     raise InvalidValue
 
                 # envoie du style
-                self.swag_bank.giveStyle(
+                self.swag_bank.give_style(
                     str(message.author),
                     str(destinataire[0]),
                     float(valeur[0]),
@@ -214,10 +217,10 @@ class SwagClient(Module):
                 await message.channel.send(
                     "Transaction effectué avec succès ! \n"
                     "```ini\n"
-                    f"[{message.author.display_name}\t{formatNumber(float(valeur[0]))} $tyle\t-->\t{destinataire[0].display_name}]\n"
+                    f"[{message.author.display_name}\t{format_number(float(valeur[0]))} $tyle\t-->\t{destinataire[0].display_name}]\n"
                     "```"
                 )
-                await updateForbesClassement(message.guild, self.swag_bank)
+                await update_forbes_classement(message.guild, self.swag_bank)
             else:
                 await message.channel.send(
                     f"{message.author.mention}, tu sembles perdu, voici les commandes que tu peux utiliser avec en relation avec ton $tyle :\n"

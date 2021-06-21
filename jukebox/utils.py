@@ -5,7 +5,7 @@ def well_aligned_jukebox_tab(lst_sound, prefix="", suffix=""):
     Fait partie de la fonctionnalité jukebox.
 
     Args:
-        lst_sound (List[jukebox.son]): Liste des sons à afficher
+        lst_sound (List[jukebox.Son]): Liste des sons à afficher
         prefix (str): Caractère préfixant chaque ligne (utile pour
             utiliser les couleurs)
         suffix (str): Caractère suffixant chaque ligne
@@ -25,7 +25,7 @@ def well_aligned_jukebox_tab(lst_sound, prefix="", suffix=""):
             f"{prefix}{tag : <{width})} || {sound.transcription}{suffix}"
             for sound, tag in zip(lst_sound, tags)
         )
-    else:  ## Si il n'y a que des sons sans aucun tag dans le tableau
+    else:  # Si il n'y a que des sons sans aucun tag dans le tableau
         return "\n".join(
             f"{prefix}{sound.transcription}{suffix}" for sound in lst_sound
         )

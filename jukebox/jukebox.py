@@ -89,7 +89,7 @@ def attr_to_tags_and_transcription(attr):
     return tags, recherche
 
 
-class code_recherche(Enum):
+class CodeRecherche(Enum):
     """Énumérateur utilisé pour indiqué si la recherche de son à donné aucun résultat, 1 seul résultat, plusieurs résultats, trop de résultats, ou si l'utilisateur a demandé de l'aide"""
 
     NO_RESULT = auto()
@@ -99,8 +99,8 @@ class code_recherche(Enum):
     REQUEST_HELP = auto()
 
 
-class son:
-    """Un son est composé de plusieurs tags ainsi que d'une transcription, avec ces informations, il est facile d'en trouver le chemin"""
+class Son:
+    """Un Son est composé de plusieurs tags ainsi que d'une transcription, avec ces informations, il est facile d'en trouver le chemin"""
 
     def __init__(self, lst_tags, trans):
         self.tags = lst_tags.copy()
@@ -139,7 +139,7 @@ class son:
             )[0]
 
 
-class jukebox:
+class Jukebox:
     """Représentation abstraite de l'ensemble des sons à rechercher et à jouer"""
 
     def __init__(self, sound_file="."):
@@ -153,7 +153,7 @@ class jukebox:
             # Génération de la liste des transcriptions
             transcription_file_lst = glob(f"{folder_path}/**/*.tr", recursive=True)
 
-            soundTab = []
+            sound_tab = []
             for transcription_file in transcription_file_lst:
 
                 # Récupération des tags
@@ -173,16 +173,16 @@ class jukebox:
 
                 # Création du tableau des sons :
                 for transcription in transcription_lines:
-                    soundTab.append(son(tags_lst, transcription.replace("\n", "")))
+                    sound_tab.append(Son(tags_lst, transcription.replace("\n", "")))
 
-            self.dico_jukebox[folder_name] = soundTab
+            self.dico_jukebox[folder_name] = sound_tab
 
         self.command_tuple = tuple(
             [f"!{command} " for command in list(self.dico_jukebox.keys())]
         )  # Liste des commandes dont le jukebox pourra être appelé (exemple (!aoe,!war3))
         print(self.dico_jukebox.keys())
 
-    def searchWithTheCommand(self, command, attr):
+    def search_with_the_command(self, command, attr):
         """Lance la recherche de son à partir d'une commande utilisateur
 
         Args:
@@ -190,41 +190,43 @@ class jukebox:
             attr (String): attribut donné à la commande (que la lumière soit avec nous, OU, [Uther] que la lumière soit avec nous)
 
         Returns:
-            file_path (String): Chemin du son qui a été trouvé (None si non trouvé)
-            searchResult (List[son]) : Ensemble des sons qui correspondent à la recherche
-            search_code_success (code_recherche) : Code indiquant une information concernant la requête de l'utilisateur
+            file_path (String): Chemin du Son qui a été trouvé (None si non trouvé)
+            search_result (List[Son]) : Ensemble des sons qui correspondent à la recherche
+            search_code_success (CodeRecherche) : Code indiquant une information concernant la requête de l'utilisateur
         """
         tags, recherche = attr_to_tags_and_transcription(attr)
 
-        searchResult = self.searchForSounds(command, tags, recherche)
+        search_result = self.search_for_sounds(command, tags, recherche)
 
         # Gestion des différents cas de figures
 
         # 1er cas le résultat est vide
-        if not searchResult:
+        if not search_result:
             file_path = None
-            search_code_success = code_recherche.NO_RESULT
+            search_code_success = CodeRecherche.NO_RESULT
 
         elif "help" in attr:
             file_path = None
-            search_code_success = code_recherche.REQUEST_HELP
+            search_code_success = CodeRecherche.REQUEST_HELP
 
         # 2nd cas, le résultat présente plusieurs possibilité
-        elif len(searchResult) > 1 and len(searchResult) <= 15:
+        elif len(search_result) > 1 and len(search_result) <= 15:
             file_path = None
-            search_code_success = code_recherche.SOME_RESULT
+            search_code_success = CodeRecherche.SOME_RESULT
 
-        elif len(searchResult) > 15:
+        elif len(search_result) > 15:
             file_path = None
-            search_code_success = code_recherche.TOO_MANY_RESULT
+            search_code_success = CodeRecherche.TOO_MANY_RESULT
 
         else:
-            file_path = searchResult[0].get_path_of_sound(self.sound_file_path, command)
-            search_code_success = code_recherche.ONE_RESULT
+            file_path = search_result[0].get_path_of_sound(
+                self.sound_file_path, command
+            )
+            search_code_success = CodeRecherche.ONE_RESULT
 
-        return file_path, searchResult, search_code_success
+        return file_path, search_result, search_code_success
 
-    def searchForSounds(self, command, tags, recherche):
+    def search_for_sounds(self, command, tags, recherche):
         """Retourne la liste des sons qui corresponde au tag et à la recherche
 
         Args:
@@ -235,20 +237,20 @@ class jukebox:
         Returns:
             List: Liste des sons compatible avec la recherche
         """
-        soundsTab = self.dico_jukebox.get(command)
+        sounds_tab = self.dico_jukebox.get(command)
 
         # Tags filtering, si le tableau n'est pas vide
         if tags:
             result = [
                 sound
-                for sound in soundsTab
+                for sound in sounds_tab
                 if all(
                     deep_is_inside(clear_string(tag), clear_all_string(sound.tags))
                     for tag in tags
                 )
             ]
         else:
-            result = soundsTab
+            result = sounds_tab
 
         splitrecherche = recherche.split(" ")
 
@@ -271,7 +273,7 @@ class jukebox:
             ]
 
         # Calcul des résulats
-        finalResult = [
+        final_result = [
             sound
             for sound in result
             if all(
@@ -282,18 +284,18 @@ class jukebox:
             )
         ]
 
-        # check if finalResult is not the same sound but different version, in that case, play a random sound.
-        if finalResult:
-            if finalResult[0].transcription[-1].isnumeric():
+        # check if final_result is not the same sound but different version, in that case, play a random sound.
+        if final_result:
+            if final_result[0].transcription[-1].isnumeric():
                 intermediate = []
-                for r in finalResult:
+                for r in final_result:
                     intermediate.append(r.transcription.split("-", 1)[1][:-1])
 
                 if len(set(intermediate)) == 1:
-                    finalResult = [choice(finalResult)]
+                    final_result = [choice(final_result)]
         ##
 
-        return finalResult
+        return final_result
 
     def jukebox_stat(self):
         """Envoie différente statistique du jukebox (Quels sont les commandes disponibles, et combien chaque commande a de sons à disposition)
