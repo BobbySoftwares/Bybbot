@@ -129,7 +129,7 @@ async def update_the_style(client, swag_bank):  # appelé toute les heures
                 pass
 
     await updateForbesClassement(
-        bobbycratie_guild
+        bobbycratie_guild, swag_bank
     )  # Mise à jour du classement après les gains de $tyle
 
 
