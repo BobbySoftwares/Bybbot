@@ -61,7 +61,7 @@ def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, messag
     )
 
 
-def mini_forbes_swag(chunk_classement, nbr_pages, guild, swag_bank):
+def mini_forbes_swag(forbes_chunk, nbr_pages, guild):
     """Fonction utilisé pour la fonctionnalité du $wag
         Appelé pour construire des parties du classement forbes sous forme de String
 
@@ -73,19 +73,14 @@ def mini_forbes_swag(chunk_classement, nbr_pages, guild, swag_bank):
     Returns:
         String: message à envoyer pour visualiser une partie du classement
     """
-
-    def display_style_of(user):
-        style_amount = swag_bank.get_style_balance_of(user)
-        return format_number(round(style_amount, 3))
-
     forbes = [
         (
-            get_guild_member_name(user, guild),
-            format_number(swag_amount),
-            display_style_of(user),
-            swag_bank.is_blocking_swag(user),
+            get_guild_member_name(account.user, guild),
+            format_number(account.swag_balance),
+            format_number(round(account.style_balance, 3)),
+            account.blocked_swag != 0,
         )
-        for (user, swag_amount) in chunk_classement
+        for account in forbes_chunk
     ]
     # Besoin de connaître le nom, la valeur de $wag, et la valeur de $tyle
     # le plus long pour l'aligement de chaque colonne
@@ -107,7 +102,7 @@ def mini_forbes_swag(chunk_classement, nbr_pages, guild, swag_bank):
     return f"```ini\n{content}\n```"
 
 
-async def update_the_style(client, swag_bank):  # appelé toute les heures
+async def update_the_style(client, swag_client):  # appelé toute les heures
     """Appelée de manière périodique en fonction des paramètres choisi
     dans la fonction "on_ready"
 
@@ -119,15 +114,15 @@ async def update_the_style(client, swag_bank):  # appelé toute les heures
     command_channel = client.get_channel(id=COMMAND_CHANNEL_ID_BOBBYCRATIE)
 
     # Faire gagner du style à ceux qui ont du swag bloqué :
-    swag_bank.everyone_earn_style()
+    swag_client.swag_bank.everyone_earn_style()
 
-    for account_name in swag_bank.get_list_of_account():
-        if swag_bank.is_blocking_swag(account_name):
+    for account_name in swag_client.swag_bank.get_list_of_account():
+        if swag_client.swag_bank.is_blocking_swag(account_name):
             # On essaye de débloquer le comptes. Cela sera refusé systématiquement
             # si le blocage n'est pas terminé
             try:
-                blocked_swag = swag_bank.get_bloked_swag(account_name)
-                swag_bank.deblock_swag(account_name)
+                blocked_swag = swag_client.swag_bank.get_bloked_swag(account_name)
+                swag_client.swag_bank.deblock_swag(account_name)
                 member = get_guild_member_name(account_name, bobbycratie_guild, False)
                 await command_channel.send(
                     f"{member.mention}, les `{blocked_swag} $wag` que vous aviez"
@@ -139,11 +134,11 @@ async def update_the_style(client, swag_bank):  # appelé toute les heures
                 pass
 
     await update_forbes_classement(
-        bobbycratie_guild, swag_bank
+        bobbycratie_guild, swag_client
     )  # Mise à jour du classement après les gains de $tyle
 
 
-async def update_the_swaggest(guild, swag_bank):
+async def update_the_swaggest(guild, swag_client):
     """Met à jour l'attribution du rôle "Le Bobby $wag"
 
     Args:
@@ -152,24 +147,19 @@ async def update_the_swaggest(guild, swag_bank):
     """
 
     # Récupération du nouveau premier au classement
-    username_swaggest = swag_bank.get_the_new_swaggest()
+    username_swaggest = swag_client.swag_bank.get_the_new_swaggest()
     if (
         username_swaggest is None
-        or username_swaggest == swag_bank.the_swaggest
+        or username_swaggest == swag_client.the_swaggest
         or guild.id != GUILD_ID_BOBBYCRATIE
     ):  # La gestion de rôle n'est qu'en bobbycratie
         return  # rien ne se passe si le plus riche est toujours le même
 
-    swag_bank.the_swaggest = (
-        username_swaggest  # Mise à jour du plus riche dans $wagBank
-    )
+    # Mise à jour du plus riche dans $wagBank
+    swag_client.the_swaggest = username_swaggest
 
     # Récupération de l'objet User du plus $wag
-    member = discord.utils.get(
-        guild.members,
-        name=username_swaggest.split("#")[0],
-        discriminator=username_swaggest.split("#")[1],
-    )
+    member = guild.get_member(swag_client.the_swaggest)
 
     if member is None:  # Si l'utilisateur n'existe pas, alors ne rien faire
         return
@@ -186,7 +176,7 @@ async def update_the_swaggest(guild, swag_bank):
     await member.add_roles(role_swag, reason="Est maintenant devenu le plus $wag !")
 
 
-async def update_forbes_classement(guild, swag_bank):
+async def update_forbes_classement(guild, swag_client):
     """Met à jour le classement Forbes dans le #swag-forbes
 
     Args:
@@ -201,14 +191,14 @@ async def update_forbes_classement(guild, swag_bank):
     channel_forbes = guild.get_channel(FORBES_CHANNEL_ID_BOBBYCRATIE)
 
     # Récupération du classement complet
-    dico_classement = list(swag_bank.get_classement().items())
+    forbes = swag_client.swag_bank.get_forbes()
 
     # Subdivision du dictionnaire en sous-liste de taille équitable
-    chunks_classement = list(chunks(dico_classement, personne_par_message))
+    forbes_chunks = list(chunks(forbes, personne_par_message))
 
     # Récupération du nombre de message nécessaire pour écrire tout le
     # classement (c'est le nombre de sous-listes)
-    nbr_pages = math.ceil(len(dico_classement) / personne_par_message)
+    nbr_pages = math.ceil(len(forbes) / personne_par_message)
 
     # On compte le nombre de message posté dans le $wag forbes
     nbr_message_in_channel = 0
@@ -224,16 +214,14 @@ async def update_forbes_classement(guild, swag_bank):
     cpt_message = 0
     async for message in channel_forbes.history(oldest_first=True):
         await message.edit(
-            content=mini_forbes_swag(
-                chunks_classement[cpt_message], cpt_message + 1, guild, swag_bank
-            )
+            content=mini_forbes_swag(forbes_chunks[cpt_message], cpt_message + 1, guild)
         )
         cpt_message += 1
 
     # update des bonus de st$le
-    swag_bank.update_bonus_growth_rate()
+    swag_client.swag_bank.update_bonus_growth_rate()
     # update du rôle du "Bobby $wag"
-    await update_the_swaggest(guild, swag_bank)
+    await update_the_swaggest(guild, swag_client)
 
 
 def forbes_medal(rank):

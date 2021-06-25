@@ -5,7 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import json
 
 from jukebox.jukebox_client import JukeboxClient
-from swag.swag_client import SwagClient
+from swag import SwagClient
 
 
 print("Lancement du bot...")
@@ -18,7 +18,7 @@ intents.members = True
 # Création du client
 client = discord.Client(intents=intents)
 
-modules = [SwagClient(client), JukeboxClient(client)]
+modules = [SwagClient(client, "bybbank.swagdb"), JukeboxClient(client)]
 
 
 @client.event

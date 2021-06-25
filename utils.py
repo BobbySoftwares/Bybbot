@@ -41,11 +41,12 @@ def chunks(lst, n):
     Yields:
         list: liste des sous-listes
     """
+    lst = list(lst)
     for i in range(0, len(lst), n):
         yield lst[i : i + n]
 
 
-def get_guild_member_name(general_username, guild, return_display_name=True):
+def get_guild_member_name(user_id, guild, return_display_name=True):
     """Permet de récupérer l'objet User en donnant le nom d'utilisateur
     général discord de quelqu'un
 
@@ -71,14 +72,12 @@ def get_guild_member_name(general_username, guild, return_display_name=True):
 
     # Cette fonction est utilisé pour l'historique, il ne faut donc pas
     # prendre en compte $wag mine et $style generator
-    if general_username == "$wag Mine ⛏" or general_username == "$tyle Generator Inc.":
-        return general_username
-    split_username = general_username.split("#")
-    user = discord.utils.get(
-        guild.members, name=split_username[0], discriminator=split_username[1]
-    )
+    if user_id == "$wag Mine ⛏" or user_id == "$tyle Generator Inc.":
+        return user_id
+
+    user = guild.get_member(user_id)
     if user is None:
-        return general_username
+        return user_id
 
     if return_display_name:
         return user.display_name
