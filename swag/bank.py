@@ -58,8 +58,8 @@ class SwagBank:
         t = now(user_account.timezone).datetime
         # On ne peut miner qu'une fois par jour
         if (
-            user_account.swag_last_mining is not None
-            and user_account.swag_last_mining.date() >= t.date()
+            user_account.last_mining_date is not None
+            and user_account.last_mining_date.date() >= t.date()
         ):
             raise AlreadyMineToday
 
@@ -68,7 +68,7 @@ class SwagBank:
         # Ajout de cet argent au compte
         user_account.swag_balance += mining_booty
         # Mise à jour de la date du dernier minage
-        user_account.swag_last_mining = t
+        user_account.last_mining_date = t
         # écriture dans l'historique
         self.swagdb.blockchain.append(("$wag Mine ⛏", user, mining_booty))
 

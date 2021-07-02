@@ -12,7 +12,7 @@ class SwagDB:
         id={},
         discord_id=[],
         swag_balance=[],
-        swag_last_mining=[],
+        last_mining_date=[],
         style_balance=[],
         style_rate=[],
         blocked_swag=[],
@@ -31,7 +31,7 @@ class SwagDB:
 
         self.discord_id = discord_id
         self.swag_balance = swag_balance
-        self.swag_last_mining = swag_last_mining
+        self.last_mining_date = last_mining_date
         self.style_balance = style_balance
         self.style_rate = style_rate
         self.blocked_swag = blocked_swag
@@ -61,7 +61,7 @@ class SwagDB:
 
             self.discord_id.append(user)
             self.swag_balance.append(0)
-            self.swag_last_mining.append(None)
+            self.last_mining_date.append(None)
             self.style_balance.append(Decimal(0))
             self.style_rate.append(Decimal(100))
             self.blocked_swag.append(0)
@@ -117,12 +117,12 @@ class SwagAccount:
         self.swagdb.swag_balance[self.id] = value
 
     @property
-    def swag_last_mining(self):
-        return self.swagdb.swag_last_mining[self.id]
+    def last_mining_date(self):
+        return self.swagdb.last_mining_date[self.id]
 
-    @swag_last_mining.setter
-    def swag_last_mining(self, value):
-        self.swagdb.swag_last_mining[self.id] = value
+    @last_mining_date.setter
+    def last_mining_date(self, value):
+        self.swagdb.last_mining_date[self.id] = value
 
     @property
     def style_balance(self):
@@ -194,7 +194,7 @@ class AccountInfo:
         self.id = account.id
         self.discord_id = account.discord_id
         self.swag_balance = account.swag_balance
-        self.swag_last_mining = account.swag_last_mining
+        self.last_mining_date = account.last_mining_date
         self.style_balance = account.style_balance
         self.style_rate = account.style_rate
         self.blocked_swag = account.blocked_swag
