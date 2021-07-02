@@ -22,7 +22,6 @@ class SwagDB:
         timezone_lock_date=[],
         creation_date=[],
         blockchain=[],
-        the_swaggest=None,
         guild_timezone={},
     ) -> None:
         self.next_id = next_id
@@ -42,7 +41,6 @@ class SwagDB:
         self.creation_date = creation_date
 
         self.blockchain = blockchain
-        self.the_swaggest = the_swaggest
         self.guild_timezone = guild_timezone
 
     @staticmethod
