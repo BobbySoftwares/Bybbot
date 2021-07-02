@@ -54,7 +54,7 @@ class SwagBank:
         # Mise à jour de la date du dernier minage
         user_account.swag_last_mining = date.today()
         # écriture dans l'historique
-        self.swagdb.swag_history.append(("$wag Mine ⛏", user, mining_booty))
+        self.swagdb.blockchain.append(("$wag Mine ⛏", user, mining_booty))
 
         return mining_booty
 
@@ -75,7 +75,7 @@ class SwagBank:
         recipient_account.swag_balance += amount
 
         # Write transaction in history
-        self.swagdb.swag_history.append((giver, recipient, amount, "$wag"))
+        self.swagdb.blockchain.append((giver, recipient, amount, "$wag"))
 
     def get_account_info(self, user):
         return self.swagdb.get_account(user).get_info()
@@ -97,7 +97,7 @@ class SwagBank:
         recipient_account.style_balance += amount
 
         # Write transaction in history
-        self.swagdb.swag_history.append((giver, recipient, amount, "$tyle"))
+        self.swagdb.blockchain.append((giver, recipient, amount, "$tyle"))
 
     def block_swag(self, user, amount):
         user_account = self.swagdb.get_account(user)
@@ -116,8 +116,7 @@ class SwagBank:
 
         user_account.swag_balance -= amount
         user_account.blocked_swag = amount
-        user_account.blocking_date = datetime.now()
-        self.swagdb.swag_history.append((user, "$tyle Generator Inc.", amount, "$wag"))
+        self.swagdb.blockchain.append((user, "$tyle Generator Inc.", amount, "$wag"))
 
     def get_user_list(self):
         return self.swagdb.ids.keys()
@@ -168,7 +167,7 @@ class SwagBank:
 
         user_account.swag_balance += returned_swag
         user_account.blocked_swag = 0
-        self.swagdb.swag_history.append(
+        self.swagdb.blockchain.append(
             (
                 "$tyle Generator Inc.",
                 user,
@@ -181,7 +180,7 @@ class SwagBank:
         id = self.swagdb.get_account(user).id
         return [
             transaction
-            for transaction in self.swagdb.swag_history
+            for transaction in self.swagdb.blockchain
             if concerns_user(id, transaction)
         ]
 

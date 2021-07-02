@@ -8,8 +8,8 @@ class SwagDB:
     def __init__(
         self,
         next_id=0,
-        ids={},  # HashMap<Ident, Index>
-        users=[],  # Vec<Ident>
+        id={},  # HashMap<Ident, Index>
+        discord_id=[],  # Vec<Ident>
         swag_balance=[],  #: Vec<Int>
         swag_last_mining=[],  #: Vec<Date>
         style_balance=[],  #: Vec<Float> // ou Int pour éviter les ennuis ?
@@ -17,13 +17,14 @@ class SwagDB:
         blocked_swag=[],  #: Vec<Int>
         blocking_date=[],  #: Vec<DateTime>
         pending_style=[],
-        swag_history=[],  #: Vec<Transaction>
+        blockchain=[],  #: Vec<Transaction>
         the_swaggest=None,
     ) -> None:
         self.next_id = next_id
-        self.ids = ids
 
-        self.users = users
+        self.id = id
+
+        self.discord_id = discord_id
         self.swag_balance = swag_balance
         self.swag_last_mining = swag_last_mining
         self.style_balance = style_balance
@@ -32,7 +33,7 @@ class SwagDB:
         self.blocking_date = blocking_date
         self.pending_style = pending_style
 
-        self.swag_history = swag_history
+        self.blockchain = blockchain
         self.the_swaggest = the_swaggest
 
     @staticmethod
@@ -43,11 +44,11 @@ class SwagDB:
         cbor2.dumps(vars(self), open(file, "wb"))
 
     def add_user(self, user):
-        if user not in self.ids:
-            self.ids[user] = self.next_id
+        if user not in self.id:
+            self.id[user] = self.next_id
             self.next_id += 1
 
-            self.users.append(user)
+            self.discord_id.append(user)
             self.swag_balance.append(0)
             self.swag_last_mining.append(None)
             self.style_balance.append(Decimal(0))
@@ -60,7 +61,7 @@ class SwagDB:
 
     def get_account(self, user):
         try:
-            return SwagAccount(self, self.ids[user])
+            return SwagAccount(self, self.id[user])
         except KeyError:
             raise NoAccountRegistered(user)
 
@@ -87,7 +88,7 @@ class SwagAccount:
 
     @property
     def user(self):
-        return self.swagdb.users[self.id]
+        return self.swagdb.discord_id[self.id]
 
     @property
     def swag_balance(self):
