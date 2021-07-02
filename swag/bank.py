@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 from enum import Enum, auto
-from decimal import Decimal
+from decimal import Decimal, ROUND_UP
 from numpy import log1p
 from shutil import move
 
@@ -21,7 +21,7 @@ STYLB = 6.608024397705518e-07
 
 
 def stylog(swag):
-    return STYLA * log1p(STYLB * swag)
+    return Decimal(STYLA * log1p(STYLB * swag))
 
 
 class SwagBank:
@@ -157,13 +157,17 @@ class SwagBank:
         forbes = sorted(
             self.swagdb.get_accounts(),
             key=lambda item: item.swag_balance,
-            reverse=False,
+            reverse=True,
         )
 
         # Fonction mathématique, qui permet au premier d'avoir toujours
         # 50%, et à celui à la moitié du classement 10%
+        N = self.swagdb.user_number()
+
         def rate(rank):
-            return round((10 / 3) * (pow(16, rank / self.swagdb.user_number()) - 1), 2)
+            return Decimal(100 + 10 / 3 * (pow(16, 1 - rank / N) - 1)).quantize(
+                Decimal(".01"), rounding=ROUND_UP
+            )
 
         for rank, user_account in enumerate(forbes):
             user_account.style_rate = rate(rank)
@@ -174,9 +178,10 @@ class SwagBank:
         for user_account in self.swagdb.get_accounts():
             block_booty = (
                 stylog(user_account.blocked_swag)
-                * (user_account.style_rate * 0.01)
-                / (TIME_OF_BLOCK * 24)
-            )
+                * user_account.style_rate
+                / 100
+                / (BLOCKING_TIME * 24)
+            ).quantize(Decimal(".0001"), rounding=ROUND_UP)
 
             user_account.pending_style += block_booty
 

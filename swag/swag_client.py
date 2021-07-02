@@ -1,6 +1,6 @@
 from swag.db import SwagDB
 from apscheduler.triggers.cron import CronTrigger
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 from .bank import (
     AlreadyMineToday,
@@ -248,7 +248,7 @@ class SwagClient(Module):
                     for argent in command_style
                     if argent.replace(".", "").replace(",", "").isnumeric()
                 )
-            )
+            ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
 
             # envoie du style
             self.swag_bank.style_transaction(giver.id, recipient.id, value)
