@@ -1,6 +1,8 @@
 **/*.mp3
 **/*.ogg
 *.swag
+*.swagdb
+*.bk
 .vscode
 __pycache__/
 bot_token.json

@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 from enum import Enum, auto
 from decimal import Decimal
 from numpy import log1p
+from shutil import move
 
 from .cauchy import roll
 
@@ -34,8 +35,20 @@ class SwagBank:
         except (IOError, OSError):
             self.swagdb = SwagDB()
 
-    def add_user(self, user):
-        self.swagdb.add_user(user)
+    def add_user(self, user, guild):
+        self.swagdb.add_user(user, guild)
+        self.transactional_save()
+
+    def transactional_save(self):
+        try:
+            move(f"{self.db_path}.bk", f"{self.db_path}.bk.bk")
+        except FileNotFoundError:
+            pass
+        try:
+            move(self.db_path, f"{self.db_path}.bk")
+        except FileNotFoundError:
+            pass
+        self.swagdb.save_database(self.db_path)
 
     def get_balance_of(self, user):
         return self.swagdb.get_account(user).swag_balance
@@ -55,6 +68,8 @@ class SwagBank:
         user_account.swag_last_mining = date.today()
         # écriture dans l'historique
         self.swagdb.blockchain.append(("$wag Mine ⛏", user, mining_booty))
+
+        self.transactional_save()
 
         return mining_booty
 
@@ -76,6 +91,8 @@ class SwagBank:
 
         # Write transaction in history
         self.swagdb.blockchain.append((giver, recipient, amount, "$wag"))
+
+        self.transactional_save()
 
     def get_account_info(self, user):
         return self.swagdb.get_account(user).get_info()
@@ -99,6 +116,8 @@ class SwagBank:
         # Write transaction in history
         self.swagdb.blockchain.append((giver, recipient, amount, "$tyle"))
 
+        self.transactional_save()
+
     def block_swag(self, user, amount):
         user_account = self.swagdb.get_account(user)
 
@@ -117,6 +136,8 @@ class SwagBank:
         user_account.swag_balance -= amount
         user_account.blocked_swag = amount
         self.swagdb.blockchain.append((user, "$tyle Generator Inc.", amount, "$wag"))
+
+        self.transactional_save()
 
     def get_user_list(self):
         return self.swagdb.ids.keys()
@@ -147,6 +168,8 @@ class SwagBank:
         for rank, user_account in enumerate(forbes):
             user_account.style_rate = rate(rank)
 
+        self.transactional_save()
+
     def earn_style(self):
         for user_account in self.swagdb.get_accounts():
             block_booty = (
@@ -156,6 +179,8 @@ class SwagBank:
             )
 
             user_account.pending_style += block_booty
+
+        self.transactional_save()
 
     def unblock_swag(self, user):
         user_account = self.swagdb.get_account(user)
@@ -175,6 +200,9 @@ class SwagBank:
                 "$wag",
             )
         )
+
+
+        self.transactional_save()
 
     def get_history(self, user):
         id = self.swagdb.get_account(user).id

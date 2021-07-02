@@ -8,16 +8,16 @@ class SwagDB:
     def __init__(
         self,
         next_id=0,
-        id={},  # HashMap<Ident, Index>
-        discord_id=[],  # Vec<Ident>
-        swag_balance=[],  #: Vec<Int>
-        swag_last_mining=[],  #: Vec<Date>
-        style_balance=[],  #: Vec<Float> // ou Int pour éviter les ennuis ?
-        style_rate=[],  #: Vec<Float> // ou Int pour éviter les ennuis ?
-        blocked_swag=[],  #: Vec<Int>
-        blocking_date=[],  #: Vec<DateTime>
+        id={},
+        discord_id=[],
+        swag_balance=[],
+        swag_last_mining=[],
+        style_balance=[],
+        style_rate=[],
+        blocked_swag=[],
+        unblocking_date=[],
         pending_style=[],
-        blockchain=[],  #: Vec<Transaction>
+        blockchain=[],
         the_swaggest=None,
     ) -> None:
         self.next_id = next_id
@@ -30,7 +30,7 @@ class SwagDB:
         self.style_balance = style_balance
         self.style_rate = style_rate
         self.blocked_swag = blocked_swag
-        self.blocking_date = blocking_date
+        self.unblocking_date = unblocking_date
         self.pending_style = pending_style
 
         self.blockchain = blockchain
@@ -38,10 +38,12 @@ class SwagDB:
 
     @staticmethod
     def load_database(file):
-        return SwagDB(**cbor2.loads(open(file, "rb")))
+        with open(file, "rb") as file:
+            return SwagDB(**cbor2.load(file))
 
     def save_database(self, file):
-        cbor2.dumps(vars(self), open(file, "wb"))
+        with open(file, "wb") as file:
+            cbor2.dump(vars(self), file)
 
     def add_user(self, user):
         if user not in self.id:
@@ -54,7 +56,7 @@ class SwagDB:
             self.style_balance.append(Decimal(0))
             self.style_rate.append(Decimal(100))
             self.blocked_swag.append(0)
-            self.blocking_date.append(None)
+            self.unblocking_date.append(None)
             self.pending_style.append(Decimal(0))
         else:
             raise AccountAlreadyExist
@@ -131,12 +133,12 @@ class SwagAccount:
         self.swagdb.blocked_swag[self.id] = value
 
     @property
-    def blocking_date(self):
-        return self.swagdb.blocking_date[self.id]
+    def unblocking_date(self):
+        return self.swagdb.unblocking_date[self.id]
 
-    @blocking_date.setter
-    def blocking_date(self, value):
-        self.swagdb.blocking_date[self.id] = value
+    @unblocking_date.setter
+    def unblocking_date(self, value):
+        self.swagdb.unblocking_date[self.id] = value
 
     @property
     def pending_style(self):
@@ -156,5 +158,5 @@ class AccountInfo:
         self.style_balance = account.style_balance
         self.style_rate = account.style_rate
         self.blocked_swag = account.blocked_swag
-        self.blocking_date = account.blocking_date
+        self.unblocking_date = account.unblocking_date
         self.pending_style = account.pending_style
