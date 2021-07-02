@@ -85,7 +85,7 @@ class SwagBank:
         recipient_account = self.swagdb.get_account(recipient)
 
         # Check if the valueIsNotNegative or not int
-        if amount < 0 or not isinstance(amount, (int, float, Decimal)):
+        if amount < 0 or not isinstance(amount, Decimal):
             raise InvalidStyleValue
 
         # Check if the expeditor have enough money:
