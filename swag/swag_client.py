@@ -1,4 +1,3 @@
-from swag.db import SwagDB
 from apscheduler.triggers.cron import CronTrigger
 from decimal import Decimal, ROUND_DOWN
 

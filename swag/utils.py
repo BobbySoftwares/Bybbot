@@ -1,5 +1,3 @@
-import discord
-
 import math
 import random
 
@@ -12,8 +10,6 @@ from utils import (
     format_number,
     get_guild_member_name,
 )
-
-from .errors import StyleStillBlocked
 
 
 def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, message_user):

@@ -1,5 +1,3 @@
-import discord
-
 import math
 import asyncio
 

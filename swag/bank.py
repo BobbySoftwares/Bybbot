@@ -1,6 +1,5 @@
 from arrow.parser import ParserError
 from arrow import now, utcnow
-from enum import Enum, auto
 from decimal import Decimal, ROUND_UP
 from numpy import log1p
 from shutil import move
@@ -9,7 +8,7 @@ from .cauchy import roll
 
 from .errors import *
 
-from .db import SwagDB, SwagAccount
+from .db import SwagDB
 
 
 SWAG_BASE = 1000
@@ -128,7 +127,7 @@ class SwagBank:
             now(user_account.timezone)
             .shift(days=BLOCKING_TIME)
             .replace(microsecond=0, second=0, minute=0)
-            .to("utc")
+            .to("UTC")
             .datetime
         )
 
