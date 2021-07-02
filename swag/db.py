@@ -89,7 +89,7 @@ class SwagAccount:
         return AccountInfo(self)
 
     @property
-    def user(self):
+    def discord_id(self):
         return self.swagdb.discord_id[self.id]
 
     @property
@@ -152,7 +152,7 @@ class SwagAccount:
 class AccountInfo:
     def __init__(self, account):
         self.id = account.id
-        self.user = account.user
+        self.discord_id = account.discord_id
         self.swag_balance = account.swag_balance
         self.swag_last_mining = account.swag_last_mining
         self.style_balance = account.style_balance

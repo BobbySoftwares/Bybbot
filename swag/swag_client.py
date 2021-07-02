@@ -74,18 +74,22 @@ class SwagClient(Module):
                 "pour faire cette transaction, vérifie ton solde avec "
                 "`!$tyle solde`"
             )
-        except (InvalidStyleValue):
+        except InvalidStyleValue:
             await message.channel.send(
                 f"{message.author.mention}, la valeur que tu as écrite est "
                 "incorrecte, elle doit être supérieur à 0, car le $tyle est "
                 "**toujours positif** !"
             )
-        except (NoAccountRegistered) as e:
+        except NoAccountRegistered as e:
             await message.channel.send(
                 f"{e.name}, tu ne possèdes pas de compte chez $wagBank™ "
                 "<:rip:817165391846703114> !\n\n"
                 "Remédie à ce problème en lançant la commande `!$wag créer` "
                 "et devient véritablement $wag 😎!"
+            )
+        except AccountAlreadyExist:
+            await message.channel.send(
+                f"{message.author.mention}, tu possèdes déjà un compte chez $wagBank™ !"
             )
 
     async def execute_swag_command(self, message):

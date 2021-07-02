@@ -1,4 +1,5 @@
-from datetime import date, datetime, timedelta
+from arrow.parser import ParserError
+from arrow import now, utcnow
 from enum import Enum, auto
 from decimal import Decimal, ROUND_UP
 from numpy import log1p
@@ -14,7 +15,8 @@ from .db import SwagDB, SwagAccount
 SWAG_BASE = 1000
 SWAG_LUCK = 100000
 
-TIME_OF_BLOCK = 3  # en jours
+# In days
+BLOCKING_TIME = 3
 
 STYLA = 1.9712167541353567
 STYLB = 6.608024397705518e-07
@@ -50,14 +52,15 @@ class SwagBank:
             pass
         self.swagdb.save_database(self.db_path)
 
-    def get_balance_of(self, user):
-        return self.swagdb.get_account(user).swag_balance
-
     def mine(self, user):
         user_account = self.swagdb.get_account(user)
 
+        t = now(user_account.timezone).datetime
         # On ne peut miner qu'une fois par jour
-        if user_account.swag_last_mining == date.today():
+        if (
+            user_account.swag_last_mining is not None
+            and user_account.swag_last_mining.date() >= t.date()
+        ):
             raise AlreadyMineToday
 
         # Génération d'un nombre aléatoire, en suivant une loi de Cauchy
@@ -65,7 +68,7 @@ class SwagBank:
         # Ajout de cet argent au compte
         user_account.swag_balance += mining_booty
         # Mise à jour de la date du dernier minage
-        user_account.swag_last_mining = date.today()
+        user_account.swag_last_mining = t
         # écriture dans l'historique
         self.swagdb.blockchain.append(("$wag Mine ⛏", user, mining_booty))
 
@@ -121,8 +124,22 @@ class SwagBank:
     def block_swag(self, user, amount):
         user_account = self.swagdb.get_account(user)
 
+        unblocking_date = (
+            now(user_account.timezone)
+            .shift(days=BLOCKING_TIME)
+            .replace(microsecond=0, second=0, minute=0)
+            .to("utc")
+            .datetime
+        )
+
+        # If no $tyle was generated yet, reset blockage
+        if user_account.unblocking_date == unblocking_date:
+            user_account.swag_balance += user_account.blocked_swag
+            user_account.blocked_swag = 0
+            user_account.unblocking_date = None
+
         # Check if the valueIsNotNegative or not int
-        if amount < 0 or not isinstance(amount, int):
+        if amount <= 0 or not isinstance(amount, int):
             raise InvalidSwagValue
 
         # Check if the account have enough money:
@@ -135,12 +152,10 @@ class SwagBank:
 
         user_account.swag_balance -= amount
         user_account.blocked_swag = amount
+        user_account.unblocking_date = unblocking_date
         self.swagdb.blockchain.append((user, "$tyle Generator Inc.", amount, "$wag"))
 
         self.transactional_save()
-
-    def get_user_list(self):
-        return self.swagdb.ids.keys()
 
     def get_forbes(self):
         return sorted(
@@ -187,27 +202,39 @@ class SwagBank:
 
         self.transactional_save()
 
-    def unblock_swag(self, user):
-        user_account = self.swagdb.get_account(user)
+    def swag_unblocker(self):
+        for user_account in self.swagdb.get_accounts():
+            if (
+                user_account.unblocking_date is not None
+                and user_account.unblocking_date <= now()
+            ):
+                returned_swag = user_account.blocked_swag
 
-        if datetime.now() < user_account.unblocking_date:
-            raise StyleStillBlocked
+                user_account.swag_balance += returned_swag
+                user_account.blocked_swag = 0
+                self.swagdb.blockchain.append(
+                    (
+                        "$tyle Generator Inc.",
+                        user_account.discord_id,
+                        returned_swag,
+                        "$wag",
+                    )
+                )
 
-        returned_swag = user_account.blocked_swag
+                returned_style = user_account.pending_style
 
-        user_account.swag_balance += returned_swag
-        user_account.blocked_swag = 0
-        self.swagdb.blockchain.append(
-            (
-                "$tyle Generator Inc.",
-                user,
-                returned_swag,
-                "$wag",
-            )
-        )
-
-
-        self.transactional_save()
+                user_account.style_balance += returned_style
+                user_account.pending_style = Decimal(0)
+                self.swagdb.blockchain.append(
+                    (
+                        "$tyle Generator Inc.",
+                        user_account.discord_id,
+                        returned_style,
+                        "$tyle",
+                    )
+                )
+                self.transactional_save()
+                yield user_account.discord_id, returned_swag, returned_style
 
     def get_history(self, user):
         id = self.swagdb.get_account(user).id
@@ -217,6 +244,36 @@ class SwagBank:
             if concerns_user(id, transaction)
         ]
 
+    def set_guild_timezone(self, guild, timezone):
+        assert_timezone(timezone)
+        self.swagdb.guild_timezone[guild] = timezone
+
+        self.transactional_save()
+
+    def set_timezone(self, user, timezone):
+        user_account = self.swagdb.get_account(user)
+
+        assert_timezone(timezone)
+
+        t = utcnow()
+        if t <= user_account.timezone_lock_date:
+            raise TimeZoneFieldLocked(user_account.timezone_lock_date)
+        lock_date = t.shift(days=1)
+
+        user_account.timezone_lock_date = lock_date
+        user_account.timezone = timezone
+
+        self.transactional_save()
+
+        return lock_date
+
 
 def concerns_user(id, transaction):
     pass
+
+
+def assert_timezone(timezone):
+    try:
+        now(timezone)
+    except ParserError:
+        raise InvalidTimeZone(timezone)

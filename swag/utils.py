@@ -75,7 +75,7 @@ def mini_forbes_swag(forbes_chunk, nbr_pages, guild):
     """
     forbes = [
         (
-            get_guild_member_name(account.user, guild),
+            get_guild_member_name(account.discord_id, guild),
             format_number(account.swag_balance),
             format_number(round(account.style_balance, 3)),
             account.blocked_swag != 0,
