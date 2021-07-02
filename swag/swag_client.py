@@ -140,6 +140,23 @@ class SwagClient(Module):
                 self.client, history, message, mini_history_swag_message
             )
 
+        elif "bloquer" in command_swag:
+            # Récupération de la valeur envoyé
+            user = message.author
+            value = int(
+                "".join(argent for argent in command_swag if argent.isnumeric())
+            )
+
+            self.swag_bank.block_swag(user.id, value)
+
+            await message.channel.send(
+                f"{user.mention}, vous venez de bloquer "
+                f"`{format_number(value)} $wag`, vous les "
+                f"récupérerez dans **{TIME_OF_BLOCK} jours** à la même "
+                "heure\n"
+            )
+            await update_forbes_classement(message.guild, self)
+
         elif "payer" in command_swag:
             # Récupération du destinataire
             destinataire = message.mentions
@@ -183,6 +200,8 @@ class SwagClient(Module):
                 "!$wag miner ~~ Gagner du $wag gratuitement tout les jours\n"
                 "!$wag payer [montant] [@destinataire] ~~ Envoie un *montant* "
                 "de $wag au *destinataire* spécifié\n"
+                "!$wag bloquer [montant] ~~ Bloque un *montant* de $wag pour "
+                "générer du $tyle pendant quelques jours\n"
                 "!$wag historique ~~ Visualiser l'ensemble des transactions "
                 "effectuées sur ton compte\n"
                 "```"
