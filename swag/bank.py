@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta
 from enum import Enum, auto
 from decimal import Decimal
+from numpy import log1p
 
 from .cauchy import roll
 
@@ -13,7 +14,13 @@ SWAG_BASE = 1000
 SWAG_LUCK = 100000
 
 TIME_OF_BLOCK = 3  # en jours
-SWAG_STYLE_RATIO = 1 / 1000000  # 1 style pour 1 millions de $wag
+
+STYLA = 1.9712167541353567
+STYLB = 6.608024397705518e-07
+
+
+def stylog(swag):
+    return STYLA * log1p(STYLB * swag)
 
 
 class SwagBank:
@@ -144,10 +151,10 @@ class SwagBank:
     def earn_style(self):
         for user_account in self.swagdb.get_accounts():
             block_booty = (
-                user_account.bloked_swag
-                * SWAG_STYLE_RATIO
+                stylog(user_account.blocked_swag)
                 * (user_account.style_rate * 0.01)
-            ) / (TIME_OF_BLOCK * 24)
+                / (TIME_OF_BLOCK * 24)
+            )
 
             user_account.pending_style += block_booty
 
