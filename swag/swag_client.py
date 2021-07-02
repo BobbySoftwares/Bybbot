@@ -6,12 +6,15 @@ from .bank import (
     AlreadyMineToday,
     InvalidSwagValue,
     InvalidStyleValue,
+    InvalidTimeZone,
+    TimeZoneFieldLocked,
     NoAccountRegistered,
+    AccountAlreadyExist,
     NotEnoughStyleInBalance,
     NotEnoughSwagInBalance,
     StyleStillBlocked,
     SwagBank,
-    TIME_OF_BLOCK,
+    BLOCKING_TIME,
 )
 from .utils import mini_history_swag_message, update_forbes_classement, update_the_style
 
@@ -42,7 +45,9 @@ class SwagClient(Module):
 
     async def process(self, message):
         try:
-            if message.content.startswith("!$wag"):
+            if message.content.startswith("!$wagdmin"):
+                await self.execute_swagdmin_command(message)
+            elif message.content.startswith("!$wag"):
                 await self.execute_swag_command(message)
             elif message.content.startswith("!$tyle"):
                 await self.execute_style_command(message)
@@ -91,13 +96,30 @@ class SwagClient(Module):
             await message.channel.send(
                 f"{message.author.mention}, tu possèdes déjà un compte chez $wagBank™ !"
             )
+        except InvalidTimeZone as e:
+            await message.channel.send(
+                f"{e.name}, n'est pas un nom de timezone valide !\n"
+                "Vérifie le nom correct sur "
+                "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones, "
+                "à la colone `TZ database name`."
+            )
+        except TimeZoneFieldLocked as e:
+            await message.channel.send(
+                "Tu viens déjà de changer de timezone. Tu ne pourras effectuer "
+                f"à nouveau cette opération qu'après le {e.date}. Cette mesure "
+                "vise à empécher l'abus de minage, merci de ta compréhension.\n\n"
+                "*L'abus de minage est dangereux pour la santé. À Miner avec "
+                "modération. Ceci était un message de la Fédération Bobbyique du "
+                "Minage*"
+            )
 
     async def execute_swag_command(self, message):
         command_swag = message.content.split()
 
         if "créer" in command_swag:
             user = message.author
-            self.swag_bank.add_user(user.id)
+            guild = message.guild
+            self.swag_bank.add_user(user.id, guild.id)
             await message.channel.send(
                 f"Bienvenue chez $wagBank™ {user.mention} !\n\n"
                 "Tu peux maintenant miner du $wag avec la commande `!$wag miner` 💰"
@@ -130,7 +152,9 @@ class SwagClient(Module):
                 f"-Taux de bloquage : {format_number(user_infos.style_rate)} %\n"
                 "-$wag actuellement bloqué : "
                 f"{format_number(user_infos.blocked_swag)}\n"
+                f"-$tyle généré : {format_number(user_infos.pending_style)}\n"
                 f"{release_info}"
+                f"-Timezone du compte : {user_infos.timezone}"
                 "```"
             )
 
@@ -156,7 +180,7 @@ class SwagClient(Module):
             await message.channel.send(
                 f"{user.mention}, vous venez de bloquer "
                 f"`{format_number(value)} $wag`, vous les "
-                f"récupérerez dans **{TIME_OF_BLOCK} jours** à la même "
+                f"récupérerez dans **{BLOCKING_TIME} jours** à la même "
                 "heure\n"
             )
             await update_forbes_classement(message.guild, self)
@@ -193,6 +217,17 @@ class SwagClient(Module):
             )
             await update_forbes_classement(message.guild, self)
 
+        elif "timezone" in command_swag:
+            timezone = command_swag[2]
+            user = message.author
+
+            date = self.swag_bank.set_timezone(user.id, timezone)
+            await message.channel.send(
+                f"Ta timezone est désormais {timezone} !\n"
+                "Pour des raisons de sécurité, tu ne pourras plus changer celle-ci "
+                f"avant {date}. Merci de ta compréhension."
+            )
+
         else:
             # Si l'utilisateur se trompe de commande, ce message s'envoie par défaut
             await message.channel.send(
@@ -226,7 +261,7 @@ class SwagClient(Module):
             await message.channel.send(
                 f"{user.mention}, vous venez de bloquer "
                 f"`{format_number(value)} $wag`, vous les "
-                f"récupérerez dans **{TIME_OF_BLOCK} jours** à la même "
+                f"récupérerez dans **{BLOCKING_TIME} jours** à la même "
                 "heure\n"
             )
             await update_forbes_classement(message.guild, self)
@@ -277,5 +312,37 @@ class SwagClient(Module):
                 "de $tyle au *destinataire* spécifié\n"
                 "!$tyle bloquer [montant] ~~ Bloque un *montant* de $wag pour "
                 "générer du $tyle pendant quelques jours\n"
+                "```"
+            )
+
+    async def execute_swagdmin_command(self, message):
+        user = message.author
+        guild = message.guild
+
+        if not user.guild_permissions.administrator:
+            return
+
+        command = message.content.split()
+        if "timezone" in command:
+            timezone = command[2]
+
+            self.swag_bank.set_guild_timezone(guild.id, timezone)
+            await message.channel.send(
+                f"La timezone par défaut du serveur est désormais {timezone}.\n"
+                "Les futurs comptes SwagBank créés sur ce serveur seront "
+                "configurés pour utiliser cette timezone par défaut."
+            )
+
+        elif "jobs" in command:
+            await update_the_style(self.client, self)
+
+        else:
+            await message.channel.send(
+                f"{message.author.mention}, tu sembles perdu, voici les "
+                "commandes administrateur que tu peux utiliser avec en relation "
+                "avec le $wag\n"
+                "```HTTP\n"
+                "!$wagdmin timezone [timezone] ~~ Configure la timezone par défaut "
+                "du serveur\n"
                 "```"
             )

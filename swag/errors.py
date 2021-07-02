@@ -50,3 +50,21 @@ class NotEnoughStyleInBalance(Exception):
     """Raised when a account should have a negative value of $tyle"""
 
     pass
+
+
+class InvalidTimeZone(Exception):
+    """Raised when an invalid timezone name is used"""
+
+    def __init__(self, name):
+        self.name = name
+        message = f"{name} n'est pas une timezone valide"
+        super().__init__(message)
+
+
+class TimeZoneFieldLocked(Exception):
+    """Raised when an user tries to set its timezone before its 24 hours lock."""
+
+    def __init__(self, date):
+        self.date = date
+        message = f"Vous ne pouvez pas changer de timezone avant {date}."
+        super().__init__(message)

@@ -116,22 +116,13 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
     # Faire gagner du style à ceux qui ont du swag bloqué :
     swag_client.swag_bank.earn_style()
 
-    for account_name in swag_client.swag_bank.get_list_of_account():
-        if swag_client.swag_bank.is_blocking_swag(account_name):
-            # On essaye de débloquer le comptes. Cela sera refusé systématiquement
-            # si le blocage n'est pas terminé
-            try:
-                blocked_swag = swag_client.swag_bank.get_bloked_swag(account_name)
-                swag_client.swag_bank.deblock_swag(account_name)
-                member = get_guild_member_name(account_name, bobbycratie_guild, False)
-                await command_channel.send(
-                    f"{member.mention}, les `{blocked_swag} $wag` que vous aviez"
-                    f"bloqué sont à nouveau disponible. Continuez d'en bloquer"
-                    f"pour gagner plus de $tyle !"
-                )
-            except (StyleStillBlocked):
-                # Si le blocage n'est pas terminé, on fait R frèr
-                pass
+    for user, swag, style in swag_client.swag_bank.swag_unblocker():
+        member = get_guild_member_name(user, bobbycratie_guild, False)
+        await command_channel.send(
+            f"{member.mention}, les `{format_number(swag)} $wag` que vous aviez bloqué sont "
+            f"à nouveau disponible. Vous avez gagné `{format_number(style)} $tyle` suite à ce "
+            "blocage. Continuez de bloquer du $wag pour gagner plus de $tyle !"
+        )
 
     await update_forbes_classement(
         bobbycratie_guild, swag_client

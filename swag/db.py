@@ -1,5 +1,6 @@
 import cbor2
 from decimal import Decimal
+from arrow import utcnow
 
 from .errors import *
 
@@ -17,8 +18,12 @@ class SwagDB:
         blocked_swag=[],
         unblocking_date=[],
         pending_style=[],
+        timezone=[],
+        timezone_lock_date=[],
+        creation_date=[],
         blockchain=[],
         the_swaggest=None,
+        guild_timezone={},
     ) -> None:
         self.next_id = next_id
 
@@ -32,9 +37,13 @@ class SwagDB:
         self.blocked_swag = blocked_swag
         self.unblocking_date = unblocking_date
         self.pending_style = pending_style
+        self.timezone = timezone
+        self.timezone_lock_date = timezone_lock_date
+        self.creation_date = creation_date
 
         self.blockchain = blockchain
         self.the_swaggest = the_swaggest
+        self.guild_timezone = guild_timezone
 
     @staticmethod
     def load_database(file):
@@ -45,7 +54,7 @@ class SwagDB:
         with open(file, "wb") as file:
             cbor2.dump(vars(self), file)
 
-    def add_user(self, user):
+    def add_user(self, user, guild):
         if user not in self.id:
             self.id[user] = self.next_id
             self.next_id += 1
@@ -58,6 +67,13 @@ class SwagDB:
             self.blocked_swag.append(0)
             self.unblocking_date.append(None)
             self.pending_style.append(Decimal(0))
+            if guild in self.guild_timezone:
+                self.timezone.append(self.guild_timezone[guild])
+            else:
+                self.timezone.append("UTC")
+            t = utcnow().datetime
+            self.creation_date.append(t)
+            self.timezone_lock_date.append(t)
         else:
             raise AccountAlreadyExist
 
@@ -148,6 +164,30 @@ class SwagAccount:
     def pending_style(self, value):
         self.swagdb.pending_style[self.id] = value
 
+    @property
+    def timezone(self):
+        return self.swagdb.timezone[self.id]
+
+    @timezone.setter
+    def timezone(self, value):
+        self.swagdb.timezone[self.id] = value
+
+    @property
+    def timezone_lock_date(self):
+        return self.swagdb.timezone_lock_date[self.id]
+
+    @timezone_lock_date.setter
+    def timezone_lock_date(self, value):
+        self.swagdb.timezone_lock_date[self.id] = value
+
+    @property
+    def creation_date(self):
+        return self.swagdb.creation_date[self.id]
+
+    @creation_date.setter
+    def creation_date(self, value):
+        self.swagdb.creation_date[self.id] = value
+
 
 class AccountInfo:
     def __init__(self, account):
@@ -160,3 +200,6 @@ class AccountInfo:
         self.blocked_swag = account.blocked_swag
         self.unblocking_date = account.unblocking_date
         self.pending_style = account.pending_style
+        self.timezone = account.timezone
+        self.timezone_lock_date = account.timezone_lock_date
+        self.creation_date = account.creation_date
