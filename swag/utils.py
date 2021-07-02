@@ -13,7 +13,7 @@ from utils import (
     get_guild_member_name,
 )
 
-from .swag import StyleStillBlocked
+from .errors import StyleStillBlocked
 
 
 def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, message_user):
@@ -114,7 +114,7 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
     command_channel = client.get_channel(id=COMMAND_CHANNEL_ID_BOBBYCRATIE)
 
     # Faire gagner du style à ceux qui ont du swag bloqué :
-    swag_client.swag_bank.everyone_earn_style()
+    swag_client.swag_bank.earn_style()
 
     for account_name in swag_client.swag_bank.get_list_of_account():
         if swag_client.swag_bank.is_blocking_swag(account_name):
