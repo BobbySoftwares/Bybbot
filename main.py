@@ -6,7 +6,11 @@ import json
 
 from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
+from maintenance.maintenance_client import MaintenanceClient
 
+
+with open("config.json", "r") as json_file:
+    client_config = json.load(json_file)
 
 print("Lancement du bot...")
 
@@ -18,7 +22,11 @@ intents.members = True
 # Création du client
 client = discord.Client(intents=intents)
 
-modules = [SwagClient(client, "bybbank.swagdb"), JukeboxClient(client)]
+modules = [
+    SwagClient(client, "bybbank.swagdb"),
+    JukeboxClient(client),
+    MaintenanceClient(client, client_config.get("admins")),
+]
 
 
 @client.event
@@ -103,9 +111,6 @@ async def on_message(message):
     for module in modules:
         await module.process(message)
 
-
-with open("bot_token.json", "r") as json_file:
-    client_config = json.load(json_file)
 
 # Lancement du client
 client.run(client_config.get("token"))
