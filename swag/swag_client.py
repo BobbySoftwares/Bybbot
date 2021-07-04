@@ -69,7 +69,7 @@ class SwagClient(Module):
         except StyleStillBlocked:
             await message.channel.send(
                 f"{message.author.mention}, du $wag est déjà bloqué à ton compte "
-                "chez $tyle Generatoc Inc. ! Attends leurs déblocage pour pouvoir "
+                "chez $tyle Generator Inc. ! Attends leurs déblocage pour pouvoir "
                 "en bloquer de nouveau !"
             )
         except NotEnoughStyleInBalance:
