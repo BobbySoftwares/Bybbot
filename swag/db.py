@@ -72,6 +72,8 @@ class SwagDB:
             t = utcnow().datetime
             self.creation_date.append(t)
             self.timezone_lock_date.append(t)
+
+            return t
         else:
             raise AccountAlreadyExist
 
