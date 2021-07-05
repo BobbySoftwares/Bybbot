@@ -1,5 +1,6 @@
 from apscheduler.triggers.cron import CronTrigger
 from decimal import Decimal, ROUND_DOWN
+from arrow import utcnow
 
 from .bank import (
     AlreadyMineToday,
@@ -27,6 +28,7 @@ class SwagClient(Module):
         print("Initialisation de la Banque Centrale du $wag...\n")
         self.swag_bank = SwagBank(db_path)
         self.the_swaggest = None
+        self.last_update = None
 
     async def setup(self):
         print("Mise à jour du classement et des bonus de blocage\n\n")
@@ -38,7 +40,10 @@ class SwagClient(Module):
         # Programme la fonction update_the_style pour être lancée
         # toutes les heures.
         async def job():
-            await update_the_style(self.client, self)
+            now = utcnow().replace(microsecond=0, second=0, minute=0)
+            if self.last_update is None or self.last_update < now:
+                self.last_update = now
+                await update_the_style(self.client, self)
 
         scheduler.add_job(job, CronTrigger(hour="*"))
 
