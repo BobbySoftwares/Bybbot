@@ -11,6 +11,8 @@ from utils import (
     get_guild_member_name,
 )
 
+from .transactions import TransactionType
+
 
 def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, message_user):
     """Fonction utilisé pour la fonctionnalité du $wag
@@ -29,26 +31,76 @@ def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, messag
     Returns:
         String : message à envoyer pour visualiser une sous-partie de l'historique
     """
+    "$wag Mine ⛏" "$tyle Generator Inc."
+
+    def process_transaction(transaction_type, transaction_data):
+        if transaction_type == TransactionType.CREATION:
+            return (
+                "$wag Mine ⛏",
+                get_guild_member_name(transaction_data[0], message_user.guild),
+                format_number(0),
+                "$wag",
+            )
+        elif transaction_type == TransactionType.MINE:
+            return (
+                "$wag Mine ⛏",
+                get_guild_member_name(transaction_data[0], message_user.guild),
+                format_number(transaction_data[1]),
+                "$wag",
+            )
+        elif transaction_type == TransactionType.SWAG:
+            return (
+                get_guild_member_name(transaction_data[0], message_user.guild),
+                get_guild_member_name(transaction_data[1], message_user.guild),
+                format_number(transaction_data[2]),
+                "$wag",
+            )
+        elif transaction_type == TransactionType.STYLE:
+            return (
+                get_guild_member_name(transaction_data[0], message_user.guild),
+                get_guild_member_name(transaction_data[1], message_user.guild),
+                format_number(transaction_data[2]),
+                "$tyle",
+            )
+        elif transaction_type == TransactionType.BLOCK:
+            return (
+                get_guild_member_name(transaction_data[0], message_user.guild),
+                "$tyle Generator Inc.",
+                format_number(transaction_data[1]),
+                "$wag",
+            )
+        elif transaction_type == TransactionType.RELEASE:
+            return (
+                "$tyle Generator Inc.",
+                get_guild_member_name(transaction_data[0], message_user.guild),
+                format_number(transaction_data[1]),
+                "$wag",
+            )
+        elif transaction_type == TransactionType.ROI:
+            return (
+                "$tyle Generator Inc.",
+                get_guild_member_name(transaction_data[0], message_user.guild),
+                format_number(transaction_data[1]),
+                "$tyle",
+            )
+
     transactions = [
-        (
-            way,
-            format_number(amount),
-            get_guild_member_name(second_party, message_user.guild),
-            currency[0] if currency else "$wag",
-        )
-        for (way, second_party, amount, *currency) in chunk_transaction
+        (str(t.to("")), *process_transaction(transaction_type, transaction_data))
+        for (t, transaction_type, transaction_data) in chunk_transaction
     ]
 
     # Besoin de connaître la valeur de swag la plus grande et le nom
     # d'utilisateur le plus grand parmis l'ensemble de la sous liste
     # pour un affichage au top
-    col1 = max(len(amount) for _, amount, _, _ in transactions)
-    col2 = max(len(second_party) for _, second_party, _, _ in transactions)
+    col1 = max(len(giver) for _, giver, _, _, _ in transactions)
+    col2 = max(len(recipient) for _, _, recipient, _, _ in transactions)
+    col3 = max(len(amount) for _, _, _, amount, _ in transactions)
 
     # Écriture du message
     content = "\n".join(
-        f"[ {way}\t{amount : <{col1}} {currency}\t{second_party : <{col2}}]"
-        for way, amount, second_party, currency in transactions
+        f"[{timestamp} \t{giver : <{col1}}\t-->\t{recipient : <{col2}}\t"
+        f"{amount : <{col3}} {currency}]"
+        for timestamp, giver, recipient, amount, currency in transactions
     )
     return (
         f"```ini\n"  # on met ini pour la couleur
