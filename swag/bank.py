@@ -3,12 +3,14 @@ from arrow import now, utcnow
 from decimal import Decimal, ROUND_UP
 from numpy import log1p
 from shutil import move
+from random import choice
+from math import ceil
 
 from .cauchy import roll
 
 from .errors import *
 
-from .db import SwagDB
+from .db import Cagnotte, SwagDB
 
 
 SWAG_BASE = 1000
@@ -265,6 +267,149 @@ class SwagBank:
         self.transactional_save()
 
         return lock_date
+
+    ## Ajout des fonctions des cagnottes
+
+    def create_cagnotte(self, cagnotte_name : str, currency : str, creator_id : int):
+        self.swagdb.add_cagnotte(cagnotte_name,currency,creator_id)
+        self.transactional_save()
+
+    def get_active_cagnotte(self,cagnotte_idx) -> Cagnotte:
+        if cagnotte_idx > 0 or cagnotte_idx < self.swagdb.cagnotte_number:
+            cagnotte = self.swagdb.get_cagnotte_from_index(cagnotte_idx)
+            if cagnotte.cagnotte_activation == True:
+                return cagnotte
+        
+        raise NoCagnotteRegistered
+
+    def get_all_active_cagnotte(self):
+        return [
+            cagnotte
+            for cagnotte in self.swagdb.get_cagnotte_infos()
+            if cagnotte.cagnotte_activation == True
+        ]
+
+    def donner_a_cagnotte(self,donator_account_discord_id : int, cagnotte_idx : int, montant):
+        cagnotte = self.get_cagnotte(cagnotte_idx)
+        donator_account = self.swagdb.get_active_cagnotte(donator_account_discord_id)
+        #On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
+        if cagnotte.get_info().cagnotte_currency == "$wag":
+
+            #Check if the value of $wag is correct regardless its propriety
+            if not isinstance(montant,int) or montant < 0:
+                raise InvalidSwagValue
+
+            #Check if the donator have enough $wag:
+            if self.get_account_info(donator_account_discord_id).swag_balance - montant < 0:
+                raise NotEnoughSwagInBalance
+
+            #Making the donation
+            donator_account.swag_balance -= montant
+            cagnotte.cagnotte_montant += montant
+        
+        elif cagnotte.get_info().cagnotte_currency == "$tyle":
+
+            #Check if the value of $tyle is correct regardless its propriety
+            if not isinstance(montant,(int,float)) or montant < 0:
+                raise InvalidStyleValue
+
+            #Check if the donator have enough $tyle:
+            if self.get_account_info(donator_account_discord_id).style_balance - montant < 0:
+                raise NotEnoughStyleInBalance
+
+            donator_account.swag_balance -= montant
+            cagnotte.cagnotte_montant += montant
+
+        ##TODO AJOUT DANS LA BLOCKCHAIN
+        #self.swagAccounts[donator_account_name].write_in_history(self.account.history_movement.GIVE_TO,nom_cagnotte,montant,self.cagnottes[nom_cagnotte].currency)
+        #self.cagnottes[nom_cagnotte].write_in_cagnotte_history(self.account.history_movement.RECEIVE_FROM,donator_account_name,montant)
+
+        if donator_account_discord_id not in cagnotte.get_info().cagnotte_participant:
+            cagnotte.cagnotte_participant.append(donator_account_discord_id) #TODO voir si ça marche
+
+        self.transactional_save()
+
+    def recevoir_depuis_cagnotte(self,cagnotte_idx : int, receiver_account_discord_id : int, montant, emiter_account_discord_id : int):
+        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+        reciever_account = self.swagdb.get_account(receiver_account_discord_id)
+
+        if emiter_account_discord_id not in cagnotte.get_info().cagnotte_gestionnaire:
+            raise NotInGestionnaireGroupCagnotte
+
+        #Check if the €agnotte have enough Money ($wag or $tyle):
+        if cagnotte.get_info().cagnotte_montant - montant < 0:
+            raise NotEnoughMoneyInCagnotte
+
+        #On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
+        if cagnotte.get_info().cagnotte_currency == "$wag":
+
+            #Check if the value of $wag is correct regardless its propriety
+            if not isinstance(montant,int) or montant < 0:
+                raise InvalidSwagValue
+
+            #Making the distribution
+            reciever_account.swag_balance += montant
+            cagnotte.cagnotte_montant -= montant
+        
+        elif cagnotte.get_info().cagnotte_montant == "$tyle":
+
+            #Check if the value of $tyle is correct regardless its propriety
+            if not isinstance(montant,(int,float)) or montant < 0:
+                raise InvalidStyleValue
+
+            reciever_account.style_balance += montant
+            cagnotte.cagnotte_montant -= montant
+
+        ##TODO AJOUT DANS LA BLOCKCHAIN
+        #self.swagAccounts[receiver_account_name].write_in_history(self.account.history_movement.RECEIVE_FROM,nom_cagnotte,montant,self.cagnottes[nom_cagnotte].currency)
+        #self.cagnottes[nom_cagnotte].write_in_cagnotte_history(self.account.history_movement.GIVE_TO,receiver_account_name,montant)
+        self.transactional_save()
+
+    def tirage_au_sort_cagnotte(self,cagnotte_idx : str, lst_of_participant : list, emiter_account_discord_id : int):
+        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+
+        if not lst_of_participant: # si la liste des participants est vide, alors par défaut, ce sont ceux qui on participé à la cagnotte qui vont être tiré au sort
+            lst_of_participant = cagnotte.get_info().cagnotte_participant
+
+        gain = cagnotte.cagnotte_montant
+        heureux_gagnant = choice(lst_of_participant)
+
+        self.recevoir_depuis_cagnotte(cagnotte_idx,heureux_gagnant,gain,emiter_account_discord_id)
+
+        return (heureux_gagnant,gain)
+
+
+    def partage_cagnotte(self,cagnotte_idx : str, lst_of_account : list, emiter_account_discord_id : int):
+        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+
+        if not lst_of_account: #Si la liste de compte est vide, tout les comptes de la bobbycratie seront pris par défaut
+            lst_of_account = self.swagdb.discord_id
+
+        gain_for_everyone = cagnotte.get_info().cagnotte_montant/len(lst_of_account)
+
+        if cagnotte.get_info().cagnotte_currency == "$wag":
+            gain_for_everyone = ceil(gain_for_everyone) #Le $wag est indivisible
+
+        for account in lst_of_account: 
+            self.recevoir_depuis_cagnotte(cagnotte_idx,account,gain_for_everyone,emiter_account_discord_id)
+
+        gagnant_miette, gain_miette = None, None
+        if cagnotte.get_info().cagnotte_montant != 0: #si il reste de l'argent à redistribuer, on tire au sort celui qui gagne les miettes
+            gagnant_miette, gain_miette = self.tirage_au_sort_cagnotte(cagnotte_idx,lst_of_account,emiter_account_discord_id)
+
+        return lst_of_account,gain_for_everyone,gagnant_miette,gain_miette
+
+        
+    def detruire_cagnotte(self,cagnotte_idx : str, emiter_account_discord_id : int):
+        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+
+        if emiter_account_discord_id not in cagnotte.get_info().cagnotte_gestionnaire:
+            raise NotInGestionnaireGroupCagnotte
+
+        if cagnotte.get_info().cagnotte_montant != 0:
+            raise DestructionOfNonEmptyCagnotte
+
+        cagnotte.cagnotte_activation = False
 
 
 def concerns_user(id, transaction):
