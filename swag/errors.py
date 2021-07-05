@@ -68,3 +68,35 @@ class TimeZoneFieldLocked(Exception):
         self.date = date
         message = f"Vous ne pouvez pas changer de timezone avant {date}."
         super().__init__(message)
+
+
+##Exception for €agnottes
+
+class NoCagnotteRegistered(Exception):
+    """Raised when the cagnotte name or id is not present in the Swagbank"""
+    def __init__(self, name):
+        self.name = name
+        message = f"La €agnotte {name} n'existe pas dans la $wagBank"
+        super().__init__(message)
+    
+    pass
+
+class CagnotteNameAlreadyExist(Exception):
+    """Raised when a new cagnotte is created with an already used name"""
+    
+    pass
+
+class NotEnoughMoneyInCagnotte(Exception):
+    """Raised when a Cagnotte should have a negative value of $wag or $tyle"""
+    
+    pass
+
+class NotInGestionnaireGroupCagnotte(Exception):
+    """Raised when someone who is not a gestionnaire of a Cagnotte try to use a gestionnaire-action only"""
+    
+    pass
+
+class DestructionOfNonEmptyCagnotte(Exception):
+    """Raised when someone want to destroy a Cagnotte which still contain money inside"""
+    
+    pass
