@@ -241,14 +241,6 @@ class SwagAccount:
     def creation_date(self, value):
         self.swagdb.creation_date[self.id] = value
 
-    @property
-    def cagnotte_activation(self):
-        return self.swagdb.cagnotte_activation[self.id]
-
-    @cagnotte_activation.setter
-    def cagnotte_activation(self, value):
-        self.swagdb.cagnotte_activation[self.id] = value
-
 class Cagnotte:
     def __init__(self, swagdb, cagnotte_id) -> None:
         self.swagdb = swagdb
@@ -293,6 +285,14 @@ class Cagnotte:
     def cagnotte_participant(self, value):
         self.swagdb.cagnotte_participant[self.id] = value
 
+    @property
+    def cagnotte_activation(self):
+        return self.swagdb.cagnotte_activation[self.id]
+
+    @cagnotte_activation.setter
+    def cagnotte_activation(self, value):
+        self.swagdb.cagnotte_activation[self.id] = value
+
 class AccountInfo:
     def __init__(self, account):
         self.id = account.id
@@ -317,3 +317,4 @@ class CagnotteInfo:
         self.cagnotte_currency = cagnotte.cagnotte_currency
         self.cagnotte_gestionnaire = cagnotte.cagnotte_gestionnaire
         self.cagnotte_participant = cagnotte.cagnotte_participant
+        self.cagnotte_activation = cagnotte.cagnotte_activation
