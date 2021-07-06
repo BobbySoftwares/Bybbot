@@ -91,7 +91,7 @@ class SwagClient(Module):
             )
         except NoAccountRegistered as e:
             await message.channel.send(
-                f"{e.name}, tu ne possèdes pas de compte chez $wagBank™ "
+                f"<@{e.name}>, tu ne possèdes pas de compte chez $wagBank™ "
                 "<:rip:817165391846703114> !\n\n"
                 "Remédie à ce problème en lançant la commande `!$wag créer` "
                 "et devient véritablement $wag 😎!"
@@ -175,9 +175,12 @@ class SwagClient(Module):
         elif "bloquer" in command_swag:
             # Récupération de la valeur envoyé
             user = message.author
+            try:
             value = int(
                 "".join(argent for argent in command_swag if argent.isnumeric())
             )
+            except ValueError:
+                raise InvalidSwagValue
 
             self.swag_bank.block_swag(user.id, value)
 
@@ -204,9 +207,12 @@ class SwagClient(Module):
             recipient = destinataire
 
             # Récupération de la valeur envoyé
+            try:
             value = int(
                 "".join(argent for argent in command_swag if argent.isnumeric())
             )
+            except ValueError:
+                raise InvalidSwagValue
 
             # envoie du swag
             self.swag_bank.swag_transaction(giver.id, recipient.id, value)
@@ -256,9 +262,13 @@ class SwagClient(Module):
         if "bloquer" in command_style:
             # Récupération de la valeur envoyé
             user = message.author
+
+            try:
             value = int(
                 "".join(argent for argent in command_style if argent.isnumeric())
             )
+            except ValueError:
+                raise InvalidSwagValue
 
             self.swag_bank.block_swag(user.id, value)
 
@@ -285,6 +295,7 @@ class SwagClient(Module):
             recipient = destinataire
 
             # Récupération de la valeur envoyé
+            try:
             value = Decimal(
                 "".join(
                     argent
@@ -292,6 +303,8 @@ class SwagClient(Module):
                     if argent.replace(".", "").replace(",", "").isnumeric()
                 )
             ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
+            except ValueError:
+                raise InvalidStyleValue
 
             # envoie du style
             self.swag_bank.style_transaction(giver.id, recipient.id, value)
