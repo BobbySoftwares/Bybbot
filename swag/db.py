@@ -1,6 +1,7 @@
 import cbor2
 from decimal import Decimal
 from arrow import utcnow
+from os import remove
 
 from .errors import *
 
@@ -49,8 +50,15 @@ class SwagDB:
             return SwagDB(**cbor2.load(file))
 
     def save_database(self, file):
-        with open(file, "wb") as file:
-            cbor2.dump(vars(self), file)
+        try:
+            with open(file, "wb") as file:
+                cbor2.dump(vars(self), file)
+        except:
+            try:
+                remove(file)
+            except FileNotFoundError:
+                pass
+            raise
 
     def add_user(self, user, guild):
         if user not in self.id:

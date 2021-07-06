@@ -3,6 +3,7 @@ from arrow import now, utcnow
 from decimal import Decimal, ROUND_UP
 from numpy import log1p
 from shutil import move
+from cbor2 import CBORDecodeEOF
 
 from .cauchy import roll
 from .errors import *
@@ -31,8 +32,14 @@ class SwagBank:
         self.db_path = db_path
         try:
             self.swagdb = SwagDB.load_database(db_path)
-        except (IOError, OSError):
-            self.swagdb = SwagDB()
+        except (CBORDecodeEOF, FileNotFoundError):
+            try:
+                self.swagdb = SwagDB.load_database(f"{db_path}.bk")
+            except (CBORDecodeEOF, FileNotFoundError):
+                try:
+                    self.swagdb = SwagDB.load_database(f"{db_path}.bk.bk")
+                except FileNotFoundError:
+                    self.swagdb = SwagDB()
 
     def add_user(self, user, guild):
         id, t = self.swagdb.add_user(user, guild)
