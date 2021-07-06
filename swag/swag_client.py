@@ -33,7 +33,7 @@ class SwagClient(Module):
     async def setup(self):
         print("Mise à jour du classement et des bonus de blocage\n\n")
         await update_forbes_classement(
-            self.client.get_guild(GUILD_ID_BOBBYCRATIE), self
+            self.client.get_guild(GUILD_ID_BOBBYCRATIE), self, self.client
         )
 
     async def add_jobs(self, scheduler):
@@ -135,7 +135,7 @@ class SwagClient(Module):
             await message.channel.send(
                 f"⛏ {user.mention} a miné `{format_number(mining_booty)} $wag` !"
             )
-            await update_forbes_classement(message.guild, self)
+            await update_forbes_classement(message.guild, self, self.client)
 
         elif "info" in command_swag:
             user = message.author
@@ -164,21 +164,27 @@ class SwagClient(Module):
 
         elif "historique" in command_swag:
             user = message.author
-            history = self.swag_bank.get_history(user.id)
+            user_account = self.swag_bank.get_account_info(user.id)
+            history = list(reversed(self.swag_bank.get_history(user.id)))
             await message.channel.send(
                 f"{user.mention}, voici l'historique de tes transactions de $wag :\n"
             )
             await reaction_message_building(
-                self.client, history, message, mini_history_swag_message
+                self.client,
+                history,
+                message,
+                mini_history_swag_message,
+                self.swag_bank,
+                user_account.timezone,
             )
 
         elif "bloquer" in command_swag:
             # Récupération de la valeur envoyé
             user = message.author
             try:
-            value = int(
-                "".join(argent for argent in command_swag if argent.isnumeric())
-            )
+                value = int(
+                    "".join(argent for argent in command_swag if argent.isnumeric())
+                )
             except ValueError:
                 raise InvalidSwagValue
 
@@ -190,7 +196,7 @@ class SwagClient(Module):
                 f"récupérerez dans **{BLOCKING_TIME} jours** à la même "
                 "heure\n"
             )
-            await update_forbes_classement(message.guild, self)
+            await update_forbes_classement(message.guild, self, self.client)
 
         elif "payer" in command_swag:
             # Récupération du destinataire
@@ -208,9 +214,9 @@ class SwagClient(Module):
 
             # Récupération de la valeur envoyé
             try:
-            value = int(
-                "".join(argent for argent in command_swag if argent.isnumeric())
-            )
+                value = int(
+                    "".join(argent for argent in command_swag if argent.isnumeric())
+                )
             except ValueError:
                 raise InvalidSwagValue
 
@@ -225,7 +231,7 @@ class SwagClient(Module):
                 f"-->\t{destinataire.display_name}]\n"
                 "```"
             )
-            await update_forbes_classement(message.guild, self)
+            await update_forbes_classement(message.guild, self, self.client)
 
         elif "timezone" in command_swag:
             timezone = command_swag[2]
@@ -255,7 +261,7 @@ class SwagClient(Module):
                 "effectuées sur ton compte\n"
                 "```"
             )
-        await update_forbes_classement(message.guild, self)
+        await update_forbes_classement(message.guild, self, self.client)
 
     async def execute_style_command(self, message):
         command_style = message.content.split()
@@ -264,9 +270,9 @@ class SwagClient(Module):
             user = message.author
 
             try:
-            value = int(
-                "".join(argent for argent in command_style if argent.isnumeric())
-            )
+                value = int(
+                    "".join(argent for argent in command_style if argent.isnumeric())
+                )
             except ValueError:
                 raise InvalidSwagValue
 
@@ -278,7 +284,7 @@ class SwagClient(Module):
                 f"récupérerez dans **{BLOCKING_TIME} jours** à la même "
                 "heure\n"
             )
-            await update_forbes_classement(message.guild, self)
+            await update_forbes_classement(message.guild, self, self.client)
 
         elif "payer" in command_style:
             # Récupération du destinataire
@@ -296,13 +302,13 @@ class SwagClient(Module):
 
             # Récupération de la valeur envoyé
             try:
-            value = Decimal(
-                "".join(
-                    argent
-                    for argent in command_style
-                    if argent.replace(".", "").replace(",", "").isnumeric()
-                )
-            ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
+                value = Decimal(
+                    "".join(
+                        argent
+                        for argent in command_style
+                        if argent.replace(".", "").replace(",", "").isnumeric()
+                    )
+                ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
             except ValueError:
                 raise InvalidStyleValue
 
@@ -317,7 +323,7 @@ class SwagClient(Module):
                 f"-->\t{destinataire.display_name}]\n"
                 "```"
             )
-            await update_forbes_classement(message.guild, self)
+            await update_forbes_classement(message.guild, self, self.client)
 
         else:
             await message.channel.send(

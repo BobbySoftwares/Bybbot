@@ -1,6 +1,8 @@
 import math
 import random
 
+from arrow import Arrow
+
 from utils import (
     COMMAND_CHANNEL_ID_BOBBYCRATIE,
     FORBES_CHANNEL_ID_BOBBYCRATIE,
@@ -14,7 +16,9 @@ from utils import (
 from .transactions import TransactionType
 
 
-def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, message_user):
+async def mini_history_swag_message(
+    chunk_transaction, current_page, nbr_pages, message_user, client, swagbank, timezone
+):
     """Fonction utilisé pour la fonctionnalité du $wag
         Appelée lorsqu'on veut afficher une partie de l'historique des
         transactions du $wag ou de $tyle
@@ -33,38 +37,78 @@ def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, messag
     """
     "$wag Mine ⛏" "$tyle Generator Inc."
 
-    def process_transaction(transaction_type, transaction_data):
+    async def process_transaction(transaction_type, transaction_data):
         if transaction_type == TransactionType.CREATION:
             return (
                 "$wag Mine ⛏",
-                get_guild_member_name(transaction_data[0], message_user.guild),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(transaction_data).discord_id,
+                    message_user.guild,
+                    client,
+                ),
                 format_number(0),
                 "$wag",
             )
         elif transaction_type == TransactionType.MINE:
             return (
                 "$wag Mine ⛏",
-                get_guild_member_name(transaction_data[0], message_user.guild),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[0]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
                 format_number(transaction_data[1]),
                 "$wag",
             )
         elif transaction_type == TransactionType.SWAG:
             return (
-                get_guild_member_name(transaction_data[0], message_user.guild),
-                get_guild_member_name(transaction_data[1], message_user.guild),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[0]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[1]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
                 format_number(transaction_data[2]),
                 "$wag",
             )
         elif transaction_type == TransactionType.STYLE:
             return (
-                get_guild_member_name(transaction_data[0], message_user.guild),
-                get_guild_member_name(transaction_data[1], message_user.guild),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[0]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[1]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
                 format_number(transaction_data[2]),
                 "$tyle",
             )
         elif transaction_type == TransactionType.BLOCK:
             return (
-                get_guild_member_name(transaction_data[0], message_user.guild),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[0]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
                 "$tyle Generator Inc.",
                 format_number(transaction_data[1]),
                 "$wag",
@@ -72,20 +116,35 @@ def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, messag
         elif transaction_type == TransactionType.RELEASE:
             return (
                 "$tyle Generator Inc.",
-                get_guild_member_name(transaction_data[0], message_user.guild),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[0]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
                 format_number(transaction_data[1]),
                 "$wag",
             )
         elif transaction_type == TransactionType.ROI:
             return (
                 "$tyle Generator Inc.",
-                get_guild_member_name(transaction_data[0], message_user.guild),
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[0]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
                 format_number(transaction_data[1]),
                 "$tyle",
             )
 
     transactions = [
-        (str(t.to("")), *process_transaction(transaction_type, transaction_data))
+        (
+            str(Arrow.fromdatetime(t).to(timezone)),
+            *(await process_transaction(transaction_type, transaction_data)),
+        )
         for (t, transaction_type, transaction_data) in chunk_transaction
     ]
 
@@ -109,7 +168,7 @@ def mini_history_swag_message(chunk_transaction, current_page, nbr_pages, messag
     )
 
 
-def mini_forbes_swag(forbes_chunk, nbr_pages, guild):
+async def mini_forbes_swag(forbes_chunk, nbr_pages, guild, client):
     """Fonction utilisé pour la fonctionnalité du $wag
         Appelé pour construire des parties du classement forbes sous forme de String
 
@@ -123,9 +182,9 @@ def mini_forbes_swag(forbes_chunk, nbr_pages, guild):
     """
     forbes = [
         (
-            get_guild_member_name(account.discord_id, guild),
+            await get_guild_member_name(account.discord_id, guild, client),
             format_number(account.swag_balance),
-            format_number(round(account.style_balance, 3)),
+            format_number(account.style_balance),
             account.blocked_swag != 0,
         )
         for account in forbes_chunk
@@ -165,15 +224,14 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
     swag_client.swag_bank.earn_style()
 
     for user, swag, style in swag_client.swag_bank.swag_unblocker():
-        member = get_guild_member_name(user, bobbycratie_guild, False)
         await command_channel.send(
-            f"{member.mention}, les `{format_number(swag)} $wag` que vous aviez bloqué sont "
+            f"<@{user}>, les `{format_number(swag)} $wag` que vous aviez bloqué sont "
             f"à nouveau disponible. Vous avez gagné `{format_number(style)} $tyle` suite à ce "
             "blocage. Continuez de bloquer du $wag pour gagner plus de $tyle !"
         )
 
     await update_forbes_classement(
-        bobbycratie_guild, swag_client
+        bobbycratie_guild, swag_client, client
     )  # Mise à jour du classement après les gains de $tyle
 
 
@@ -215,7 +273,7 @@ async def update_the_swaggest(guild, swag_client):
     await member.add_roles(role_swag, reason="Est maintenant devenu le plus $wag !")
 
 
-async def update_forbes_classement(guild, swag_client):
+async def update_forbes_classement(guild, swag_client, client):
     """Met à jour le classement Forbes dans le #swag-forbes
 
     Args:
@@ -253,7 +311,9 @@ async def update_forbes_classement(guild, swag_client):
     cpt_message = 0
     async for message in channel_forbes.history(oldest_first=True):
         await message.edit(
-            content=mini_forbes_swag(forbes_chunks[cpt_message], cpt_message + 1, guild)
+            content=await mini_forbes_swag(
+                forbes_chunks[cpt_message], cpt_message + 1, guild, client
+            )
         )
         cpt_message += 1
 

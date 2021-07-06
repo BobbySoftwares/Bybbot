@@ -31,7 +31,9 @@ def well_aligned_jukebox_tab(lst_sound, prefix="", suffix=""):
         )
 
 
-def mini_help_message_string(sub_soundlst, current_page, nbr_pages, message_user=None):
+def mini_help_message_string(
+    sub_soundlst, current_page, nbr_pages, message_user=None, client=None
+):
     """Fonction utilisé par la fonctionnalité du Jukebox
     Appelée lorsqu'on veut afficher un message d'aide pour l'affichage
     du catalogue est son disponible en fonction de la commande
