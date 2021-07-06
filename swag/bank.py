@@ -69,7 +69,7 @@ class SwagBank:
         user_account.last_mining_date = t
         # écriture dans l'historique
         self.swagdb.blockchain.append(
-            (utcnow().datetime, TransactionType.MINE, (user, mining_booty))
+            (utcnow().datetime, TransactionType.MINE, (user_account.id, mining_booty))
         )
 
         self.transactional_save()
@@ -94,7 +94,11 @@ class SwagBank:
 
         # Write transaction in history
         self.swagdb.blockchain.append(
-            (utcnow().datetime, TransactionType.SWAG, (giver, recipient, amount))
+            (
+                utcnow().datetime,
+                TransactionType.SWAG,
+                (giver_account.id, recipient_account.id, amount),
+            )
         )
 
         self.transactional_save()
@@ -120,7 +124,11 @@ class SwagBank:
 
         # Write transaction in history
         self.swagdb.blockchain.append(
-            (utcnow().datetime, TransactionType.STYLE, (giver, recipient, amount))
+            (
+                utcnow().datetime,
+                TransactionType.STYLE,
+                (giver_account.id, recipient_account.id, amount),
+            )
         )
 
         self.transactional_save()
@@ -143,7 +151,11 @@ class SwagBank:
             user_account.blocked_swag = 0
             user_account.unblocking_date = None
             self.swagdb.blockchain.append(
-                (t.to("UTC").datetime, TransactionType.RELEASE, (user, amount))
+                (
+                    t.to("UTC").datetime,
+                    TransactionType.RELEASE,
+                    (user_account.id, amount),
+                )
             )
 
         # Check if the valueIsNotNegative or not int
@@ -162,7 +174,7 @@ class SwagBank:
         user_account.blocked_swag = amount
         user_account.unblocking_date = unblocking_date
         self.swagdb.blockchain.append(
-            (t.to("UTC").datetime, TransactionType.BLOCK, (user, amount))
+            (t.to("UTC").datetime, TransactionType.BLOCK, (user_account.id, amount))
         )
 
         self.transactional_save()
@@ -227,7 +239,7 @@ class SwagBank:
                         utcnow().datetime,
                         TransactionType.RELEASE,
                         (
-                            user_account.discord_id,
+                            user_account.id,
                             returned_swag,
                         ),
                     )
@@ -242,7 +254,7 @@ class SwagBank:
                         utcnow().datetime,
                         TransactionType.ROI,
                         (
-                            user_account.discord_id,
+                            user_account.id,
                             returned_style,
                         ),
                     )
