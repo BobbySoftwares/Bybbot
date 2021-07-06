@@ -73,7 +73,7 @@ class SwagDB:
             self.creation_date.append(t)
             self.timezone_lock_date.append(t)
 
-            return t
+            return self.next_id - 1, t
         else:
             raise AccountAlreadyExist
 

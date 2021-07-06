@@ -35,8 +35,8 @@ class SwagBank:
             self.swagdb = SwagDB()
 
     def add_user(self, user, guild):
-        t = self.swagdb.add_user(user, guild)
-        self.swagdb.blockchain.append((t, TransactionType.CREATION, user))
+        id, t = self.swagdb.add_user(user, guild)
+        self.swagdb.blockchain.append((t, TransactionType.CREATION, id))
         self.transactional_save()
 
     def transactional_save(self):
