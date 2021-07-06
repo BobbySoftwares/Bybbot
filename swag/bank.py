@@ -3,13 +3,12 @@ from arrow import now, utcnow
 from decimal import Decimal, ROUND_UP
 from numpy import log1p
 from shutil import move
+from cbor2 import CBORDecodeEOF
 
 from .cauchy import roll
-
 from .errors import *
-
 from .db import SwagDB
-
+from .transactions import TransactionType, concerns_user
 
 SWAG_BASE = 1000
 SWAG_LUCK = 100000
@@ -33,11 +32,18 @@ class SwagBank:
         self.db_path = db_path
         try:
             self.swagdb = SwagDB.load_database(db_path)
-        except (IOError, OSError):
-            self.swagdb = SwagDB()
+        except (CBORDecodeEOF, FileNotFoundError):
+            try:
+                self.swagdb = SwagDB.load_database(f"{db_path}.bk")
+            except (CBORDecodeEOF, FileNotFoundError):
+                try:
+                    self.swagdb = SwagDB.load_database(f"{db_path}.bk.bk")
+                except FileNotFoundError:
+                    self.swagdb = SwagDB()
 
     def add_user(self, user, guild):
-        self.swagdb.add_user(user, guild)
+        id, t = self.swagdb.add_user(user, guild)
+        self.swagdb.blockchain.append((t, TransactionType.CREATION, id))
         self.transactional_save()
 
     def transactional_save(self):
@@ -69,7 +75,9 @@ class SwagBank:
         # Mise à jour de la date du dernier minage
         user_account.last_mining_date = t
         # écriture dans l'historique
-        self.swagdb.blockchain.append(("$wag Mine ⛏", user, mining_booty))
+        self.swagdb.blockchain.append(
+            (utcnow().datetime, TransactionType.MINE, (user_account.id, mining_booty))
+        )
 
         self.transactional_save()
 
@@ -92,7 +100,13 @@ class SwagBank:
         recipient_account.swag_balance += amount
 
         # Write transaction in history
-        self.swagdb.blockchain.append((giver, recipient, amount, "$wag"))
+        self.swagdb.blockchain.append(
+            (
+                utcnow().datetime,
+                TransactionType.SWAG,
+                (giver_account.id, recipient_account.id, amount),
+            )
+        )
 
         self.transactional_save()
 
@@ -116,16 +130,23 @@ class SwagBank:
         recipient_account.style_balance += amount
 
         # Write transaction in history
-        self.swagdb.blockchain.append((giver, recipient, amount, "$tyle"))
+        self.swagdb.blockchain.append(
+            (
+                utcnow().datetime,
+                TransactionType.STYLE,
+                (giver_account.id, recipient_account.id, amount),
+            )
+        )
 
         self.transactional_save()
 
     def block_swag(self, user, amount):
         user_account = self.swagdb.get_account(user)
 
+        t = now(user_account.timezone)
+
         unblocking_date = (
-            now(user_account.timezone)
-            .shift(days=BLOCKING_TIME)
+            t.shift(days=BLOCKING_TIME)
             .replace(microsecond=0, second=0, minute=0)
             .to("UTC")
             .datetime
@@ -136,6 +157,13 @@ class SwagBank:
             user_account.swag_balance += user_account.blocked_swag
             user_account.blocked_swag = 0
             user_account.unblocking_date = None
+            self.swagdb.blockchain.append(
+                (
+                    t.to("UTC").datetime,
+                    TransactionType.RELEASE,
+                    (user_account.id, amount),
+                )
+            )
 
         # Check if the valueIsNotNegative or not int
         if amount <= 0 or not isinstance(amount, int):
@@ -152,7 +180,9 @@ class SwagBank:
         user_account.swag_balance -= amount
         user_account.blocked_swag = amount
         user_account.unblocking_date = unblocking_date
-        self.swagdb.blockchain.append((user, "$tyle Generator Inc.", amount, "$wag"))
+        self.swagdb.blockchain.append(
+            (t.to("UTC").datetime, TransactionType.BLOCK, (user_account.id, amount))
+        )
 
         self.transactional_save()
 
@@ -206,6 +236,7 @@ class SwagBank:
             if (
                 user_account.unblocking_date is not None
                 and user_account.unblocking_date <= now()
+                and 0 < user_account.blocked_swag
             ):
                 returned_swag = user_account.blocked_swag
 
@@ -213,10 +244,12 @@ class SwagBank:
                 user_account.blocked_swag = 0
                 self.swagdb.blockchain.append(
                     (
-                        "$tyle Generator Inc.",
-                        user_account.discord_id,
-                        returned_swag,
-                        "$wag",
+                        utcnow().datetime,
+                        TransactionType.RELEASE,
+                        (
+                            user_account.id,
+                            returned_swag,
+                        ),
                     )
                 )
 
@@ -226,10 +259,12 @@ class SwagBank:
                 user_account.pending_style = Decimal(0)
                 self.swagdb.blockchain.append(
                     (
-                        "$tyle Generator Inc.",
-                        user_account.discord_id,
-                        returned_style,
-                        "$tyle",
+                        utcnow().datetime,
+                        TransactionType.ROI,
+                        (
+                            user_account.id,
+                            returned_style,
+                        ),
                     )
                 )
                 self.transactional_save()
@@ -259,16 +294,12 @@ class SwagBank:
             raise TimeZoneFieldLocked(user_account.timezone_lock_date)
         lock_date = t.shift(days=1)
 
-        user_account.timezone_lock_date = lock_date
+        user_account.timezone_lock_date = lock_date.datetime
         user_account.timezone = timezone
 
         self.transactional_save()
 
         return lock_date
-
-
-def concerns_user(id, transaction):
-    pass
 
 
 def assert_timezone(timezone):

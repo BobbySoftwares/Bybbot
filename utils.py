@@ -4,16 +4,15 @@ import asyncio
 ROLE_ID_BOBBY_SWAG = 856280663392649257
 GUILD_ID_BOBBYCRATIE = 856278929296195602
 # Identifiant unique du rôle "Le bobby swag"
-# ROLE_ID_BOBBY_SWAG = 846736189310238751
+ROLE_ID_BOBBY_SWAG = 846736189310238751
 # ID unique du serveur Bobbycratie
-# GUILD_ID_BOBBYCRATIE = 487244765558210580
+GUILD_ID_BOBBYCRATIE = 487244765558210580
 
-FORBES_CHANNEL_ID_BOBBYCRATIE = 856279732009304074
 COMMAND_CHANNEL_ID_BOBBYCRATIE = 856278929869242380
 # ID unique du canal du swag forbes
-# FORBES_CHANNEL_ID_BOBBYCRATIE = 848313360306536448
+FORBES_CHANNEL_ID_BOBBYCRATIE = 848313360306536448
 # ID unique du canal swag-command
-# COMMAND_CHANNEL_ID_BOBBYCRATIE = 848302082150760508
+COMMAND_CHANNEL_ID_BOBBYCRATIE = 848302082150760508
 
 
 def format_number(n):
@@ -44,7 +43,7 @@ def chunks(lst, n):
         yield lst[i : i + n]
 
 
-def get_guild_member_name(user_id, guild, return_display_name=True):
+async def get_guild_member_name(user_id, guild, client, return_display_name=True):
     """Permet de récupérer l'objet User en donnant le nom d'utilisateur
     général discord de quelqu'un
 
@@ -75,16 +74,19 @@ def get_guild_member_name(user_id, guild, return_display_name=True):
 
     user = guild.get_member(user_id)
     if user is None:
-        return user_id
+        user = client.get_user(user_id)
+
+    if user is None:
+        return (await client.fetch_user(user_id)).name
 
     if return_display_name:
         return user.display_name
     else:
-        return user
+        return user.name
 
 
 async def reaction_message_building(
-    client, lst_to_show, message_user, fonction_message_builder
+    client, lst_to_show, message_user, fonction_message_builder, *args
 ):
     """Utilisé par toutes les fonctionnalités du bot (Jukebox et $wag)
         Permet de créer un message interactif avec des réactions, pour
@@ -110,8 +112,13 @@ async def reaction_message_building(
 
     # Envoie du message crée par la fonction_message_builder, défini en entrée.
     message_bot = await message_user.channel.send(
-        fonction_message_builder(
-            chunks_sounds[current_page - 1], current_page, nbr_pages, message_user
+        await fonction_message_builder(
+            chunks_sounds[current_page - 1],
+            current_page,
+            nbr_pages,
+            message_user,
+            client,
+            *args
         )
     )
 
@@ -137,11 +144,13 @@ async def reaction_message_building(
             if str(reaction.emoji) == "▶️" and current_page != nbr_pages:
                 current_page += 1
                 await message_bot.edit(
-                    content=fonction_message_builder(
+                    content=await fonction_message_builder(
                         chunks_sounds[current_page - 1],
                         current_page,
                         nbr_pages,
                         message_user,
+                        client,
+                        *args
                     )
                 )
 
@@ -149,11 +158,13 @@ async def reaction_message_building(
             elif str(reaction.emoji) == "◀️" and current_page > 1:
                 current_page -= 1
                 await message_bot.edit(
-                    content=fonction_message_builder(
+                    content=await fonction_message_builder(
                         chunks_sounds[current_page - 1],
                         current_page,
                         nbr_pages,
                         message_user,
+                        client,
+                        *args
                     )
                 )
 

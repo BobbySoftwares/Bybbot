@@ -5,4 +5,4 @@
 *.bk
 .vscode
 __pycache__/
-bot_token.json
+config.json
