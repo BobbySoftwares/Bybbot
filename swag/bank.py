@@ -229,6 +229,7 @@ class SwagBank:
             if (
                 user_account.unblocking_date is not None
                 and user_account.unblocking_date <= now()
+                and 0 < user_account.blocked_swag
             ):
                 returned_swag = user_account.blocked_swag
 
@@ -286,7 +287,7 @@ class SwagBank:
             raise TimeZoneFieldLocked(user_account.timezone_lock_date)
         lock_date = t.shift(days=1)
 
-        user_account.timezone_lock_date = lock_date
+        user_account.timezone_lock_date = lock_date.datetime
         user_account.timezone = timezone
 
         self.transactional_save()
