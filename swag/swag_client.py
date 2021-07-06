@@ -1,3 +1,10 @@
+from swag.errors import (
+    CagnotteNameAlreadyExist,
+    DestructionOfNonEmptyCagnotte,
+    NoCagnotteRegistered,
+    NotEnoughMoneyInCagnotte,
+    NotInGestionnaireGroupCagnotte,
+)
 from apscheduler.triggers.cron import CronTrigger
 from decimal import Decimal, ROUND_DOWN
 
@@ -50,6 +57,8 @@ class SwagClient(Module):
                 await self.execute_swag_command(message)
             elif message.content.startswith("!$tyle"):
                 await self.execute_style_command(message)
+            elif message.content.startwith("!€agnotte"):
+                await self.execute_cagnotte_command(message)
         except NotEnoughSwagInBalance:
             await message.channel.send(
                 f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour "
@@ -110,6 +119,33 @@ class SwagClient(Module):
                 "*L'abus de minage est dangereux pour la santé. À Miner avec "
                 "modération. Ceci était un message de la Fédération Bobbyique du "
                 "Minage*"
+            )
+        except NoCagnotteRegistered as e:
+            await message.channel.send(
+                f"Aucune €agnotte n°{e.name} est active dans la $wagBank ! "
+                "Tu t'es sans doute trompé de numéro 🤨"
+            )
+        except CagnotteNameAlreadyExist:
+            await message.channel.send(
+                f"{message.author.mention}, une €agnotte porte déjà ce nom ! "
+                "Je te conseille de choisir un autre nom avant que tout le monde "
+                "soit complètement duper 🤦‍♂️"
+            )
+        except NotEnoughMoneyInCagnotte:
+            await message.channel.send(
+                f"{message.author.mention}, tu es entrain de demander à une €agnotte "
+                "une somme d'argent qu'elle n'a pas. Non mais tu n'as pas honte ? 😐"
+            )
+        except NotInGestionnaireGroupCagnotte:
+            await message.channel.send(
+                f"{message.author.mention}, tu ne fais pas parti des gestionnaires "
+                "de cette €agnotte, tu ne peux donc pas distribuer son contenu 🤷‍♀️"
+            )
+        except DestructionOfNonEmptyCagnotte:
+            await message.channel.send(
+                f"**Ligne 340 des conditions générales d'utilisations des €agnottes :**\n\n"
+                "*Il est formellement interdit de détruire une cagnotte qui n'est pas vidé "
+                "de son contenu. C'est comme ça.*"
             )
 
     async def execute_swag_command(self, message):
@@ -343,5 +379,47 @@ class SwagClient(Module):
                 "```HTTP\n"
                 "!$wagdmin timezone [timezone] ~~ Configure la timezone par défaut "
                 "du serveur\n"
+                "```"
+            )
+
+    async def execute_cagnotte_command(self, message):
+
+        command = message.content.split()
+
+        if "créer" in command:
+            # Donner le numéro de la cagnotte en retour
+            pass
+
+        elif "donner" in command:
+            pass
+
+        elif "partager" in command:
+            pass
+
+        elif "loto" in command:
+            pass
+
+        elif "détruire" in command:
+            pass
+
+        else:
+            await message.channel.send(
+                f"{message.channel.mention}, tu as l'air perdu "
+                "(pourquoi ça ne m'étonne pas...) Voici les commandes "
+                "que tu peux utiliser avec les €agnottes :\n"
+                "```HTTP\n"
+                "!€agnotte créer [$wag/$tyle] [Nom_de_la_cagnotte] ~~ "
+                "Permet de créer une nouvelle cagnotte, de $wag ou de $tyle "
+                "avec le nom de son choix\n"
+                "!€agnotte donner €[num_cagnotte] [montant] ~~ fait don "
+                "de la somme choisi à la cagnotte numéro €n\n"
+                "!€agnotte partager €[num_cagnotte] [@mention1 @mention2 ...] ~~ "
+                "Partage l'intégralité de la cagnotte entre les utilisateurs mentionné. "
+                "Si personne n'est mentionné, la cagnotte sera redistribué parmis ses donateurs\n"
+                "!€agnotte loto €[num_cagnotte] [@mention1 @mention2 ...] ~~ "
+                "Tire au sort parmis les utilisateurs mentionné celui qui remportera l'intégralité "
+                "de la €agnotte. Si personne n'est mentionné, le tirage au sort se fait parmis"
+                "l'ensemble des personnes ayant un compte"
+                "!€agnotte détruire €[num_cagnotte] ~~ Détruit la cagnotte si elle est vide"
                 "```"
             )
