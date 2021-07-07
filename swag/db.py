@@ -27,9 +27,9 @@ class SwagDB:
         next_cagnotte_id=0,
         cagnotte_id={},
         cagnotte_name=[],
-        cagnotte_montant=[],
+        cagnotte_balance=[],
         cagnotte_currency=[],
-        cagnotte_gestionnaire=[],
+        cagnotte_manager=[],
         cagnotte_participant=[],
         cagnotte_activation=[],
     ) -> None:
@@ -55,9 +55,9 @@ class SwagDB:
         self.next_cagnotte_id = next_cagnotte_id
         self.cagnotte_id = cagnotte_id
         self.cagnotte_name = cagnotte_name
-        self.cagnotte_montant = cagnotte_montant
+        self.cagnotte_balance = cagnotte_balance
         self.cagnotte_currency = cagnotte_currency
-        self.cagnotte_gestionnaire = cagnotte_gestionnaire
+        self.cagnotte_manager = cagnotte_manager
         self.cagnotte_participant = cagnotte_participant
         self.cagnotte_activation = cagnotte_activation
 
@@ -109,12 +109,12 @@ class SwagDB:
 
             self.cagnotte_name.append(cagnotte_name)
             if cagnotte_currency == "$wag":
-                self.cagnotte_montant.append(0)
+                self.cagnotte_balance.append(0)
             elif cagnotte_currency == "$tyle":
-                self.cagnotte_montant.append(Decimal(0))
+                self.cagnotte_balance.append(Decimal(0))
 
             self.cagnotte_currency.append(cagnotte_currency)
-            self.cagnotte_gestionnaire.append([cagnotte_creator_id])
+            self.cagnotte_manager.append([cagnotte_creator_id])
             self.cagnotte_participant.append([])
             self.cagnotte_activation.append(True)
 
@@ -264,12 +264,12 @@ class Cagnotte:
         return self.swagdb.cagnotte_id[self.id]
 
     @property
-    def cagnotte_montant(self):
-        return self.swagdb.cagnotte_montant[self.id]
+    def cagnotte_balance(self):
+        return self.swagdb.cagnotte_balance[self.id]
 
-    @cagnotte_montant.setter
-    def cagnotte_montant(self, value):
-        self.swagdb.cagnotte_montant[self.id] = value
+    @cagnotte_balance.setter
+    def cagnotte_balance(self, value):
+        self.swagdb.cagnotte_balance[self.id] = value
 
     @property
     def cagnotte_currency(self):
@@ -280,12 +280,12 @@ class Cagnotte:
         self.swagdb.cagnotte_currency[self.id] = value
 
     @property
-    def cagnotte_gestionnaire(self):
-        return self.swagdb.cagnotte_gestionnaire[self.id]
+    def cagnotte_manager(self):
+        return self.swagdb.cagnotte_manager[self.id]
 
-    @cagnotte_gestionnaire.setter
-    def cagnotte_gestionnaire(self, value):
-        self.swagdb.cagnotte_gestionnaire[self.id] = value
+    @cagnotte_manager.setter
+    def cagnotte_manager(self, value):
+        self.swagdb.cagnotte_manager[self.id] = value
 
     @property
     def cagnotte_participant(self):
@@ -325,8 +325,8 @@ class CagnotteInfo:
 
         self.cagnotte_id = cagnotte.cagnotte_id
         self.cagnotte_name = cagnotte.cagnotte_name
-        self.cagnotte_montant = cagnotte.cagnotte_montant
+        self.cagnotte_balance = cagnotte.cagnotte_balance
         self.cagnotte_currency = cagnotte.cagnotte_currency
-        self.cagnotte_gestionnaire = cagnotte.cagnotte_gestionnaire
+        self.cagnotte_manager = cagnotte.cagnotte_manager
         self.cagnotte_participant = cagnotte.cagnotte_participant
         self.cagnotte_activation = cagnotte.cagnotte_activation
