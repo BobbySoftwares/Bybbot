@@ -4,7 +4,7 @@
 
 The Bybbot is an discord bot in python written by, for and with a subset of disturbed minds from an arcane french discord server to do stuff and things, among:
 
-- Disruptive inflationist eco-friendly vegan cryptocurrencies for everyone, based on a scientific approach to optimize for big fat all-luck-no-skill-based economy. You too, become a millionaire without having a clue how and spit on the plebeans which also happens to be millionaires but slightly less than you! Embark on a journey of social experiments without anybody to keep this ship afloat !
+- Disruptive inflationist eco-friendly vegan cryptocurrencies for everyone, based on a scientific approach to optimize for big fat all-luck-no-skill-based economy. You too, become a millionaire without having a clue how and spit on the plebeans which also happens to be millionaires but slightly less than you! Embark on a journey of social experiments without anybody to keep the ship afloat !
 
 - Obscure french memetic sound references, also known as what mortals call a *soundboard*. Enjoy thousands of french lines taken from films, shows and games you've never heard of before unless you're french! Embrace frenchhood at is most extreme manifestation!
 
