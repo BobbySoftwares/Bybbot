@@ -117,6 +117,9 @@ class SwagBank:
     def get_account_info(self, user):
         return self.swagdb.get_account(user).get_info()
 
+    def get_cagnotte_info(self, cagnotte_idx):
+        return self.swagdb.get_cagnotte_from_index(cagnotte_idx).get_info()
+
     def style_transaction(self, giver, recipient, amount):
         giver_account = self.swagdb.get_account(giver)
         recipient_account = self.swagdb.get_account(recipient)
@@ -439,7 +442,7 @@ class SwagBank:
             cagnotte_idx, heureux_gagnant, gain, emiter_account_discord_id
         )
 
-        return (heureux_gagnant, gain)
+        return heureux_gagnant, gain
 
     def partage_cagnotte(
         self, cagnotte_idx: str, lst_of_account: list, emiter_account_discord_id: int

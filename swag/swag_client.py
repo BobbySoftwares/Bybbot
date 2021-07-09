@@ -1,6 +1,7 @@
 from swag.errors import (
     CagnotteNameAlreadyExist,
     DestructionOfNonEmptyCagnotte,
+    NoCagnotteIdxInCommand,
     NoCagnotteRegistered,
     NotEnoughMoneyInCagnotte,
     NotInGestionnaireGroupCagnotte,
@@ -25,7 +26,12 @@ from .bank import (
 )
 from .utils import mini_history_swag_message, update_forbes_classement, update_the_style
 
-from utils import GUILD_ID_BOBBYCRATIE, format_number, reaction_message_building
+from utils import (
+    GUILD_ID_BOBBYCRATIE,
+    format_number,
+    get_guild_member_name,
+    reaction_message_building,
+)
 from module import Module
 
 
@@ -127,8 +133,13 @@ class SwagClient(Module):
             )
         except NoCagnotteRegistered as e:
             await message.channel.send(
-                f"Aucune €agnotte n°{e.name} est active dans la $wagBank ! "
+                f"Aucune €agnotte n°€{e.name} est active dans la $wagBank ! "
                 "Tu t'es sans doute trompé de numéro 🤨"
+            )
+        except NoCagnotteIdxInCommand as e:
+            await message.channel.send(
+                "Aucun numéro de cagnotte n'est mentionné avec la forme €n (ex : €1)"
+                f"dans ta commande {message.author.mention}. 🤔"
             )
         except CagnotteNameAlreadyExist:
             await message.channel.send(
@@ -407,43 +418,171 @@ class SwagClient(Module):
             )
 
     async def execute_cagnotte_command(self, message):
+        def get_cagnotte_idx_from_command(splited_command):
+            cagnotte_idx = int(
+                [
+                    identifiant[1:]
+                    for identifiant in splited_command
+                    if identifiant.startswith("€") and identifiant[1:].isnumeric()
+                ][0]
+            )
+            return cagnotte_idx
 
-        command = message.content.split()
+        message_command = message.content
+        splited_command = message_command.split()
 
-        if "créer" in command:
-            # Donner le numéro de la cagnotte en retour
-            pass
+        if "créer $wag" in message_command:
+            cagnotte_name = " ".join(splited_command[3:])
+            if len(cagnotte_name) == 0:
+                await message.channel.send(
+                    "Merci de mentionné un nom pour ta €agnotte."
+                )
+                return
+            self.swag_bank.create_cagnotte(cagnotte_name, "$wag", message.author.id)
 
-        elif "donner" in command:
-            pass
+        elif "créer $tyle" in message_command:
+            cagnotte_name = " ".join(splited_command[3:])
+            if len(cagnotte_name) == 0:
+                await message.channel.send(
+                    "Merci de mentionné un nom pour ta €agnotte."
+                )
+                return
+            self.swag_bank.create_cagnotte(cagnotte_name, "$tyle", message.author.id)
 
-        elif "partager" in command:
-            pass
+        elif "créer":
+            await message.channel.send(
+                "Merci de mentionné le type de monnaie de la €agnotte "
+                "après le mot clef **créer**"
+            )
 
-        elif "loto" in command:
-            pass
+        elif all(
+            "€" not in argument for argument in splited_command
+        ):  # À partir d'ici, toute les commandes passe par l'identifiant de €agnotte (sous forme de €n)
+            await message.channel.send(
+                f"{message.author.mention}, il manque l'identifiant de la €agnotte "
+                " dans la commande (€3 par exemple) afin de pouvoir faire l'action que tu demandes."
+            )
 
-        elif "détruire" in command:
-            pass
+        elif "donner" in splited_command:
+
+            cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
+
+            currency = self.swag_bank.get_cagnotte_info(cagnotte_idx).cagnotte_currency
+
+            if currency == "$wag":
+                try:
+                    value = int(
+                        "".join(
+                            argent for argent in splited_command if argent.isnumeric()
+                        )
+                    )
+                except ValueError:
+                    raise InvalidSwagValue
+
+            elif currency == "$tyle":
+                try:
+                    value = Decimal(
+                        "".join(
+                            argent
+                            for argent in splited_command
+                            if argent.replace(".", "").replace(",", "").isnumeric()
+                        )
+                    ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
+                except ValueError:
+                    raise InvalidStyleValue
+
+            self.swag_bank.donner_a_cagnotte(message.author.id, cagnotte_idx, value)
+
+            cagnotte_name = self.swag_bank.get_cagnotte_info(cagnotte_idx).cagnotte_name
+            await message.channel.send(
+                "Transaction effectué avec succès ! \n"
+                "```ini\n"
+                f"[{message.author.display_name}\t"
+                f"{format_number(value)} {currency}\t"
+                f"-->\t€{cagnotte_idx} {cagnotte_name}]\n"
+                "```"
+            )
+            await update_forbes_classement(message.guild, self, self.client)
+
+        elif "partager" in splited_command:
+            cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
+            cagnotte_currency = self.swag_bank.get_cagnotte_info(
+                cagnotte_idx
+            ).cagnotte_currency
+            cagnotte_name = self.swag_bank.get_cagnotte_info(cagnotte_idx).cagnotte_name
+            participants_id = [participant.id for participant in message.mentions]
+
+            (
+                participants_id,
+                gain,
+                gagnant_miette,
+                miette,
+            ) = self.swag_bank.partage_cagnotte(
+                cagnotte_idx, participants_id, message.author.id
+            )
+
+            participants_mention = ", ".join(
+                [
+                    get_guild_member_name(participant_id).mention
+                    for participant_id in participants_id
+                ]
+            )
+
+            message.channel.send(
+                f"{participants_mention} vous avez chacun récupéré `{gain} {cagnotte_currency}`"
+                f"de la cagnotte *{cagnotte_name}* 💸"
+            )
+
+            if gagnant_miette != None:
+                message.channel.send(
+                    f"{get_guild_member_name(gagnant_miette).mention} récupère les `{miette} {cagnotte_currency}` restants ! 🤑"
+                )
+
+        elif "loto" in splited_command:
+            cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
+            participants_id = [participant.id for participant in message.mentions]
+
+            gagnant, gain = self.swag_bank.tirage_au_sort_cagnotte(
+                cagnotte_idx, participants_id, message.author.id
+            )
+
+            cagnotte_currency = self.swag_bank.get_cagnotte_info(
+                cagnotte_idx
+            ).cagnotte_currency
+            cagnotte_name = self.swag_bank.get_cagnotte_info(cagnotte_idx).cagnotte_name
+
+            message.channel.send(
+                f"{get_guild_member_name(gagnant).mention} vient de gagner l'intégralité de la €agnotte "
+                f"€{cagnotte_idx} *{cagnotte_name}*, à savoir `{gain} {cagnotte_currency}` ! 🎰"
+            )
+
+        elif "détruire" in splited_command:
+            cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
+            cagnotte_name = self.swag_bank.get_cagnotte_info(cagnotte_idx).cagnotte_name
+
+            self.swag_bank.detruire_cagnotte(cagnotte_idx, message.author.id)
+            message.channel.send(
+                f"La €agnotte €{cagnotte_idx} *{cagnotte_name}* est maintenant détruite de ce plan de l'existance ❌"
+            )
 
         else:
             await message.channel.send(
                 f"{message.channel.mention}, tu as l'air perdu "
-                "(pourquoi ça ne m'étonne pas...) Voici les commandes "
+                "(pourquoi ça ne m'étonne pas...) 🙄\nVoici les commandes "
                 "que tu peux utiliser avec les €agnottes :\n"
                 "```HTTP\n"
-                "!€agnotte créer [$wag/$tyle] [Nom_de_la_cagnotte] ~~ "
-                "Permet de créer une nouvelle cagnotte, de $wag ou de $tyle "
+                "!€agnotte créer [$wag/$tyle] [Nom_de_la_€agnotte] ~~ "
+                "Permet de créer une nouvelle €agnotte, de $wag ou de $tyle "
                 "avec le nom de son choix\n"
-                "!€agnotte donner €[num_cagnotte] [montant] ~~ fait don "
-                "de la somme choisi à la cagnotte numéro €n\n"
-                "!€agnotte partager €[num_cagnotte] [@mention1 @mention2 ...] ~~ "
-                "Partage l'intégralité de la cagnotte entre les utilisateurs mentionné. "
-                "Si personne n'est mentionné, la cagnotte sera redistribué parmis ses donateurs\n"
-                "!€agnotte loto €[num_cagnotte] [@mention1 @mention2 ...] ~~ "
-                "Tire au sort parmis les utilisateurs mentionné celui qui remportera l'intégralité "
+                "!€agnotte donner €[n] [montant] ~~ fait don "
+                "de la somme choisi à la €agnotte numéro €n\n"
+                "!€agnotte partager €[n] [@mention1 @mention2 ...] ~~ "
+                "Partage l'intégralité de la €agnotte entre les utilisateurs mentionné. "
+                "Si personne n'est mentionné, la €agnotte sera redistribué parmis ses donateurs\n"
+                "!€agnotte loto €[n] [@mention1 @mention2 ...] ~~ "
+                "Tire au sort parmis les utilisateurs mentionnés celui qui remportera l'intégralité "
                 "de la €agnotte. Si personne n'est mentionné, le tirage au sort se fait parmis"
                 "l'ensemble des personnes ayant un compte"
-                "!€agnotte détruire €[num_cagnotte] ~~ Détruit la cagnotte si elle est vide"
+                "!€agnotte détruire €[n] ~~ Détruit la €agnotte si elle est vide"
                 "```"
             )

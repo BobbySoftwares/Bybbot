@@ -73,6 +73,12 @@ class TimeZoneFieldLocked(Exception):
 ##Exception for €agnottes
 
 
+class NoCagnotteIdxInCommand(Exception):
+    """Raised when a user use a cagnotte command without specify a cagnotte idx with an €"""
+
+    pass
+
+
 class NoCagnotteRegistered(Exception):
     """Raised when the cagnotte name or id is not present in the Swagbank"""
 
