@@ -9,6 +9,8 @@ class TransactionType(IntEnum):
     BLOCK = 4
     RELEASE = 5
     ROI = 6
+    DONATION = 7  # Envoie de l'argent à une cagnotte
+    DISTRIBUTION = 8  # Recevoir de l'argent depuis cagnotte
 
 
 def concerns_user(id, transaction):
@@ -25,4 +27,15 @@ def concerns_user(id, transaction):
     elif transaction[1] == TransactionType.RELEASE:
         return id == transaction[2][0]
     elif transaction[1] == TransactionType.ROI:
+        return id == transaction[2][0]
+    elif transaction[1] == TransactionType.DONATION:
+        return id == transaction[2][0]
+    elif transaction[1] == TransactionType.DISTRIBUTION:
+        return id == transaction[2][1]
+
+
+def concerns_cagnotte(id, transaction):
+    if transaction[1] == TransactionType.DONATION:
+        return id == transaction[2][1]
+    elif transaction[1] == TransactionType.DISTRIBUTION:
         return id == transaction[2][0]

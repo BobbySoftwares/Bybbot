@@ -574,6 +574,8 @@ class SwagClient(Module):
                 "!€agnotte créer [$wag/$tyle] [Nom_de_la_€agnotte] ~~ "
                 "Permet de créer une nouvelle €agnotte, de $wag ou de $tyle "
                 "avec le nom de son choix\n"
+                "!€agnotte info €[n] ~~ Affiche des informations détaillés sur la €agnotte n"
+                "!€agnotte historique €[n] ~~ Affiche les transactions en lien avec la €agnotte n"
                 "!€agnotte donner €[n] [montant] ~~ fait don "
                 "de la somme choisi à la €agnotte numéro €n\n"
                 "!€agnotte partager €[n] [@mention1 @mention2 ...] ~~ "

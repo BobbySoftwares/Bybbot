@@ -332,8 +332,8 @@ class SwagBank:
     def donner_a_cagnotte(
         self, donator_account_discord_id: int, cagnotte_idx: int, montant
     ):
-        cagnotte = self.get_cagnotte(cagnotte_idx)
-        donator_account = self.swagdb.get_active_cagnotte(donator_account_discord_id)
+        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+        donator_account = self.swagdb.get_account(donator_account_discord_id)
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
         if cagnotte.get_info().cagnotte_currency == "$wag":
 
@@ -369,9 +369,19 @@ class SwagBank:
             donator_account.swag_balance -= montant
             cagnotte.cagnotte_montant += montant
 
-        ##TODO AJOUT DANS LA BLOCKCHAIN
-        # self.swagAccounts[donator_account_name].write_in_history(self.account.history_movement.GIVE_TO,nom_cagnotte,montant,self.cagnottes[nom_cagnotte].currency)
-        # self.cagnottes[nom_cagnotte].write_in_cagnotte_history(self.account.history_movement.RECEIVE_FROM,donator_account_name,montant)
+        # Write donation in the blockchain
+        self.swagdb.blockchain.append(
+            (
+                utcnow().datetime,
+                TransactionType.DONATION,
+                (
+                    donator_account.get_info().id,
+                    cagnotte.get_info().cagnotte_id,
+                    montant,
+                    cagnotte.get_info().cagnotte_currency,
+                ),
+            )
+        )
 
         if donator_account_discord_id not in cagnotte.get_info().cagnotte_participant:
             cagnotte.cagnotte_participant.append(
@@ -417,9 +427,19 @@ class SwagBank:
             reciever_account.style_balance += montant
             cagnotte.cagnotte_montant -= montant
 
-        ##TODO AJOUT DANS LA BLOCKCHAIN
-        # self.swagAccounts[receiver_account_name].write_in_history(self.account.history_movement.RECEIVE_FROM,nom_cagnotte,montant,self.cagnottes[nom_cagnotte].currency)
-        # self.cagnottes[nom_cagnotte].write_in_cagnotte_history(self.account.history_movement.GIVE_TO,receiver_account_name,montant)
+            # Write distribution in the blockchain
+        self.swagdb.blockchain.append(
+            (
+                utcnow().datetime,
+                TransactionType.DISTRIBUTION,
+                (
+                    cagnotte.get_info().cagnotte_id,
+                    reciever_account.get_info().id,
+                    montant,
+                    cagnotte.get_info().cagnotte_currency,
+                ),
+            )
+        )
         self.transactional_save()
 
     def tirage_au_sort_cagnotte(
@@ -484,6 +504,13 @@ class SwagBank:
             raise DestructionOfNonEmptyCagnotte
 
         cagnotte.cagnotte_activation = False
+
+    def get_cagnotte_history(self, cagnotte_idx):
+        return [
+            transaction
+            for transaction in self.swagdb.blockchain
+            if concerns_user(cagnotte_idx, transaction)
+        ]
 
 
 def assert_timezone(timezone):

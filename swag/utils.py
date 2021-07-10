@@ -139,6 +139,17 @@ async def mini_history_swag_message(
                 format_number(transaction_data[1]),
                 "$tyle",
             )
+        elif transaction_type == TransactionType.DONATION:
+            return (
+                await get_guild_member_name(
+                    swagbank.swagdb_get_account_from_index(
+                        transaction_data[0]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
+                transaction_data[1],  ##Mettre le nom de la cagnotte + ID ?
+            )
 
     transactions = [
         (
