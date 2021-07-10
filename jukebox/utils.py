@@ -22,7 +22,7 @@ def well_aligned_jukebox_tab(lst_sound, prefix="", suffix=""):
 
     if width > 2:
         return "\n".join(
-            f"{prefix}{tag : <{width})} || {sound.transcription}{suffix}"
+            f"{prefix}{tag : <{width}} || {sound.transcription}{suffix}"
             for sound, tag in zip(lst_sound, tags)
         )
     else:  # Si il n'y a que des sons sans aucun tag dans le tableau
