@@ -1,5 +1,6 @@
 import math
 import random
+from swag.db import Cagnotte, CagnotteInfo
 
 from arrow import Arrow
 
@@ -220,6 +221,38 @@ async def mini_forbes_swag(forbes_chunk, nbr_pages, guild, client):
     return f"```ini\n{content}\n```"
 
 
+async def mini_forbes_cagnottes(cagnottes_chunk, guild, client):
+    """Fonction utilisé pour la fonctionnalité du $wag
+        Appelé pour construire des parties de la liste des €agnottes dans le forbes
+
+    Args:
+        cagnottes_chunk (lst): sous-liste d'une partie des cagnottes
+        guild (Guild): Guilde où est affiché le classement
+
+    Returns:
+        String: message à envoyer pour visualiser une partie des €agnottes
+    """
+    cagnottes = [
+        (
+            f"€[{cagnotte.cagnotte_id}]",
+            f'"{cagnotte.cagnotte_name}"',
+            f"{cagnotte.cagnotte_balance} {cagnotte.cagnotte_currency}",
+        )
+        for cagnotte in cagnottes_chunk
+    ]
+    # Besoin de connaître l'id, le nom, le montant et la monnaie utilisé dans la €agnotte
+    # le plus long pour l'aligement de chaque colonne
+    col1 = max(len(id) for id, _, _ in cagnottes)
+    col2 = max(len(name) for _, name, _ in cagnottes)
+    col3 = max(len(balance) for _, _, balance in cagnottes)
+
+    content = "\n".join(
+        f"{id : <{col1}}\t" f"{name : <{col2}}\t" f"{balance : >{col3}}"
+        for _, (id, name, balance) in enumerate(cagnottes)
+    )
+    return f"```fix\n{content}\n```"
+
+
 async def update_the_style(client, swag_client):  # appelé toute les heures
     """Appelée de manière périodique en fonction des paramètres choisi
     dans la fonction "on_ready"
@@ -293,7 +326,7 @@ async def update_forbes_classement(guild, swag_client, client):
             le moment)
     """
 
-    personne_par_message = 15  # Chaque message du $wag forbes ne contient que 15 places
+    ligne_par_message = 15  # Chaque message du $wag forbes ne contient que 15 places
 
     # Récupération du canal #$wag-forbes
     channel_forbes = guild.get_channel(FORBES_CHANNEL_ID_BOBBYCRATIE)
@@ -301,12 +334,20 @@ async def update_forbes_classement(guild, swag_client, client):
     # Récupération du classement complet
     forbes = swag_client.swag_bank.get_forbes()
 
-    # Subdivision du dictionnaire en sous-liste de taille équitable
-    forbes_chunks = list(chunks(forbes, personne_par_message))
+    # Récupération de la liste des cagnottes
+    cagnottes = swag_client.swag_bank.get_all_active_cagnotte()
+
+    # Subdivision de la liste du classement en sous-liste de taille équitable
+    forbes_chunks = list(chunks(forbes, ligne_par_message))
+
+    # Subdivision de la liste des €agnotte
+    cagnottes_chunks = list(chunks(cagnottes, ligne_par_message))
 
     # Récupération du nombre de message nécessaire pour écrire tout le
-    # classement (c'est le nombre de sous-listes)
-    nbr_pages = math.ceil(len(forbes) / personne_par_message)
+    # forbes (c'est le nombre de sous-listes totaux)
+    nbr_pages_classement = math.ceil(len(forbes) / ligne_par_message)
+    nbr_pages_cagnottes = math.ceil(len(cagnottes) / ligne_par_message)
+    nbr_pages = nbr_pages_classement + nbr_pages_cagnottes
 
     # On compte le nombre de message posté dans le $wag forbes
     nbr_message_in_channel = 0
@@ -314,19 +355,38 @@ async def update_forbes_classement(guild, swag_client, client):
         nbr_message_in_channel += 1
 
     # Si le nombre de message du canal est plus petit que le nombre
-    # de messages nécessaire pour écrire le classement on en créé
+    # de messages nécessaire pour écrire le classement et les cagnottes on en créé
     for _ in range(nbr_pages - nbr_message_in_channel):
-        await channel_forbes.send("Nouvelle page de classement en cours d'écriture")
+        await channel_forbes.send("Nouvelle page du forbes en cours d'écriture")
 
-    # édition des messages pour mettre à jour le classement
-    cpt_message = 0
+    # édition des messages pour mettre à jour le forbes
+    cpt_message_classement = 0
+    cpt_message_cagnottes = 0
     async for message in channel_forbes.history(oldest_first=True):
-        await message.edit(
-            content=await mini_forbes_swag(
-                forbes_chunks[cpt_message], cpt_message + 1, guild, client
+
+        if (
+            cpt_message_classement < nbr_pages_classement
+        ):  # On écrit d'abord les €agnottes
+            await message.edit(
+                content=await mini_forbes_cagnottes(
+                    cagnottes_chunks[cpt_message_cagnottes],
+                    guild,
+                    client,
+                )
             )
-        )
-        cpt_message += 1
+            cpt_message_cagnottes += 1
+
+        else:  # Ensuite, le classement
+
+            await message.edit(
+                content=await mini_forbes_swag(
+                    forbes_chunks[cpt_message_classement],
+                    cpt_message_classement + 1,
+                    guild,
+                    client,
+                )
+            )
+            cpt_message_classement += 1
 
     # update des bonus de st$le
     swag_client.swag_bank.update_bonus_growth_rate()
