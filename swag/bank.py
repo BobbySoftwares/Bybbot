@@ -195,7 +195,7 @@ class SwagBank:
 
     def get_the_new_swaggest(self):
         for user in self.get_forbes():
-            return user.id
+            return user.discord_id
 
     def update_bonus_growth_rate(self):
         forbes = sorted(
