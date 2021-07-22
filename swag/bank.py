@@ -12,7 +12,7 @@ from .cauchy import roll
 from .errors import *
 
 from .db import SwagDB, Cagnotte
-from .transactions import TransactionType, concerns_user
+from .transactions import TransactionType, concerns_cagnotte, concerns_user
 
 SWAG_BASE = 1000
 SWAG_LUCK = 100000
@@ -329,7 +329,14 @@ class SwagBank:
             if cagnotte.cagnotte_activation == True
         ]
 
-    def donner_a_cagnotte(
+    def get_cagnotte_history(self, cagnotte_idx):
+        return [
+            transaction
+            for transaction in self.swagdb.blockchain
+            if concerns_cagnotte(cagnotte_idx, transaction)
+        ]
+
+    def payer_a_cagnotte(
         self, donator_account_discord_id: int, cagnotte_idx: int, montant
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
@@ -390,7 +397,7 @@ class SwagBank:
 
         self.transactional_save()
 
-    def recevoir_depuis_cagnotte(
+    def donner_depuis_cagnotte(
         self,
         cagnotte_idx: int,
         receiver_account_discord_id: int,
