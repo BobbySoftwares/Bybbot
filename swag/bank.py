@@ -1,10 +1,10 @@
 from arrow.parser import ParserError
 from arrow import now, utcnow
-from decimal import Decimal, ROUND_UP
+from decimal import Decimal, ROUND_DOWN, ROUND_UP
 from numpy import log1p
 from shutil import move
 from random import choice
-from math import ceil
+from math import floor
 
 from cbor2 import CBORDecodeEOF
 
@@ -315,12 +315,12 @@ class SwagBank:
         self.transactional_save()
 
     def get_active_cagnotte(self, cagnotte_idx) -> Cagnotte:
-        if cagnotte_idx > 0 or cagnotte_idx < self.swagdb.cagnotte_number:
+        if cagnotte_idx >= 0 and cagnotte_idx < self.swagdb.cagnotte_number():
             cagnotte = self.swagdb.get_cagnotte_from_index(cagnotte_idx)
             if cagnotte.cagnotte_activation == True:
                 return cagnotte
 
-        raise NoCagnotteRegistered
+        raise NoCagnotteRegistered(cagnotte_idx)
 
     def get_all_active_cagnotte(self):
         return [
@@ -353,16 +353,16 @@ class SwagBank:
                 self.get_account_info(donator_account_discord_id).swag_balance - montant
                 < 0
             ):
-                raise NotEnoughSwagInBalance
+                raise NotEnoughSwagInBalance(donator_account_discord_id)
 
             # Making the donation
             donator_account.swag_balance -= montant
-            cagnotte.cagnotte_montant += montant
+            cagnotte.cagnotte_balance += montant
 
         elif cagnotte.get_info().cagnotte_currency == "$tyle":
 
             # Check if the value of $tyle is correct regardless its propriety
-            if not isinstance(montant, (int, float)) or montant < 0:
+            if not isinstance(montant, (int, float, Decimal)) or montant < 0:
                 raise InvalidStyleValue
 
             # Check if the donator have enough $tyle:
@@ -373,8 +373,8 @@ class SwagBank:
             ):
                 raise NotEnoughStyleInBalance
 
-            donator_account.swag_balance -= montant
-            cagnotte.cagnotte_montant += montant
+            donator_account.style_balance -= montant
+            cagnotte.cagnotte_balance += montant
 
         # Write donation in the blockchain
         self.swagdb.blockchain.append(
@@ -407,11 +407,11 @@ class SwagBank:
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
         reciever_account = self.swagdb.get_account(receiver_account_discord_id)
 
-        if emiter_account_discord_id not in cagnotte.get_info().cagnotte_gestionnaire:
+        if emiter_account_discord_id not in cagnotte.get_info().cagnotte_manager:
             raise NotInGestionnaireGroupCagnotte
 
         # Check if the €agnotte have enough Money ($wag or $tyle):
-        if cagnotte.get_info().cagnotte_montant - montant < 0:
+        if cagnotte.get_info().cagnotte_balance - montant < 0:
             raise NotEnoughMoneyInCagnotte
 
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
@@ -423,16 +423,16 @@ class SwagBank:
 
             # Making the distribution
             reciever_account.swag_balance += montant
-            cagnotte.cagnotte_montant -= montant
+            cagnotte.cagnotte_balance -= montant
 
-        elif cagnotte.get_info().cagnotte_montant == "$tyle":
+        elif cagnotte.get_info().cagnotte_currency == "$tyle":
 
             # Check if the value of $tyle is correct regardless its propriety
-            if not isinstance(montant, (int, float)) or montant < 0:
+            if not isinstance(montant, (int, float, Decimal)) or montant < 0:
                 raise InvalidStyleValue
 
             reciever_account.style_balance += montant
-            cagnotte.cagnotte_montant -= montant
+            cagnotte.cagnotte_balance -= montant
 
             # Write distribution in the blockchain
         self.swagdb.blockchain.append(
@@ -462,10 +462,10 @@ class SwagBank:
         ):  # si la liste des participants est vide, alors par défaut, ce sont ceux qui on participé à la cagnotte qui vont être tiré au sort
             lst_of_participant = cagnotte.get_info().cagnotte_participant
 
-        gain = cagnotte.cagnotte_montant
+        gain = cagnotte.cagnotte_balance
         heureux_gagnant = choice(lst_of_participant)
 
-        self.recevoir_depuis_cagnotte(
+        self.donner_depuis_cagnotte(
             cagnotte_idx, heureux_gagnant, gain, emiter_account_discord_id
         )
 
@@ -479,21 +479,28 @@ class SwagBank:
         if (
             not lst_of_account
         ):  # Si la liste de compte est vide, tout les comptes de la bobbycratie seront pris par défaut
-            lst_of_account = self.swagdb.discord_id
+            lst_of_account = [
+                account.discord_id for account in self.swagdb.get_account_infos()
+            ]
 
-        gain_for_everyone = cagnotte.get_info().cagnotte_montant / len(lst_of_account)
+        gain_for_everyone = cagnotte.get_info().cagnotte_balance / len(lst_of_account)
 
         if cagnotte.get_info().cagnotte_currency == "$wag":
-            gain_for_everyone = ceil(gain_for_everyone)  # Le $wag est indivisible
+            gain_for_everyone = floor(gain_for_everyone)  # Le $wag est indivisible
+
+        if cagnotte.get_info().cagnotte_currency == "$tyle":
+            gain_for_everyone = Decimal(
+                cagnotte.get_info().cagnotte_balance / len(lst_of_account)
+            ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
 
         for account in lst_of_account:
-            self.recevoir_depuis_cagnotte(
+            self.donner_depuis_cagnotte(
                 cagnotte_idx, account, gain_for_everyone, emiter_account_discord_id
             )
 
         gagnant_miette, gain_miette = None, None
         if (
-            cagnotte.get_info().cagnotte_montant != 0
+            cagnotte.get_info().cagnotte_balance != 0
         ):  # si il reste de l'argent à redistribuer, on tire au sort celui qui gagne les miettes
             gagnant_miette, gain_miette = self.tirage_au_sort_cagnotte(
                 cagnotte_idx, lst_of_account, emiter_account_discord_id
@@ -504,19 +511,21 @@ class SwagBank:
     def detruire_cagnotte(self, cagnotte_idx: str, emiter_account_discord_id: int):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
 
-        if emiter_account_discord_id not in cagnotte.get_info().cagnotte_gestionnaire:
+        if emiter_account_discord_id not in cagnotte.get_info().cagnotte_manager:
             raise NotInGestionnaireGroupCagnotte
 
-        if cagnotte.get_info().cagnotte_montant != 0:
+        if cagnotte.get_info().cagnotte_balance != 0:
             raise DestructionOfNonEmptyCagnotte
 
         cagnotte.cagnotte_activation = False
+
+        self.transactional_save()
 
     def get_cagnotte_history(self, cagnotte_idx):
         return [
             transaction
             for transaction in self.swagdb.blockchain
-            if concerns_user(cagnotte_idx, transaction)
+            if concerns_cagnotte(cagnotte_idx, transaction)
         ]
 
 

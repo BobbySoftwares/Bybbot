@@ -143,13 +143,30 @@ async def mini_history_swag_message(
         elif transaction_type == TransactionType.DONATION:
             return (
                 await get_guild_member_name(
-                    swagbank.swagdb_get_account_from_index(
+                    swagbank.swagdb.get_account_from_index(
                         transaction_data[0]
                     ).discord_id,
                     message_user.guild,
                     client,
                 ),
-                transaction_data[1],  ##Mettre le nom de la cagnotte + ID ?
+                f"€{transaction_data[1]} "
+                f"{swagbank.swagdb.get_cagnotte_from_index(transaction_data[1]).get_info().cagnotte_name}",
+                format_number(transaction_data[2]),
+                transaction_data[3],
+            )
+        elif transaction_type == TransactionType.DISTRIBUTION:
+            return (
+                f"€{transaction_data[0]} "
+                f"{swagbank.swagdb.get_cagnotte_from_index(transaction_data[0]).get_info().cagnotte_name}",
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[1]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
+                format_number(transaction_data[2]),
+                transaction_data[3],
             )
 
     transactions = [
@@ -365,7 +382,7 @@ async def update_forbes_classement(guild, swag_client, client):
     async for message in channel_forbes.history(oldest_first=True):
 
         if (
-            cpt_message_classement < nbr_pages_classement
+            cpt_message_cagnottes < nbr_pages_cagnottes
         ):  # On écrit d'abord les €agnottes
             await message.edit(
                 content=await mini_forbes_cagnottes(

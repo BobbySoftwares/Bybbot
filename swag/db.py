@@ -254,54 +254,58 @@ class SwagAccount:
 class Cagnotte:
     def __init__(self, swagdb, cagnotte_id) -> None:
         self.swagdb = swagdb
-        self.id = cagnotte_id
+        self.cagnotte_id = cagnotte_id
 
     def get_info(self):
         return CagnotteInfo(self)
 
     @property
-    def cagnotte_id(self):
-        return self.swagdb.cagnotte_id[self.id]
+    def cagnotte_name(self):
+        return self.swagdb.cagnotte_name[self.cagnotte_id]
+
+    @cagnotte_name.setter
+    def cagnotte_name(self, value):
+        self.swagdb.cagnotte_name[self.cagnotte_id] = value
 
     @property
     def cagnotte_balance(self):
-        return self.swagdb.cagnotte_balance[self.id]
+        return self.swagdb.cagnotte_balance[self.cagnotte_id]
 
     @cagnotte_balance.setter
     def cagnotte_balance(self, value):
-        self.swagdb.cagnotte_balance[self.id] = value
+        self.swagdb.cagnotte_balance[self.cagnotte_id] = value
 
     @property
     def cagnotte_currency(self):
-        return self.swagdb.cagnotte_currency[self.id]
+        return self.swagdb.cagnotte_currency[self.cagnotte_id]
 
     @cagnotte_currency.setter
     def cagnotte_currency(self, value):
-        self.swagdb.cagnotte_currency[self.id] = value
+        self.swagdb.cagnotte_currency[self.cagnotte_id] = value
 
     @property
     def cagnotte_manager(self):
-        return self.swagdb.cagnotte_manager[self.id]
+        return self.swagdb.cagnotte_manager[self.cagnotte_id]
 
     @cagnotte_manager.setter
     def cagnotte_manager(self, value):
-        self.swagdb.cagnotte_manager[self.id] = value
+        self.swagdb.cagnotte_manager[self.cagnotte_id] = value
 
     @property
     def cagnotte_participant(self):
-        return self.swagdb.cagnotte_participant[self.id]
+        return self.swagdb.cagnotte_participant[self.cagnotte_id]
 
     @cagnotte_participant.setter
     def cagnotte_participant(self, value):
-        self.swagdb.cagnotte_participant[self.id] = value
+        self.swagdb.cagnotte_participant[self.cagnotte_id] = value
 
     @property
     def cagnotte_activation(self):
-        return self.swagdb.cagnotte_activation[self.id]
+        return self.swagdb.cagnotte_activation[self.cagnotte_id]
 
     @cagnotte_activation.setter
     def cagnotte_activation(self, value):
-        self.swagdb.cagnotte_activation[self.id] = value
+        self.swagdb.cagnotte_activation[self.cagnotte_id] = value
 
 
 class AccountInfo:
