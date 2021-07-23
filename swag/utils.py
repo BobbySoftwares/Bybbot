@@ -142,7 +142,7 @@ async def mini_history_swag_message(
 
     transactions = [
         (
-            str(Arrow.fromdatetime(t).to(timezone)),
+            str(Arrow.fromdatetime(t).to(timezone).strftime("%d/%m/%Y %H:%M")),
             *(await process_transaction(transaction_type, transaction_data)),
         )
         for (t, transaction_type, transaction_data) in chunk_transaction
