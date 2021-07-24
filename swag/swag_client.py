@@ -441,7 +441,7 @@ class SwagClient(Module):
             self.swag_bank.create_cagnotte(cagnotte_name, "$wag", message.author.id)
 
             cagnotte_id = (
-                self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info().cagnotte_id
+                self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info().id
             )
             await message.channel.send(
                 f"{message.author.mention} vient de créer une €agnotte de $tyle nommé **« {cagnotte_name} »**. "
@@ -460,7 +460,7 @@ class SwagClient(Module):
             self.swag_bank.create_cagnotte(cagnotte_name, "$wag", message.author.id)
 
             cagnotte_id = (
-                self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info().cagnotte_id
+                self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info().id
             )
             await message.channel.send(
                 f"{message.author.mention} vient de créer une €agnotte de $tyle nommé **« {cagnotte_name} »**. "
@@ -490,11 +490,11 @@ class SwagClient(Module):
             await message.channel.send(
                 f"Voici les informations de la €agnotte €{cagnotte_idx}\n"
                 "```\n"
-                f"Nom de €agnotte : {cagnotte_info.cagnotte_name}\n"
-                f"Type de €agnotte : {cagnotte_info.cagnotte_currency}\n"
-                f"Montant de la €agnotte : {cagnotte_info.cagnotte_balance} {cagnotte_info.cagnotte_currency}\n"
-                f"Gestionnaire de la €agnotte : {[await get_guild_member_name(manager,message.guild,self.client) for manager in cagnotte_info.cagnotte_manager]}\n"
-                f"Participants : {[await get_guild_member_name(participant,message.guild,self.client) for participant in cagnotte_info.cagnotte_participant]}\n"
+                f"Nom de €agnotte : {cagnotte_info.name}\n"
+                f"Type de €agnotte : {cagnotte_info.currency}\n"
+                f"Montant de la €agnotte : {cagnotte_info.balance} {cagnotte_info.currency}\n"
+                f"Gestionnaire de la €agnotte : {[await get_guild_member_name(manager,message.guild,self.client) for manager in cagnotte_info.manager]}\n"
+                f"Participants : {[await get_guild_member_name(participant,message.guild,self.client) for participant in cagnotte_info.participant]}\n"
                 "```"
             )
 
@@ -504,9 +504,7 @@ class SwagClient(Module):
 
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
             cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_name
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
             )
             history = list(reversed(self.swag_bank.get_cagnotte_history(cagnotte_idx)))
             await message.channel.send(
@@ -526,9 +524,7 @@ class SwagClient(Module):
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
 
             currency = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_currency
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().currency
             )
 
             if currency == "$wag":
@@ -556,9 +552,7 @@ class SwagClient(Module):
             self.swag_bank.payer_a_cagnotte(message.author.id, cagnotte_idx, value)
 
             cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_name
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
             )
             await message.channel.send(
                 "Transaction effectué avec succès ! \n"
@@ -583,9 +577,7 @@ class SwagClient(Module):
             destinataire = destinataire[0]
 
             currency = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_currency
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().currency
             )
 
             if currency == "$wag":
@@ -615,9 +607,7 @@ class SwagClient(Module):
             )
 
             cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_name
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
             )
             await message.channel.send(
                 "Transaction effectué avec succès ! \n"
@@ -633,11 +623,9 @@ class SwagClient(Module):
         elif "partager" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
             cagnotte_currency = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_currency
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().currency
             )
-            cagnotte_name = self.swag_bank.get_cagnotte_info(cagnotte_idx).cagnotte_name
+            cagnotte_name = self.swag_bank.get_cagnotte_info(cagnotte_idx).name
             participants_id = [participant.id for participant in message.mentions]
 
             (
@@ -691,14 +679,10 @@ class SwagClient(Module):
             )
 
             cagnotte_currency = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_currency
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().currency
             )
             cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_name
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
             )
 
             await message.channel.send(
@@ -711,9 +695,7 @@ class SwagClient(Module):
         elif "détruire" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
             cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx)
-                .get_info()
-                .cagnotte_name
+                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
             )
 
             self.swag_bank.detruire_cagnotte(cagnotte_idx, message.author.id)
