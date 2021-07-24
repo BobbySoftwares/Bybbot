@@ -10,4 +10,4 @@ class MaintenanceClient(Module):
         if message.content.startswith("!sudo") and message.author.id in self.admins:
             command = message.content.split()
             if "reboot" in command:
-                await self.client.logout()
+                await self.client.close()
