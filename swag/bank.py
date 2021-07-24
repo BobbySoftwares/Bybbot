@@ -405,7 +405,7 @@ class SwagBank:
         emiter_account_discord_id: int,
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
-        reciever_account = self.swagdb.get_account(receiver_account_discord_id)
+        receiver_account = self.swagdb.get_account(receiver_account_discord_id)
 
         if emiter_account_discord_id not in cagnotte.get_info().manager:
             raise NotInGestionnaireGroupCagnotte
@@ -422,7 +422,7 @@ class SwagBank:
                 raise InvalidSwagValue
 
             # Making the distribution
-            reciever_account.swag_balance += montant
+            receiver_account.swag_balance += montant
             cagnotte.balance -= montant
 
         elif cagnotte.get_info().currency == "$tyle":
@@ -431,7 +431,7 @@ class SwagBank:
             if not isinstance(montant, (int, float, Decimal)) or montant < 0:
                 raise InvalidStyleValue
 
-            reciever_account.style_balance += montant
+            receiver_account.style_balance += montant
             cagnotte.balance -= montant
 
             # Write distribution in the blockchain
@@ -441,7 +441,7 @@ class SwagBank:
                 TransactionType.DISTRIBUTION,
                 (
                     cagnotte.get_info().id,
-                    reciever_account.get_info().id,
+                    receiver_account.get_info().id,
                     montant,
                     cagnotte.get_info().currency,
                 ),
