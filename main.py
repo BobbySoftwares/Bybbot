@@ -37,7 +37,7 @@ async def on_ready():
     à jour du $tyle
     """
 
-    print("Le bot est loggué avec les id {0.user}".format(client))
+    print(f"Le bot est loggué avec les id {client.user}")
 
     for module in modules:
         await module.setup()
