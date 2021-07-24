@@ -149,18 +149,18 @@ class SwagClient(Module):
             )
         except NotEnoughMoneyInCagnotte:
             await message.channel.send(
-                f"{message.author.mention}, tu es entrain de demander à une €agnotte "
+                f"{message.author.mention}, tu es en train de demander à une €agnotte "
                 "une somme d'argent qu'elle n'a pas. Non mais tu n'as pas honte ? 😐"
             )
         except NotInGestionnaireGroupCagnotte:
             await message.channel.send(
-                f"{message.author.mention}, tu ne fais pas parti des gestionnaires "
+                f"{message.author.mention}, tu ne fais pas partie des gestionnaires "
                 "de cette €agnotte, tu ne peux donc pas distribuer son contenu 🤷‍♀️"
             )
         except DestructionOfNonEmptyCagnotte:
             await message.channel.send(
                 f"**Ligne 340 des conditions générales d'utilisations des €agnottes :**\n\n"
-                "*Il est formellement interdit de détruire une cagnotte qui n'est pas vidé "
+                "*Il est formellement interdit de détruire une cagnotte qui n'est pas vidée "
                 "de son contenu. C'est comme ça.*"
             )
 
@@ -435,7 +435,7 @@ class SwagClient(Module):
             cagnotte_name = " ".join(splited_command[3:])
             if len(cagnotte_name) == 0:
                 await message.channel.send(
-                    "Merci de mentionné un nom pour ta €agnotte."
+                    "Merci de mentionner un nom pour ta €agnotte."
                 )
                 return
             self.swag_bank.create_cagnotte(cagnotte_name, "$wag", message.author.id)
@@ -444,7 +444,7 @@ class SwagClient(Module):
                 self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info().id
             )
             await message.channel.send(
-                f"{message.author.mention} vient de créer une €agnotte de $tyle nommé **« {cagnotte_name} »**. "
+                f"{message.author.mention} vient de créer une €agnotte de $tyle nommée **« {cagnotte_name} »**. "
                 f"Son identifiant est le €{cagnotte_id}"
             )
 
@@ -454,7 +454,7 @@ class SwagClient(Module):
             cagnotte_name = " ".join(splited_command[3:])
             if len(cagnotte_name) == 0:
                 await message.channel.send(
-                    "Merci de mentionné un nom pour ta €agnotte."
+                    "Merci de mentionner un nom pour ta €agnotte."
                 )
                 return
             self.swag_bank.create_cagnotte(cagnotte_name, "$wag", message.author.id)
@@ -463,19 +463,19 @@ class SwagClient(Module):
                 self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info().id
             )
             await message.channel.send(
-                f"{message.author.mention} vient de créer une €agnotte de $tyle nommé **« {cagnotte_name} »**. "
+                f"{message.author.mention} vient de créer une €agnotte de $tyle nommée **« {cagnotte_name} »**. "
                 f"Son identifiant est le €{cagnotte_id}"
             )
             await update_forbes_classement(message.guild, self, self.client)
 
         elif "créer" in splited_command:
             await message.channel.send(
-                "Merci de mentionné le type de monnaie de la €agnotte "
+                "Merci de mentionner le type de monnaie de la €agnotte "
                 "après le mot clef **créer**"
             )
 
         elif set(splited_command).intersection(
-            {"info", "historique", "payer", "donner", "loto", "partager", "detruire"}
+            {"info", "historique", "payer", "donner", "loto", "partager", "détruire"}
         ) and all(
             "€" not in argument for argument in splited_command[1:]
         ):  # À partir d'ici, toute les commandes passe par l'identifiant de €agnotte (sous forme de €n)
@@ -555,7 +555,7 @@ class SwagClient(Module):
                 self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
             )
             await message.channel.send(
-                "Transaction effectué avec succès ! \n"
+                "Transaction effectuée avec succès ! \n"
                 "```ini\n"
                 f"[{message.author.display_name}\t"
                 f"{format_number(value)} {currency}\t"
@@ -610,7 +610,7 @@ class SwagClient(Module):
                 self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
             )
             await message.channel.send(
-                "Transaction effectué avec succès ! \n"
+                "Transaction effectuée avec succès ! \n"
                 "```ini\n"
                 f"[€{cagnotte_idx} {cagnotte_name}\t"
                 f"{format_number(value)} {currency}\t"
@@ -700,14 +700,14 @@ class SwagClient(Module):
 
             self.swag_bank.detruire_cagnotte(cagnotte_idx, message.author.id)
             await message.channel.send(
-                f"La €agnotte €{cagnotte_idx} *{cagnotte_name}* est maintenant détruite de ce plan de l'existance ❌"
+                f"La €agnotte €{cagnotte_idx} *{cagnotte_name}* est maintenant détruite de ce plan de l'existence ❌"
             )
             await update_forbes_classement(message.guild, self, self.client)
 
         else:
             await message.channel.send(
                 f"{message.author.mention}, tu as l'air perdu "
-                "(pourquoi ça ne m'étonne pas...) 🙄\nVoici les commandes "
+                "(c'est un peu normal, avec ces commandes pétées du cul...) 🙄\nVoici les commandes "
                 "que tu peux utiliser avec les €agnottes :\n"
                 "```HTTP\n"
                 "!€agnotte créer [$wag/$tyle] [Nom_de_la_€agnotte] ~~ "
@@ -728,5 +728,5 @@ class SwagClient(Module):
                 "l'ensemble des personnes ayant un compte\n"
                 "⭐!€agnotte détruire €[n] ~~ Détruit la €agnotte si elle est vide"
                 "```\n"
-                "*Seul le créateur de le Gestionnaire de la €agnotte peut faire les commandes précédées d'une  ⭐*"
+                "*Seul le gestionnaire de la €agnotte peut faire les commandes précédées d'une  ⭐*"
             )
