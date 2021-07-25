@@ -115,7 +115,7 @@ class SwagDB:
 
             self.cagnotte_currency.append(cagnotte_currency)
             self.cagnotte_manager.append([cagnotte_creator_id])
-            self.cagnotte_participant.append([])
+            self.cagnotte_participant.append(set())
             self.cagnotte_activation.append(True)
 
         else:

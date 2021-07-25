@@ -381,8 +381,7 @@ class SwagBank:
             )
         )
 
-        if donator_account_discord_id not in cagnotte.participant:
-            cagnotte.participant.append(donator_account_discord_id)
+        cagnotte.participant.append(donator_account_discord_id)
 
         self.transactional_save()
 
