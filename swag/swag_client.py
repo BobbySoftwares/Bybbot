@@ -440,12 +440,10 @@ class SwagClient(Module):
                 return
             self.swag_bank.create_cagnotte(cagnotte_name, "$wag", message.author.id)
 
-            cagnotte_id = (
-                self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info().id
-            )
+            cagnotte_info = self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info()
             await message.channel.send(
                 f"{message.author.mention} vient de créer une €agnotte de $tyle nommée **« {cagnotte_name} »**. "
-                f"Son identifiant est le €{cagnotte_id}"
+                f"Son identifiant est le €{cagnotte_info.id}"
             )
 
             await update_forbes_classement(message.guild, self, self.client)
@@ -459,12 +457,10 @@ class SwagClient(Module):
                 return
             self.swag_bank.create_cagnotte(cagnotte_name, "$wag", message.author.id)
 
-            cagnotte_id = (
-                self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info().id
-            )
+            cagnotte_info = self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info()
             await message.channel.send(
                 f"{message.author.mention} vient de créer une €agnotte de $tyle nommée **« {cagnotte_name} »**. "
-                f"Son identifiant est le €{cagnotte_id}"
+                f"Son identifiant est le €{cagnotte_info.id}"
             )
             await update_forbes_classement(message.guild, self, self.client)
 
@@ -503,12 +499,11 @@ class SwagClient(Module):
             user_account = self.swag_bank.get_account_info(user.id)
 
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
-            cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
-            )
             history = list(reversed(self.swag_bank.get_cagnotte_history(cagnotte_idx)))
+
+            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
             await message.channel.send(
-                f"{message.author.mention}, voici l'historique de tes transactions de la cagnotte **{cagnotte_name}** :\n"
+                f"{message.author.mention}, voici l'historique de tes transactions de la cagnotte **{cagnotte_info.name}** :\n"
             )
             await reaction_message_building(
                 self.client,
@@ -522,12 +517,9 @@ class SwagClient(Module):
         elif "payer" in splited_command:
 
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
+            cagnotte = self.swag_bank.get_active_cagnotte(cagnotte_idx)
 
-            currency = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().currency
-            )
-
-            if currency == "$wag":
+            if cagnotte.currency == "$wag":
                 try:
                     value = int(
                         "".join(
@@ -537,7 +529,7 @@ class SwagClient(Module):
                 except ValueError:
                     raise InvalidSwagValue
 
-            elif currency == "$tyle":
+            elif cagnotte.currencycurrency == "$tyle":
                 try:
                     value = Decimal(
                         "".join(
@@ -551,22 +543,20 @@ class SwagClient(Module):
 
             self.swag_bank.pay_to_cagnotte(message.author.id, cagnotte_idx, value)
 
-            cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
-            )
+            cagnotte_info = cagnotte.get_info()
             await message.channel.send(
                 "Transaction effectuée avec succès ! \n"
                 "```ini\n"
                 f"[{message.author.display_name}\t"
-                f"{format_number(value)} {currency}\t"
-                f"-->\t€{cagnotte_idx} {cagnotte_name}]\n"
+                f"{format_number(value)} {cagnotte_info.currency}\t"
+                f"-->\t€{cagnotte_idx} {cagnotte_info.name}]\n"
                 "```"
             )
             await update_forbes_classement(message.guild, self, self.client)
 
         elif "donner" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
-
+            cagnotte = self.swag_bank.get_active_cagnotte(cagnotte_idx)
             destinataire = message.mentions
             if len(destinataire) != 1:
                 await message.channel.send(
@@ -576,11 +566,7 @@ class SwagClient(Module):
                 return
             destinataire = destinataire[0]
 
-            currency = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().currency
-            )
-
-            if currency == "$wag":
+            if cagnotte.currency == "$wag":
                 try:
                     value = int(
                         "".join(
@@ -590,7 +576,7 @@ class SwagClient(Module):
                 except ValueError:
                     raise InvalidSwagValue
 
-            elif currency == "$tyle":
+            elif cagnotte.currency == "$tyle":
                 try:
                     value = Decimal(
                         "".join(
@@ -606,14 +592,12 @@ class SwagClient(Module):
                 cagnotte_idx, destinataire.id, value, message.author.id
             )
 
-            cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
-            )
+            cagnotte_info = cagnotte.get_info()
             await message.channel.send(
                 "Transaction effectuée avec succès ! \n"
                 "```ini\n"
-                f"[€{cagnotte_idx} {cagnotte_name}\t"
-                f"{format_number(value)} {currency}\t"
+                f"[€{cagnotte_idx} {cagnotte_info.name}\t"
+                f"{format_number(value)} {cagnotte_info.currency}\t"
                 f"-->\t{destinataire.display_name}]\n"
                 "```"
             )
@@ -622,10 +606,6 @@ class SwagClient(Module):
 
         elif "partager" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
-            cagnotte_currency = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().currency
-            )
-            cagnotte_name = self.swag_bank.get_cagnotte_info(cagnotte_idx).name
             participants_id = [participant.id for participant in message.mentions]
 
             (
@@ -651,9 +631,10 @@ class SwagClient(Module):
 
             participants_mention = ", ".join(participants_str)
 
+            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
             await message.channel.send(
-                f"{participants_mention} vous avez chacun récupéré `{gain} {cagnotte_currency}`"
-                f" de la cagnotte **{cagnotte_name}** 💸"
+                f"{participants_mention} vous avez chacun récupéré `{gain} {cagnotte_info.currency}`"
+                f" de la cagnotte **{cagnotte_info.name}** 💸"
             )
 
             if gagnant_miette != None:
@@ -678,29 +659,21 @@ class SwagClient(Module):
                 cagnotte_idx, participants_id, message.author.id
             )
 
-            cagnotte_currency = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().currency
-            )
-            cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
-            )
-
+            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
             await message.channel.send(
                 f"{message.guild.get_member(gagnant).mention} vient de gagner l'intégralité de la €agnotte "
-                f"€{cagnotte_idx} *{cagnotte_name}*, à savoir `{gain} {cagnotte_currency}` ! 🎰"
+                f"€{cagnotte_idx} *{cagnotte_info.name}*, à savoir `{gain} {cagnotte_info.currency}` ! 🎰"
             )
 
             await update_forbes_classement(message.guild, self, self.client)
 
         elif "détruire" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
-            cagnotte_name = (
-                self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
-            )
 
+            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
             self.swag_bank.destroy_cagnotte(cagnotte_idx, message.author.id)
             await message.channel.send(
-                f"La €agnotte €{cagnotte_idx} *{cagnotte_name}* est maintenant détruite de ce plan de l'existence ❌"
+                f"La €agnotte €{cagnotte_idx} *{cagnotte_info.name}* est maintenant détruite de ce plan de l'existence ❌"
             )
             await update_forbes_classement(message.guild, self, self.client)
 

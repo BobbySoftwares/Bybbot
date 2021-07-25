@@ -340,34 +340,28 @@ class SwagBank:
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
         donator_account = self.swagdb.get_account(donator_account_discord_id)
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
-        if cagnotte.get_info().currency == "$wag":
+        if cagnotte.currency == "$wag":
 
             # Check if the value of $wag is correct regardless its propriety
             if not isinstance(montant, int) or montant < 0:
                 raise InvalidSwagValue
 
             # Check if the donator have enough $wag:
-            if (
-                self.get_account_info(donator_account_discord_id).swag_balance - montant
-                < 0
-            ):
+            if donator_account.swag_balance < montant:
                 raise NotEnoughSwagInBalance(donator_account_discord_id)
 
             # Making the donation
             donator_account.swag_balance -= montant
             cagnotte.balance += montant
 
-        elif cagnotte.get_info().currency == "$tyle":
+        elif cagnotte.currency == "$tyle":
 
             # Check if the value of $tyle is correct regardless its propriety
             if not isinstance(montant, (int, float, Decimal)) or montant < 0:
                 raise InvalidStyleValue
 
             # Check if the donator have enough $tyle:
-            if (
-                self.get_account_info(donator_account_discord_id).style_balance
-                < montant
-            ):
+            if donator_account.style_balance < montant:
                 raise NotEnoughStyleInBalance
 
             donator_account.style_balance -= montant
@@ -379,18 +373,16 @@ class SwagBank:
                 utcnow().datetime,
                 TransactionType.DONATION,
                 (
-                    donator_account.get_info().id,
-                    cagnotte.get_info().id,
+                    donator_account.id,
+                    cagnotte.id,
                     montant,
-                    cagnotte.get_info().currency,
+                    cagnotte.currency,
                 ),
             )
         )
 
-        if donator_account_discord_id not in cagnotte.get_info().participant:
-            cagnotte.participant.append(
-                donator_account_discord_id
-            )  # TODO voir si ça marche
+        if donator_account_discord_id not in cagnotte.participant:
+            cagnotte.participant.append(donator_account_discord_id)
 
         self.transactional_save()
 
@@ -404,15 +396,15 @@ class SwagBank:
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
         receiver_account = self.swagdb.get_account(receiver_account_discord_id)
 
-        if emiter_account_discord_id not in cagnotte.get_info().manager:
+        if emiter_account_discord_id not in cagnotte.manager:
             raise NotInManagerGroupCagnotte
 
         # Check if the €agnotte have enough Money ($wag or $tyle):
-        if cagnotte.get_info().balance - montant < 0:
+        if cagnotte.balance < montant:
             raise NotEnoughMoneyInCagnotte
 
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
-        if cagnotte.get_info().currency == "$wag":
+        if cagnotte.currency == "$wag":
 
             # Check if the value of $wag is correct regardless its propriety
             if not isinstance(montant, int) or montant < 0:
@@ -422,7 +414,7 @@ class SwagBank:
             receiver_account.swag_balance += montant
             cagnotte.balance -= montant
 
-        elif cagnotte.get_info().currency == "$tyle":
+        elif cagnotte.currency == "$tyle":
 
             # Check if the value of $tyle is correct regardless its propriety
             if not isinstance(montant, (int, float, Decimal)) or montant < 0:
@@ -437,10 +429,10 @@ class SwagBank:
                 utcnow().datetime,
                 TransactionType.DISTRIBUTION,
                 (
-                    cagnotte.get_info().id,
-                    receiver_account.get_info().id,
+                    cagnotte.id,
+                    receiver_account.id,
                     montant,
-                    cagnotte.get_info().currency,
+                    cagnotte.currency,
                 ),
             )
         )
@@ -456,7 +448,7 @@ class SwagBank:
 
         # si la liste des participants est vide, alors par défaut, ce sont ceux qui on participé à la cagnotte qui vont être tiré au sort
         if not lst_of_participant:
-            lst_of_participant = cagnotte.get_info().participant
+            lst_of_participant = cagnotte.participant
 
         gain = cagnotte.balance
         gagnant = choice(lst_of_participant)
@@ -479,14 +471,14 @@ class SwagBank:
                 account.discord_id for account in self.swagdb.get_account_infos()
             ]
 
-        gain_for_everyone = cagnotte.get_info().balance / len(lst_of_account)
+        gain_for_everyone = cagnotte.balance / len(lst_of_account)
 
-        if cagnotte.get_info().currency == "$wag":
+        if cagnotte.currency == "$wag":
             gain_for_everyone = floor(gain_for_everyone)  # Le $wag est indivisible
 
-        if cagnotte.get_info().currency == "$tyle":
+        if cagnotte.currency == "$tyle":
             gain_for_everyone = Decimal(
-                cagnotte.get_info().balance / len(lst_of_account)
+                cagnotte.balance / len(lst_of_account)
             ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
 
         for account in lst_of_account:
@@ -495,9 +487,8 @@ class SwagBank:
             )
 
         gagnant_miette, gain_miette = None, None
-        if (
-            cagnotte.get_info().balance != 0
-        ):  # si il reste de l'argent à redistribuer, on tire au sort celui qui gagne les miettes
+        # si il reste de l'argent à redistribuer, on tire au sort celui qui gagne les miettes
+        if cagnotte.balance != 0:
             gagnant_miette, gain_miette = self.lottery_cagnotte(
                 cagnotte_idx, lst_of_account, emiter_account_discord_id
             )
@@ -507,10 +498,10 @@ class SwagBank:
     def destroy_cagnotte(self, cagnotte_idx: int, emiter_account_discord_id: int):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
 
-        if emiter_account_discord_id not in cagnotte.get_info().manager:
+        if emiter_account_discord_id not in cagnotte.manager:
             raise NotInManagerGroupCagnotte
 
-        if cagnotte.get_info().balance != 0:
+        if cagnotte.balance != 0:
             raise ForbiddenDestructionOfCagnotte
 
         cagnotte.is_active = False
