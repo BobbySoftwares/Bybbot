@@ -324,7 +324,7 @@ class SwagBank:
         return [
             cagnotte
             for cagnotte in self.swagdb.get_cagnotte_infos()
-            if cagnotte.activation == True
+            if cagnotte.is_active
         ]
 
     def get_cagnotte_history(self, cagnotte_idx):
@@ -366,8 +366,7 @@ class SwagBank:
             # Check if the donator have enough $tyle:
             if (
                 self.get_account_info(donator_account_discord_id).style_balance
-                - montant
-                < 0
+                < montant
             ):
                 raise NotEnoughStyleInBalance
 
@@ -455,9 +454,8 @@ class SwagBank:
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
 
-        if (
-            not lst_of_participant
-        ):  # si la liste des participants est vide, alors par défaut, ce sont ceux qui on participé à la cagnotte qui vont être tiré au sort
+        # si la liste des participants est vide, alors par défaut, ce sont ceux qui on participé à la cagnotte qui vont être tiré au sort
+        if not lst_of_participant:
             lst_of_participant = cagnotte.get_info().participant
 
         gain = cagnotte.balance

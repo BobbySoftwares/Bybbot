@@ -336,4 +336,4 @@ class CagnotteInfo:
         self.currency = cagnotte.currency
         self.manager = cagnotte.manager
         self.participant = cagnotte.participant
-        self.activation = cagnotte.activation
+        self.is_active = cagnotte.is_active
