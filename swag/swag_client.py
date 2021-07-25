@@ -136,20 +136,15 @@ class SwagClient(Module):
                 f"Aucune €agnotte n°€{e.name} est active dans la $wagBank ! "
                 f"{message.author.mention}, tu t'es sans doute trompé de numéro 🤨"
             )
-        except NoCagnotteIdxInCommand as e:
-            await message.channel.send(
-                "Aucun numéro de cagnotte n'est mentionné avec la forme €n (ex : €1)"
-                f"dans ta commande {message.author.mention}. 🤔"
-            )
         except CagnotteNameAlreadyExist:
             await message.channel.send(
                 f"{message.author.mention}, une €agnotte porte déjà ce nom ! "
                 "Je te conseille de choisir un autre nom avant que tout le monde "
                 "soit complètement duper 🤦‍♂️"
             )
-        except NotEnoughMoneyInCagnotte:
+        except NotEnoughMoneyInCagnotte as e:
             await message.channel.send(
-                f"{message.author.mention}, tu es en train de demander à une €agnotte "
+                f"{message.author.mention}, tu es en train de demander à la €agnotte €{e.id} "
                 "une somme d'argent qu'elle n'a pas. Non mais tu n'as pas honte ? 😐"
             )
         except NotInManagerGroupCagnotte:
@@ -646,7 +641,7 @@ class SwagClient(Module):
                 else:
                     user_gagnant = user.mention
                 await message.channel.send(
-                    f"{user_gagnant} récupère les `{miette} {cagnotte_currency}` restants ! 🤑"
+                    f"{user_gagnant} récupère les `{miette} {cagnotte_info.currency}` restants ! 🤑"
                 )
 
             await update_forbes_classement(message.guild, self, self.client)

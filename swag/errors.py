@@ -73,12 +73,6 @@ class TimeZoneFieldLocked(Exception):
 ##Exception for €agnottes
 
 
-class NoCagnotteIdxInCommand(Exception):
-    """Raised when a user use a cagnotte command without specify a cagnotte idx with an €"""
-
-    pass
-
-
 class NoCagnotteRegistered(Exception):
     """Raised when the cagnotte name or id is not present in the Swagbank"""
 
@@ -99,7 +93,10 @@ class CagnotteNameAlreadyExist(Exception):
 class NotEnoughMoneyInCagnotte(Exception):
     """Raised when a Cagnotte should have a negative value of $wag or $tyle"""
 
-    pass
+    def __init__(self, cagnotte_id):
+        self.id = cagnotte_id
+        message = f"La €agnotte {cagnotte_id} n'a pas assez d'argent pour faire la transaction demandé"
+        super().__init__(message)
 
 
 class NotInManagerGroupCagnotte(Exception):

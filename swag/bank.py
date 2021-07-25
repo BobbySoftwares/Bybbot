@@ -400,7 +400,7 @@ class SwagBank:
 
         # Check if the €agnotte have enough Money ($wag or $tyle):
         if cagnotte.balance < montant:
-            raise NotEnoughMoneyInCagnotte
+            raise NotEnoughMoneyInCagnotte(cagnotte.id)
 
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
         if cagnotte.currency == "$wag":
