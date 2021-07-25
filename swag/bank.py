@@ -336,7 +336,7 @@ class SwagBank:
         ]
 
     def pay_to_cagnotte(
-        self, donator_account_discord_id: int, cagnotte_idx: int, montant
+        self, donator_account_discord_id: int, cagnotte_idx: int, amount
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
         donator_account = self.swagdb.get_account(donator_account_discord_id)
@@ -344,29 +344,29 @@ class SwagBank:
         if cagnotte.currency == "$wag":
 
             # Check if the value of $wag is correct regardless its propriety
-            if not isinstance(montant, int) or montant < 0:
+            if not isinstance(amount, int) or amount < 0:
                 raise InvalidSwagValue
 
             # Check if the donator have enough $wag:
-            if donator_account.swag_balance < montant:
+            if donator_account.swag_balance < amount:
                 raise NotEnoughSwagInBalance(donator_account_discord_id)
 
             # Making the donation
-            donator_account.swag_balance -= montant
-            cagnotte.balance += montant
+            donator_account.swag_balance -= amount
+            cagnotte.balance += amount
 
         elif cagnotte.currency == "$tyle":
 
             # Check if the value of $tyle is correct regardless its propriety
-            if not isinstance(montant, (int, float, Decimal)) or montant < 0:
+            if not isinstance(amount, (int, float, Decimal)) or amount < 0:
                 raise InvalidStyleValue
 
             # Check if the donator have enough $tyle:
-            if donator_account.style_balance < montant:
+            if donator_account.style_balance < amount:
                 raise NotEnoughStyleInBalance
 
-            donator_account.style_balance -= montant
-            cagnotte.balance += montant
+            donator_account.style_balance -= amount
+            cagnotte.balance += amount
 
         # Write donation in the blockchain
         self.swagdb.blockchain.append(
@@ -376,13 +376,13 @@ class SwagBank:
                 (
                     donator_account.id,
                     cagnotte.id,
-                    montant,
+                    amount,
                     cagnotte.currency,
                 ),
             )
         )
 
-        cagnotte.participant.append(donator_account_discord_id)
+        cagnotte.participant.add(donator_account_discord_id)
 
         self.transactional_save()
 
@@ -390,7 +390,7 @@ class SwagBank:
         self,
         cagnotte_idx: int,
         receiver_account_discord_id: int,
-        montant,
+        amount,
         emiter_account_discord_id: int,
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
@@ -400,28 +400,28 @@ class SwagBank:
             raise NotInManagerGroupCagnotte
 
         # Check if the €agnotte have enough Money ($wag or $tyle):
-        if cagnotte.balance < montant:
+        if cagnotte.balance < amount:
             raise NotEnoughMoneyInCagnotte(cagnotte.id)
 
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
         if cagnotte.currency == "$wag":
 
             # Check if the value of $wag is correct regardless its propriety
-            if not isinstance(montant, int) or montant < 0:
+            if not isinstance(amount, int) or amount < 0:
                 raise InvalidSwagValue
 
             # Making the distribution
-            receiver_account.swag_balance += montant
-            cagnotte.balance -= montant
+            receiver_account.swag_balance += amount
+            cagnotte.balance -= amount
 
         elif cagnotte.currency == "$tyle":
 
             # Check if the value of $tyle is correct regardless its propriety
-            if not isinstance(montant, (int, float, Decimal)) or montant < 0:
+            if not isinstance(amount, (int, float, Decimal)) or amount < 0:
                 raise InvalidStyleValue
 
-            receiver_account.style_balance += montant
-            cagnotte.balance -= montant
+            receiver_account.style_balance += amount
+            cagnotte.balance -= amount
 
             # Write distribution in the blockchain
         self.swagdb.blockchain.append(
@@ -431,7 +431,7 @@ class SwagBank:
                 (
                     cagnotte.id,
                     receiver_account.id,
-                    montant,
+                    amount,
                     cagnotte.currency,
                 ),
             )
