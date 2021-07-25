@@ -150,14 +150,14 @@ async def mini_history_swag_message(
                     client,
                 ),
                 f"€{transaction_data[1]} "
-                f"{swagbank.swagdb.get_cagnotte_from_index(transaction_data[1]).get_info().cagnotte_name}",
+                f"{swagbank.swagdb.get_cagnotte_from_index(transaction_data[1]).get_info().name}",
                 format_number(transaction_data[2]),
                 transaction_data[3],
             )
         elif transaction_type == TransactionType.DISTRIBUTION:
             return (
                 f"€{transaction_data[0]} "
-                f"{swagbank.swagdb.get_cagnotte_from_index(transaction_data[0]).get_info().cagnotte_name}",
+                f"{swagbank.swagdb.get_cagnotte_from_index(transaction_data[0]).get_info().name}",
                 await get_guild_member_name(
                     swagbank.swagdb.get_account_from_index(
                         transaction_data[1]
@@ -251,9 +251,9 @@ async def mini_forbes_cagnottes(cagnottes_chunk, guild, client):
     """
     cagnottes = [
         (
-            f"€[{cagnotte.cagnotte_id}]",
-            f'"{cagnotte.cagnotte_name}"',
-            f"{cagnotte.cagnotte_balance} {cagnotte.cagnotte_currency}",
+            f"€[{cagnotte.id}]",
+            f'"{cagnotte.name}"',
+            f"{format_number(cagnotte.balance)} {cagnotte.currency}",
         )
         for cagnotte in cagnottes_chunk
     ]
