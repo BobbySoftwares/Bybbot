@@ -12,7 +12,7 @@ from cbor2 import CBORDecodeEOF
 from .cauchy import roll
 from .errors import *
 
-from .db import SwagDB, Cagnotte
+from .db import Currency, SwagDB, Cagnotte
 from .transactions import TransactionType, concerns_cagnotte, concerns_user
 
 SWAG_BASE = 1000
@@ -311,7 +311,7 @@ class SwagBank:
 
     ## Ajout des fonctions des cagnottes
 
-    def create_cagnotte(self, cagnotte_name: str, currency: str, creator_id: int):
+    def create_cagnotte(self, cagnotte_name: str, currency: Currency, creator_id: int):
         self.swagdb.add_cagnotte(cagnotte_name, currency, creator_id)
         self.transactional_save()
 
@@ -341,7 +341,7 @@ class SwagBank:
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
         donator_account = self.swagdb.get_account(donator_account_discord_id)
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
-        if cagnotte.currency == "$wag":
+        if cagnotte.currency == Currency.SWAG:
 
             # Check if the value of $wag is correct regardless its propriety
             if not isinstance(amount, int) or amount < 0:
@@ -355,7 +355,7 @@ class SwagBank:
             donator_account.swag_balance -= amount
             cagnotte.balance += amount
 
-        elif cagnotte.currency == "$tyle":
+        elif cagnotte.currency == Currency.STYLE:
 
             # Check if the value of $tyle is correct regardless its propriety
             if not isinstance(amount, (int, float, Decimal)) or amount < 0:
@@ -404,7 +404,7 @@ class SwagBank:
             raise NotEnoughMoneyInCagnotte(cagnotte.id)
 
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
-        if cagnotte.currency == "$wag":
+        if cagnotte.currency == Currency.SWAG:
 
             # Check if the value of $wag is correct regardless its propriety
             if not isinstance(amount, int) or amount < 0:
@@ -414,7 +414,7 @@ class SwagBank:
             receiver_account.swag_balance += amount
             cagnotte.balance -= amount
 
-        elif cagnotte.currency == "$tyle":
+        elif cagnotte.currency == Currency.STYLE:
 
             # Check if the value of $tyle is correct regardless its propriety
             if not isinstance(amount, (int, float, Decimal)) or amount < 0:
@@ -473,10 +473,10 @@ class SwagBank:
 
         gain_for_everyone = cagnotte.balance / len(lst_of_account)
 
-        if cagnotte.currency == "$wag":
+        if cagnotte.currency == Currency.SWAG:
             gain_for_everyone = int(gain_for_everyone)  # Le $wag est indivisible
 
-        if cagnotte.currency == "$tyle":
+        if cagnotte.currency == Currency.STYLE:
             gain_for_everyone = (cagnotte.balance / len(lst_of_account)).quantize(
                 Decimal(".0001"), rounding=ROUND_DOWN
             )

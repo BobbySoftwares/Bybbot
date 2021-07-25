@@ -1,6 +1,6 @@
 import math
 import random
-from .db import Cagnotte, CagnotteInfo
+from .db import Cagnotte, CagnotteInfo, Currency
 
 from arrow import Arrow
 
@@ -187,7 +187,7 @@ async def mini_history_swag_message(
     # Écriture du message
     content = "\n".join(
         f"[{timestamp} \t{giver : <{col1}}\t-->\t{recipient : <{col2}}\t"
-        f"{amount : <{col3}} {currency}]"
+        f"{amount : <{col3}} {currency_to_str(currency)}]"
         for timestamp, giver, recipient, amount, currency in transactions
     )
     return (
@@ -253,19 +253,26 @@ async def mini_forbes_cagnottes(cagnottes_chunk, guild, client):
         (
             f"€[{cagnotte.id}]",
             f'"{cagnotte.name}"',
-            f"{format_number(cagnotte.balance)} {cagnotte.currency}",
+            f"{format_number(cagnotte.balance)}",
+            f"{currency_to_str(cagnotte.currency)}",
+            f"👑 {await get_guild_member_name(cagnotte.manager[0],guild,client)}",
         )
         for cagnotte in cagnottes_chunk
     ]
     # Besoin de connaître l'id, le nom, le montant et la monnaie utilisé dans la €agnotte
     # le plus long pour l'aligement de chaque colonne
-    col1 = max(len(id) for id, _, _ in cagnottes)
-    col2 = max(len(name) for _, name, _ in cagnottes)
-    col3 = max(len(balance) for _, _, balance in cagnottes)
+    col1 = max(len(id) for id, _, _, _, _ in cagnottes)
+    col2 = max(len(name) for _, name, _, _, _ in cagnottes)
+    col3 = max(len(balance) for _, _, balance, _, _ in cagnottes)
+    col4 = max(len(currency) for _, _, _, currency, _ in cagnottes)
+    col5 = max(len(manager) for _, _, _, _, manager in cagnottes)
 
     content = "\n".join(
-        f"{id : <{col1}}\t" f"{name : <{col2}}\t" f"{balance : >{col3}}"
-        for _, (id, name, balance) in enumerate(cagnottes)
+        f"{id : <{col1}}\t"
+        f"{name : <{col2}}\t"
+        f"{balance : >{col3}} {currency : <{col4}}\t"
+        f"{manager : <{col5}}"
+        for _, (id, name, balance, currency, manager) in enumerate(cagnottes)
     )
     return f"```fix\n{content}\n```"
 
@@ -409,6 +416,13 @@ async def update_forbes_classement(guild, swag_client, client):
     swag_client.swag_bank.update_bonus_growth_rate()
     # update du rôle du "Bobby $wag"
     await update_the_swaggest(guild, swag_client)
+
+
+def currency_to_str(enum_currency: Currency):
+    if enum_currency == 0:
+        return "$wag"
+    elif enum_currency == 1:
+        return "$tyle"
 
 
 def forbes_medal(rank):

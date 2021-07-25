@@ -2,8 +2,14 @@ import cbor2
 from decimal import Decimal
 from arrow import utcnow
 from os import remove
+from enum import IntEnum
 
 from .errors import *
+
+
+class Currency(IntEnum):
+    SWAG = 0
+    STYLE = 1
 
 
 class SwagDB:
@@ -108,9 +114,9 @@ class SwagDB:
             self.next_cagnotte_id += 1
 
             self.cagnotte_name.append(cagnotte_name)
-            if cagnotte_currency == "$wag":
+            if cagnotte_currency == Currency.SWAG:
                 self.cagnotte_balance.append(0)
-            elif cagnotte_currency == "$tyle":
+            elif cagnotte_currency == Currency.STYLE:
                 self.cagnotte_balance.append(Decimal(0))
 
             self.cagnotte_currency.append(cagnotte_currency)
