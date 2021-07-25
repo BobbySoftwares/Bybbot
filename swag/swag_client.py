@@ -1,7 +1,6 @@
 from swag.errors import (
     CagnotteNameAlreadyExist,
     ForbiddenDestructionOfCagnotte,
-    NoCagnotteIdxInCommand,
     NoCagnotteRegistered,
     NotEnoughMoneyInCagnotte,
     NotInManagerGroupCagnotte,
