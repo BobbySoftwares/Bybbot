@@ -1,10 +1,10 @@
 from swag.errors import (
     CagnotteNameAlreadyExist,
-    DestructionOfNonEmptyCagnotte,
+    ForbiddenDestructionOfCagnotte,
     NoCagnotteIdxInCommand,
     NoCagnotteRegistered,
     NotEnoughMoneyInCagnotte,
-    NotInGestionnaireGroupCagnotte,
+    NotInManagerGroupCagnotte,
 )
 from apscheduler.triggers.cron import CronTrigger
 from decimal import Decimal, ROUND_DOWN
@@ -152,12 +152,12 @@ class SwagClient(Module):
                 f"{message.author.mention}, tu es en train de demander à une €agnotte "
                 "une somme d'argent qu'elle n'a pas. Non mais tu n'as pas honte ? 😐"
             )
-        except NotInGestionnaireGroupCagnotte:
+        except NotInManagerGroupCagnotte:
             await message.channel.send(
                 f"{message.author.mention}, tu ne fais pas partie des gestionnaires "
                 "de cette €agnotte, tu ne peux donc pas distribuer son contenu 🤷‍♀️"
             )
-        except DestructionOfNonEmptyCagnotte:
+        except ForbiddenDestructionOfCagnotte:
             await message.channel.send(
                 f"**Ligne 340 des conditions générales d'utilisations des €agnottes :**\n\n"
                 "*Il est formellement interdit de détruire une cagnotte qui n'est pas vidée "
@@ -549,7 +549,7 @@ class SwagClient(Module):
                 except ValueError:
                     raise InvalidStyleValue
 
-            self.swag_bank.payer_a_cagnotte(message.author.id, cagnotte_idx, value)
+            self.swag_bank.pay_to_cagnotte(message.author.id, cagnotte_idx, value)
 
             cagnotte_name = (
                 self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
@@ -602,7 +602,7 @@ class SwagClient(Module):
                 except ValueError:
                     raise InvalidStyleValue
 
-            self.swag_bank.donner_depuis_cagnotte(
+            self.swag_bank.receive_from_cagnotte(
                 cagnotte_idx, destinataire.id, value, message.author.id
             )
 
@@ -633,7 +633,7 @@ class SwagClient(Module):
                 gain,
                 gagnant_miette,
                 miette,
-            ) = self.swag_bank.partage_cagnotte(
+            ) = self.swag_bank.share_cagnotte(
                 cagnotte_idx, participants_id, message.author.id
             )
 
@@ -674,7 +674,7 @@ class SwagClient(Module):
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
             participants_id = [participant.id for participant in message.mentions]
 
-            gagnant, gain = self.swag_bank.tirage_au_sort_cagnotte(
+            gagnant, gain = self.swag_bank.lottery_cagnotte(
                 cagnotte_idx, participants_id, message.author.id
             )
 
@@ -698,7 +698,7 @@ class SwagClient(Module):
                 self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info().name
             )
 
-            self.swag_bank.detruire_cagnotte(cagnotte_idx, message.author.id)
+            self.swag_bank.destroy_cagnotte(cagnotte_idx, message.author.id)
             await message.channel.send(
                 f"La €agnotte €{cagnotte_idx} *{cagnotte_name}* est maintenant détruite de ce plan de l'existence ❌"
             )

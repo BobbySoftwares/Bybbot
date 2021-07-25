@@ -102,13 +102,13 @@ class NotEnoughMoneyInCagnotte(Exception):
     pass
 
 
-class NotInGestionnaireGroupCagnotte(Exception):
+class NotInManagerGroupCagnotte(Exception):
     """Raised when someone who is not a gestionnaire of a Cagnotte try to use a gestionnaire-action only"""
 
     pass
 
 
-class DestructionOfNonEmptyCagnotte(Exception):
+class ForbiddenDestructionOfCagnotte(Exception):
     """Raised when someone want to destroy a Cagnotte which still contain money inside"""
 
     pass

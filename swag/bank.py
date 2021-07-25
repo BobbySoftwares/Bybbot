@@ -336,7 +336,7 @@ class SwagBank:
             if concerns_cagnotte(cagnotte_idx, transaction)
         ]
 
-    def payer_a_cagnotte(
+    def pay_to_cagnotte(
         self, donator_account_discord_id: int, cagnotte_idx: int, montant
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
@@ -397,7 +397,7 @@ class SwagBank:
 
         self.transactional_save()
 
-    def donner_depuis_cagnotte(
+    def receive_from_cagnotte(
         self,
         cagnotte_idx: int,
         receiver_account_discord_id: int,
@@ -408,7 +408,7 @@ class SwagBank:
         receiver_account = self.swagdb.get_account(receiver_account_discord_id)
 
         if emiter_account_discord_id not in cagnotte.get_info().manager:
-            raise NotInGestionnaireGroupCagnotte
+            raise NotInManagerGroupCagnotte
 
         # Check if the €agnotte have enough Money ($wag or $tyle):
         if cagnotte.get_info().balance - montant < 0:
@@ -449,7 +449,7 @@ class SwagBank:
         )
         self.transactional_save()
 
-    def tirage_au_sort_cagnotte(
+    def lottery_cagnotte(
         self,
         cagnotte_idx: str,
         lst_of_participant: list,
@@ -463,15 +463,15 @@ class SwagBank:
             lst_of_participant = cagnotte.get_info().participant
 
         gain = cagnotte.balance
-        heureux_gagnant = choice(lst_of_participant)
+        gagnant = choice(lst_of_participant)
 
-        self.donner_depuis_cagnotte(
-            cagnotte_idx, heureux_gagnant, gain, emiter_account_discord_id
+        self.receive_from_cagnotte(
+            cagnotte_idx, gagnant, gain, emiter_account_discord_id
         )
 
-        return heureux_gagnant, gain
+        return gagnant, gain
 
-    def partage_cagnotte(
+    def share_cagnotte(
         self, cagnotte_idx: str, lst_of_account: list, emiter_account_discord_id: int
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
@@ -494,7 +494,7 @@ class SwagBank:
             ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
 
         for account in lst_of_account:
-            self.donner_depuis_cagnotte(
+            self.receive_from_cagnotte(
                 cagnotte_idx, account, gain_for_everyone, emiter_account_discord_id
             )
 
@@ -502,20 +502,20 @@ class SwagBank:
         if (
             cagnotte.get_info().balance != 0
         ):  # si il reste de l'argent à redistribuer, on tire au sort celui qui gagne les miettes
-            gagnant_miette, gain_miette = self.tirage_au_sort_cagnotte(
+            gagnant_miette, gain_miette = self.lottery_cagnotte(
                 cagnotte_idx, lst_of_account, emiter_account_discord_id
             )
 
         return lst_of_account, gain_for_everyone, gagnant_miette, gain_miette
 
-    def detruire_cagnotte(self, cagnotte_idx: str, emiter_account_discord_id: int):
+    def destroy_cagnotte(self, cagnotte_idx: int, emiter_account_discord_id: int):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
 
         if emiter_account_discord_id not in cagnotte.get_info().manager:
-            raise NotInGestionnaireGroupCagnotte
+            raise NotInManagerGroupCagnotte
 
         if cagnotte.get_info().balance != 0:
-            raise DestructionOfNonEmptyCagnotte
+            raise ForbiddenDestructionOfCagnotte
 
         cagnotte.is_active = False
 
