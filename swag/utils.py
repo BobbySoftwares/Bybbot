@@ -1,6 +1,6 @@
 import math
 import random
-from swag.db import Cagnotte, CagnotteInfo
+from .db import Cagnotte, CagnotteInfo
 
 from arrow import Arrow
 
