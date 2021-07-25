@@ -1,3 +1,4 @@
+from typing import List
 from arrow.parser import ParserError
 from arrow import now, utcnow
 from decimal import Decimal, ROUND_DOWN, ROUND_UP
@@ -440,7 +441,7 @@ class SwagBank:
     def lottery_cagnotte(
         self,
         cagnotte_idx: str,
-        lst_of_participant: list,
+        lst_of_participant: List[int],
         emiter_account_discord_id: int,
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
@@ -449,14 +450,14 @@ class SwagBank:
         if not lst_of_participant:
             lst_of_participant = cagnotte.participant
 
-        gain = cagnotte.balance
-        gagnant = choice(lst_of_participant)
+        reward = cagnotte.balance
+        winner = choice(lst_of_participant)
 
         self.receive_from_cagnotte(
-            cagnotte_idx, gagnant, gain, emiter_account_discord_id
+            cagnotte_idx, winner, reward, emiter_account_discord_id
         )
 
-        return gagnant, gain
+        return winner, reward
 
     def share_cagnotte(
         self, cagnotte_idx: str, lst_of_account: list, emiter_account_discord_id: int
@@ -473,26 +474,26 @@ class SwagBank:
         gain_for_everyone = cagnotte.balance / len(lst_of_account)
 
         if cagnotte.currency == "$wag":
-            gain_for_everyone = floor(gain_for_everyone)  # Le $wag est indivisible
+            gain_for_everyone = int(gain_for_everyone)  # Le $wag est indivisible
 
         if cagnotte.currency == "$tyle":
-            gain_for_everyone = Decimal(
-                cagnotte.balance / len(lst_of_account)
-            ).quantize(Decimal(".0001"), rounding=ROUND_DOWN)
+            gain_for_everyone = (cagnotte.balance / len(lst_of_account)).quantize(
+                Decimal(".0001"), rounding=ROUND_DOWN
+            )
 
         for account in lst_of_account:
             self.receive_from_cagnotte(
                 cagnotte_idx, account, gain_for_everyone, emiter_account_discord_id
             )
 
-        gagnant_miette, gain_miette = None, None
-        # si il reste de l'argent à redistribuer, on tire au sort celui qui gagne les miettes
+        # si il reste de l'argent à redistribuer, on tire au sort celui qui gagne ce reste
+        winner_rest, rest = None, None
         if cagnotte.balance != 0:
-            gagnant_miette, gain_miette = self.lottery_cagnotte(
+            winner_rest, rest = self.lottery_cagnotte(
                 cagnotte_idx, lst_of_account, emiter_account_discord_id
             )
 
-        return lst_of_account, gain_for_everyone, gagnant_miette, gain_miette
+        return lst_of_account, gain_for_everyone, winner_rest, rest
 
     def destroy_cagnotte(self, cagnotte_idx: int, emiter_account_discord_id: int):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
