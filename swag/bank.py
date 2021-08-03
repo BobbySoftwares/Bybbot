@@ -321,7 +321,7 @@ class SwagBank:
         else:
             raise NoCagnotteRegistered(cagnotte_idx)
 
-    def get_all_active_cagnotte(self):
+    def get_all_active_cagnottes(self):
         return [
             cagnotte
             for cagnotte in self.swagdb.get_cagnotte_infos()
@@ -382,7 +382,7 @@ class SwagBank:
             )
         )
 
-        cagnotte.participant.add(donator_account_discord_id)
+        cagnotte.participants.add(donator_account_discord_id)
 
         self.transactional_save()
 
@@ -396,8 +396,8 @@ class SwagBank:
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
         receiver_account = self.swagdb.get_account(receiver_account_discord_id)
 
-        if emiter_account_discord_id not in cagnotte.manager:
-            raise NotInManagerGroupCagnotte
+        if emiter_account_discord_id not in cagnotte.managers:
+            raise NotCagnotteManager
 
         # Check if the €agnotte have enough Money ($wag or $tyle):
         if cagnotte.balance < amount:
@@ -448,7 +448,7 @@ class SwagBank:
 
         # si la liste des participants est vide, alors par défaut, ce sont ceux qui on participé à la cagnotte qui vont être tiré au sort
         if not lst_of_participant:
-            lst_of_participant = cagnotte.participant
+            lst_of_participant = cagnotte.participants
 
         reward = cagnotte.balance
         winner = choice(lst_of_participant)
@@ -460,28 +460,28 @@ class SwagBank:
         return winner, reward
 
     def share_cagnotte(
-        self, cagnotte_idx: str, lst_of_account: list, emiter_account_discord_id: int
+        self, cagnotte_idx: str, account_list: List, emiter_account_discord_id: int
     ):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
 
         if (
-            not lst_of_account
+            not account_list
         ):  # Si la liste de compte est vide, tout les comptes de la bobbycratie seront pris par défaut
-            lst_of_account = [
+            account_list = [
                 account.discord_id for account in self.swagdb.get_account_infos()
             ]
 
-        gain_for_everyone = cagnotte.balance / len(lst_of_account)
+        gain_for_everyone = cagnotte.balance / len(account_list)
 
         if cagnotte.currency == Currency.SWAG:
             gain_for_everyone = int(gain_for_everyone)  # Le $wag est indivisible
 
         if cagnotte.currency == Currency.STYLE:
-            gain_for_everyone = (cagnotte.balance / len(lst_of_account)).quantize(
+            gain_for_everyone = (cagnotte.balance / len(account_list)).quantize(
                 Decimal(".0001"), rounding=ROUND_DOWN
             )
 
-        for account in lst_of_account:
+        for account in account_list:
             self.receive_from_cagnotte(
                 cagnotte_idx, account, gain_for_everyone, emiter_account_discord_id
             )
@@ -490,19 +490,19 @@ class SwagBank:
         winner_rest, rest = None, None
         if cagnotte.balance != 0:
             winner_rest, rest = self.lottery_cagnotte(
-                cagnotte_idx, lst_of_account, emiter_account_discord_id
+                cagnotte_idx, account_list, emiter_account_discord_id
             )
 
-        return lst_of_account, gain_for_everyone, winner_rest, rest
+        return account_list, gain_for_everyone, winner_rest, rest
 
     def destroy_cagnotte(self, cagnotte_idx: int, emiter_account_discord_id: int):
         cagnotte = self.get_active_cagnotte(cagnotte_idx)
 
-        if emiter_account_discord_id not in cagnotte.manager:
-            raise NotInManagerGroupCagnotte
+        if emiter_account_discord_id not in cagnotte.managers:
+            raise NotCagnotteManager
 
         if cagnotte.balance != 0:
-            raise ForbiddenDestructionOfCagnotte
+            raise CagnotteDestructionForbidden
 
         cagnotte.is_active = False
 

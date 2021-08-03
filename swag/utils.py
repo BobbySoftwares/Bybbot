@@ -350,7 +350,7 @@ async def update_forbes_classement(guild, swag_client, client):
             le moment)
     """
 
-    ligne_par_message = 15  # Chaque message du $wag forbes ne contient que 15 places
+    line_in_message = 15  # Chaque message du $wag forbes ne contient que 15 places
 
     # Récupération du canal #$wag-forbes
     channel_forbes = guild.get_channel(FORBES_CHANNEL_ID_BOBBYCRATIE)
@@ -362,15 +362,15 @@ async def update_forbes_classement(guild, swag_client, client):
     cagnottes = swag_client.swag_bank.get_all_active_cagnotte()
 
     # Subdivision de la liste du classement en sous-liste de taille équitable
-    forbes_chunks = list(chunks(forbes, ligne_par_message))
+    forbes_chunks = list(chunks(forbes, line_in_message))
 
     # Subdivision de la liste des €agnotte
-    cagnottes_chunks = list(chunks(cagnottes, ligne_par_message))
+    cagnottes_chunks = list(chunks(cagnottes, line_in_message))
 
     # Récupération du nombre de message nécessaire pour écrire tout le
     # forbes (c'est le nombre de sous-listes totaux)
-    nbr_pages_classement = math.ceil(len(forbes) / ligne_par_message)
-    nbr_pages_cagnottes = math.ceil(len(cagnottes) / ligne_par_message)
+    nbr_pages_classement = math.ceil(len(forbes) / line_in_message)
+    nbr_pages_cagnottes = math.ceil(len(cagnottes) / line_in_message)
     nbr_pages = nbr_pages_classement + nbr_pages_cagnottes
 
     # On compte le nombre de message posté dans le $wag forbes

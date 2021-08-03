@@ -63,9 +63,9 @@ class SwagDB:
         self.cagnotte_name = cagnotte_name
         self.cagnotte_balance = cagnotte_balance
         self.cagnotte_currency = cagnotte_currency
-        self.cagnotte_manager = cagnotte_manager
-        self.cagnotte_participant = cagnotte_participant
-        self.cagnotte_activation = cagnotte_activation
+        self.cagnotte_managers = cagnotte_manager
+        self.cagnotte_participants = cagnotte_participant
+        self.cagnotte_activation_state = cagnotte_activation
 
     @staticmethod
     def load_database(file):
@@ -120,9 +120,9 @@ class SwagDB:
                 self.cagnotte_balance.append(Decimal(0))
 
             self.cagnotte_currency.append(cagnotte_currency)
-            self.cagnotte_manager.append([cagnotte_creator_id])
-            self.cagnotte_participant.append(set())
-            self.cagnotte_activation.append(True)
+            self.cagnotte_managers.append([cagnotte_creator_id])
+            self.cagnotte_participants.append(set())
+            self.cagnotte_activation_state.append(True)
 
         else:
             raise CagnotteNameAlreadyExist
@@ -293,19 +293,19 @@ class Cagnotte:
         self.swagdb.cagnotte_currency[self.id] = value
 
     @property
-    def manager(self):
+    def managers(self):
         return self.swagdb.cagnotte_manager[self.id]
 
-    @manager.setter
-    def manager(self, value):
+    @managers.setter
+    def managers(self, value):
         self.swagdb.cagnotte_manager[self.id] = value
 
     @property
-    def participant(self):
+    def participants(self):
         return self.swagdb.cagnotte_participant[self.id]
 
-    @participant.setter
-    def participant(self, value):
+    @participants.setter
+    def participants(self, value):
         self.swagdb.cagnotte_participant[self.id] = value
 
     @property
@@ -340,6 +340,6 @@ class CagnotteInfo:
         self.name = cagnotte.name
         self.balance = cagnotte.balance
         self.currency = cagnotte.currency
-        self.manager = cagnotte.manager
-        self.participant = cagnotte.participant
+        self.managers = cagnotte.managers
+        self.participants = cagnotte.participants
         self.is_active = cagnotte.is_active
