@@ -119,7 +119,7 @@ class SwagBank:
         return self.swagdb.get_account(user).get_info()
 
     def get_cagnotte_info(self, cagnotte_idx):
-        return self.swagdb.get_cagnotte_from_index(cagnotte_idx).get_info()
+        return self.swagdb.get_cagnotte(cagnotte_idx).get_info()
 
     def style_transaction(self, giver, recipient, amount):
         giver_account = self.swagdb.get_account(giver)
@@ -318,7 +318,7 @@ class SwagBank:
 
     def get_active_cagnotte(self, cagnotte_idx) -> Cagnotte:
         if cagnotte_idx in self.swagdb.get_active_cagnotte_ids():
-            return self.swagdb.get_cagnotte_from_index(cagnotte_idx)
+            return self.swagdb.get_cagnotte(cagnotte_idx)
         else:
             raise NoCagnotteRegistered(cagnotte_idx)
 

@@ -442,7 +442,7 @@ class SwagClient(Module):
                 cagnotte_name, Currency.SWAG, message.author.id
             )
 
-            cagnotte_info = self.swag_bank.swagdb.get_cagnotte_from_index(
+            cagnotte_info = self.swag_bank.swagdb.get_cagnotte(
                 new_cagnotte_idx
             ).get_info()
             await message.channel.send(
@@ -463,7 +463,7 @@ class SwagClient(Module):
                 cagnotte_name, Currency.STYLE, message.author.id
             )
 
-            cagnotte_info = self.swag_bank.swagdb.get_cagnotte_from_index(
+            cagnotte_info = self.swag_bank.swagdb.get_cagnotte(
                 new_cagnotte_idx
             ).get_info()
             await message.channel.send(
