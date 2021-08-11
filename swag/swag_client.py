@@ -1,10 +1,10 @@
 from swag.db import Currency
 from swag.errors import (
     CagnotteNameAlreadyExist,
-    ForbiddenDestructionOfCagnotte,
+    CagnotteDestructionForbidden,
     NoCagnotteRegistered,
     NotEnoughMoneyInCagnotte,
-    NotInManagerGroupCagnotte,
+    NotCagnotteManager,
 )
 from apscheduler.triggers.cron import CronTrigger
 from decimal import Decimal, ROUND_DOWN
@@ -152,12 +152,12 @@ class SwagClient(Module):
                 f"{message.author.mention}, tu es en train de demander à la €agnotte €{e.id} "
                 "une somme d'argent qu'elle n'a pas. Non mais tu n'as pas honte ? 😐"
             )
-        except NotInManagerGroupCagnotte:
+        except NotCagnotteManager:
             await message.channel.send(
                 f"{message.author.mention}, tu ne fais pas partie des gestionnaires "
                 "de cette €agnotte, tu ne peux donc pas manipuler son contenu 🤷‍♀️"
             )
-        except ForbiddenDestructionOfCagnotte:
+        except CagnotteDestructionForbidden:
             await message.channel.send(
                 f"**Ligne 340 des conditions générales d'utilisations des €agnottes :**\n\n"
                 "*Il est formellement interdit de détruire une cagnotte qui n'est pas vidée "
@@ -493,8 +493,8 @@ class SwagClient(Module):
                 f"Nom de €agnotte : {cagnotte_info.name}\n"
                 f"Type de €agnotte : {currency_to_str(cagnotte_info.currency)}\n"
                 f"Montant de la €agnotte : {format_number(cagnotte_info.balance)} {currency_to_str(cagnotte_info.currency)}\n"
-                f"Gestionnaire de la €agnotte : {[await get_guild_member_name(manager,message.guild,self.client) for manager in cagnotte_info.manager]}\n"
-                f"Participants : {[await get_guild_member_name(participant,message.guild,self.client) for participant in cagnotte_info.participant]}\n"
+                f"Gestionnaire de la €agnotte : {[await get_guild_member_name(manager,message.guild,self.client) for manager in cagnotte_info.managers]}\n"
+                f"Participants : {[await get_guild_member_name(participant,message.guild,self.client) for participant in cagnotte_info.participants]}\n"
                 "```"
             )
 
@@ -561,14 +561,14 @@ class SwagClient(Module):
         elif "donner" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
             cagnotte = self.swag_bank.get_active_cagnotte(cagnotte_idx)
-            destinataire = message.mentions
-            if len(destinataire) != 1:
+            receiver = message.mentions
+            if len(receiver) != 1:
                 await message.channel.send(
                     "Merci de mentionner un destinataire (@Bobby Machin) pour "
                     "lui donner une partie de cette €agnotte !"
                 )
                 return
-            destinataire = destinataire[0]
+            receiver = receiver[0]
 
             if cagnotte.currency == Currency.SWAG:
                 try:
@@ -593,7 +593,7 @@ class SwagClient(Module):
                     raise InvalidStyleValue
 
             self.swag_bank.receive_from_cagnotte(
-                cagnotte_idx, destinataire.id, value, message.author.id
+                cagnotte_idx, receiver.id, value, message.author.id
             )
 
             cagnotte_info = cagnotte.get_info()
@@ -602,7 +602,7 @@ class SwagClient(Module):
                 "```ini\n"
                 f"[€{cagnotte_idx} {cagnotte_info.name}\t"
                 f"{format_number(value)} {currency_to_str(cagnotte_info.currency)}\t"
-                f"-->\t{destinataire.display_name}]\n"
+                f"-->\t{receiver.display_name}]\n"
                 "```"
             )
 
@@ -612,12 +612,7 @@ class SwagClient(Module):
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
             participants_id = [participant.id for participant in message.mentions]
 
-            (
-                participants_id,
-                gain,
-                gagnant_miette,
-                miette,
-            ) = self.swag_bank.share_cagnotte(
+            (participants_id, gain, winner_rest, rest,) = self.swag_bank.share_cagnotte(
                 cagnotte_idx, participants_id, message.author.id
             )
 
@@ -633,24 +628,24 @@ class SwagClient(Module):
                 else:
                     participants_str.append(user.mention)
 
-            participants_mention = ", ".join(participants_str)
+            participants_mentions = ", ".join(participants_str)
 
             cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
             await message.channel.send(
-                f"{participants_mention} vous avez chacun récupéré `{format_number(gain)} {currency_to_str(cagnotte_info.currency)}`"
+                f"{participants_mentions} vous avez chacun récupéré `{format_number(gain)} {currency_to_str(cagnotte_info.currency)}`"
                 f" de la cagnotte **{cagnotte_info.name}** 💸"
             )
 
-            if gagnant_miette != None:
-                user = message.guild.get_member(gagnant_miette)
+            if winner_rest != None:
+                user = message.guild.get_member(winner_rest)
                 if user == None:
                     user_gagnant = await get_guild_member_name(
-                        gagnant_miette, message.guild, self.client
+                        winner_rest, message.guild, self.client
                     )
                 else:
                     user_gagnant = user.mention
                 await message.channel.send(
-                    f"{user_gagnant} récupère les `{format_number(miette)} {currency_to_str(cagnotte_info.currency)}` restants ! 🤑"
+                    f"{user_gagnant} récupère les `{format_number(rest)} {currency_to_str(cagnotte_info.currency)}` restants ! 🤑"
                 )
 
             await update_forbes_classement(message.guild, self, self.client)

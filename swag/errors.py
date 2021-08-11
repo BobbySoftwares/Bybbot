@@ -99,13 +99,13 @@ class NotEnoughMoneyInCagnotte(Exception):
         super().__init__(message)
 
 
-class NotInManagerGroupCagnotte(Exception):
+class NotCagnotteManager(Exception):
     """Raised when someone who is not a gestionnaire of a Cagnotte try to use a gestionnaire-action only"""
 
     pass
 
 
-class ForbiddenDestructionOfCagnotte(Exception):
+class CagnotteDestructionForbidden(Exception):
     """Raised when someone want to destroy a Cagnotte which still contain money inside"""
 
     pass
