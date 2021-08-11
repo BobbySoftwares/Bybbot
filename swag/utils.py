@@ -150,14 +150,14 @@ async def mini_history_swag_message(
                     client,
                 ),
                 f"€{transaction_data[1]} "
-                f"{swagbank.swagdb.get_cagnotte_from_index(transaction_data[1]).get_info().name}",
+                f"{swagbank.swagdb.get_cagnotte(transaction_data[1]).get_info().name}",
                 format_number(transaction_data[2]),
                 transaction_data[3],
             )
         elif transaction_type == TransactionType.DISTRIBUTION:
             return (
                 f"€{transaction_data[0]} "
-                f"{swagbank.swagdb.get_cagnotte_from_index(transaction_data[0]).get_info().name}",
+                f"{swagbank.swagdb.get_cagnotte(transaction_data[0]).get_info().name}",
                 await get_guild_member_name(
                     swagbank.swagdb.get_account_from_index(
                         transaction_data[1]
@@ -255,7 +255,7 @@ async def mini_forbes_cagnottes(cagnottes_chunk, guild, client):
             f'"{cagnotte.name}"',
             f"{format_number(cagnotte.balance)}",
             f"{currency_to_str(cagnotte.currency)}",
-            f"👑 {await get_guild_member_name(cagnotte.manager[0],guild,client)}",
+            f"👑 {await get_guild_member_name(cagnotte.managers[0],guild,client)}",
         )
         for cagnotte in cagnottes_chunk
     ]
@@ -359,7 +359,7 @@ async def update_forbes_classement(guild, swag_client, client):
     forbes = swag_client.swag_bank.get_forbes()
 
     # Récupération de la liste des cagnottes
-    cagnottes = swag_client.swag_bank.get_all_active_cagnotte()
+    cagnottes = swag_client.swag_bank.get_all_active_cagnottes()
 
     # Subdivision de la liste du classement en sous-liste de taille équitable
     forbes_chunks = list(chunks(forbes, line_in_message))
@@ -388,9 +388,8 @@ async def update_forbes_classement(guild, swag_client, client):
     cpt_message_cagnottes = 0
     async for message in channel_forbes.history(oldest_first=True):
 
-        if (
-            cpt_message_cagnottes < nbr_pages_cagnottes
-        ):  # On écrit d'abord les €agnottes
+        # On écrit d'abord les €agnottes
+        if cpt_message_cagnottes < nbr_pages_cagnottes:
             await message.edit(
                 content=await mini_forbes_cagnottes(
                     cagnottes_chunks[cpt_message_cagnottes],
@@ -400,7 +399,8 @@ async def update_forbes_classement(guild, swag_client, client):
             )
             cpt_message_cagnottes += 1
 
-        else:  # Ensuite, le classement
+        # Ensuite, le classement
+        elif cpt_message_classement < nbr_pages_classement:
 
             await message.edit(
                 content=await mini_forbes_swag(
@@ -411,6 +411,10 @@ async def update_forbes_classement(guild, swag_client, client):
                 )
             )
             cpt_message_classement += 1
+
+        # Si il y a des messages en trop on les supprime
+        else:
+            await message.delete()
 
     # update des bonus de st$le
     swag_client.swag_bank.update_bonus_growth_rate()
