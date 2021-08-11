@@ -34,9 +34,9 @@ class SwagDB:
         cagnotte_name=[],
         cagnotte_balance=[],
         cagnotte_currency=[],
-        cagnotte_manager=[],
-        cagnotte_participant=[],
-        cagnotte_activation=[],
+        cagnotte_managers=[],
+        cagnotte_participants=[],
+        cagnotte_activation_state=[],
     ) -> None:
         self.next_id = next_id
 
@@ -61,9 +61,9 @@ class SwagDB:
         self.cagnotte_name = cagnotte_name
         self.cagnotte_balance = cagnotte_balance
         self.cagnotte_currency = cagnotte_currency
-        self.cagnotte_managers = cagnotte_manager
-        self.cagnotte_participants = cagnotte_participant
-        self.cagnotte_activation_state = cagnotte_activation
+        self.cagnotte_managers = cagnotte_managers
+        self.cagnotte_participants = cagnotte_participants
+        self.cagnotte_activation_state = cagnotte_activation_state
 
     @staticmethod
     def load_database(file):
@@ -285,27 +285,27 @@ class Cagnotte:
 
     @property
     def managers(self):
-        return self.swagdb.cagnotte_manager[self.id]
+        return self.swagdb.cagnotte_managers[self.id]
 
     @managers.setter
     def managers(self, value):
-        self.swagdb.cagnotte_manager[self.id] = value
+        self.swagdb.cagnotte_managers[self.id] = value
 
     @property
     def participants(self):
-        return self.swagdb.cagnotte_participant[self.id]
+        return self.swagdb.cagnotte_participants[self.id]
 
     @participants.setter
     def participants(self, value):
-        self.swagdb.cagnotte_participant[self.id] = value
+        self.swagdb.cagnotte_participants[self.id] = value
 
     @property
     def is_active(self):
-        return self.swagdb.cagnotte_activation[self.id]
+        return self.swagdb.cagnotte_activation_state[self.id]
 
     @is_active.setter
     def is_active(self, value):
-        self.swagdb.cagnotte_activation[self.id] = value
+        self.swagdb.cagnotte_activation_state[self.id] = value
 
 
 class AccountInfo:

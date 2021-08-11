@@ -314,7 +314,7 @@ class SwagBank:
     def create_cagnotte(self, cagnotte_name: str, currency: Currency, creator_id: int):
         self.swagdb.add_cagnotte(cagnotte_name, currency, creator_id)
         self.transactional_save()
-        return self.swagdb.cagnotte_number - 1  # return the idx of the Cagnotte
+        return self.swagdb.cagnotte_number() - 1  # return the idx of the Cagnotte
 
     def get_active_cagnotte(self, cagnotte_idx) -> Cagnotte:
         if cagnotte_idx in self.swagdb.get_active_cagnotte_ids():
@@ -455,7 +455,7 @@ class SwagBank:
             lst_of_participant = cagnotte.participants
 
         reward = cagnotte.balance
-        winner = choice(lst_of_participant)
+        winner = choice(tuple(lst_of_participant))
 
         self.receive_from_cagnotte(
             cagnotte_idx, winner, reward, emiter_account_discord_id
