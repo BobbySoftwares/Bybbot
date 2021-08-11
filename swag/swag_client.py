@@ -438,11 +438,13 @@ class SwagClient(Module):
                     "Merci de mentionner un nom pour ta €agnotte."
                 )
                 return
-            self.swag_bank.create_cagnotte(
+            new_cagnotte_idx = self.swag_bank.create_cagnotte(
                 cagnotte_name, Currency.SWAG, message.author.id
             )
 
-            cagnotte_info = self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info()
+            cagnotte_info = self.swag_bank.swagdb.get_cagnotte_from_index(
+                new_cagnotte_idx
+            ).get_info()
             await message.channel.send(
                 f"{message.author.mention} vient de créer une €agnotte de $tyle nommée **« {cagnotte_name} »**. "
                 f"Son identifiant est le €{cagnotte_info.id}"
@@ -457,11 +459,13 @@ class SwagClient(Module):
                     "Merci de mentionner un nom pour ta €agnotte."
                 )
                 return
-            self.swag_bank.create_cagnotte(
+            new_cagnotte_idx = self.swag_bank.create_cagnotte(
                 cagnotte_name, Currency.STYLE, message.author.id
             )
 
-            cagnotte_info = self.swag_bank.swagdb.get_cagnotte(cagnotte_name).get_info()
+            cagnotte_info = self.swag_bank.swagdb.get_cagnotte_from_index(
+                new_cagnotte_idx
+            ).get_info()
             await message.channel.send(
                 f"{message.author.mention} vient de créer une €agnotte de $tyle nommée **« {cagnotte_name} »**. "
                 f"Son identifiant est le €{cagnotte_info.id}"

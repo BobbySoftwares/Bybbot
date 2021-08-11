@@ -31,7 +31,6 @@ class SwagDB:
         blockchain=[],
         guild_timezone={},
         next_cagnotte_id=0,
-        cagnotte_id={},
         cagnotte_name=[],
         cagnotte_balance=[],
         cagnotte_currency=[],
@@ -59,7 +58,6 @@ class SwagDB:
         self.guild_timezone = guild_timezone
 
         self.next_cagnotte_id = next_cagnotte_id
-        self.cagnotte_id = cagnotte_id
         self.cagnotte_name = cagnotte_name
         self.cagnotte_balance = cagnotte_balance
         self.cagnotte_currency = cagnotte_currency
@@ -109,8 +107,7 @@ class SwagDB:
             raise AccountAlreadyExist
 
     def add_cagnotte(self, cagnotte_name, cagnotte_currency, cagnotte_creator_id):
-        if cagnotte_name not in self.cagnotte_id:
-            self.cagnotte_id[cagnotte_name] = self.next_cagnotte_id
+        if cagnotte_name not in self.cagnotte_name:
             self.next_cagnotte_id += 1
 
             self.cagnotte_name.append(cagnotte_name)
@@ -133,16 +130,10 @@ class SwagDB:
         except KeyError:
             raise NoAccountRegistered(user)
 
-    def get_cagnotte(self, cagnotte_name):
-        try:
-            return Cagnotte(self, self.cagnotte_id[cagnotte_name])
-        except KeyError:
-            raise NoCagnotteRegistered(cagnotte_name)
-
     def get_account_from_index(self, idx):
         return SwagAccount(self, idx)
 
-    def get_cagnotte_from_index(self, idx):
+    def get_cagnotte(self, idx):
         return Cagnotte(self, idx)
 
     def get_accounts(self):
