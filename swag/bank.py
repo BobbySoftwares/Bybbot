@@ -12,7 +12,7 @@ from cbor2 import CBORDecodeEOF
 from .cauchy import roll
 from .errors import *
 
-from .db import Currency, SwagDB, Cagnotte
+from .db import CagnotteInfo, Currency, SwagDB, Cagnotte
 from .transactions import TransactionType, concerns_cagnotte, concerns_user
 
 SWAG_BASE = 1000
@@ -321,6 +321,9 @@ class SwagBank:
             return self.swagdb.get_cagnotte(cagnotte_idx)
         else:
             raise NoCagnotteRegistered(cagnotte_idx)
+
+    def get_active_cagnotte_info(self, cagnotte_idx) -> CagnotteInfo:
+        return self.get_active_cagnotte(cagnotte_idx).get_info()
 
     def get_all_active_cagnottes(self):
         return [

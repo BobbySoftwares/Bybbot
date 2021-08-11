@@ -490,7 +490,7 @@ class SwagClient(Module):
 
         elif "info" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
-            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
             await message.channel.send(
                 f"Voici les informations de la €agnotte €{cagnotte_idx}\n"
                 "```\n"
@@ -509,7 +509,7 @@ class SwagClient(Module):
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
             history = list(reversed(self.swag_bank.get_cagnotte_history(cagnotte_idx)))
 
-            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
             await message.channel.send(
                 f"{message.author.mention}, voici l'historique de tes transactions de la cagnotte **{cagnotte_info.name}** :\n"
             )
@@ -634,7 +634,7 @@ class SwagClient(Module):
 
             participants_mentions = ", ".join(participants_str)
 
-            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
             await message.channel.send(
                 f"{participants_mentions} vous avez chacun récupéré `{format_number(gain)} {currency_to_str(cagnotte_info.currency)}`"
                 f" de la cagnotte **{cagnotte_info.name}** 💸"
@@ -673,7 +673,7 @@ class SwagClient(Module):
         elif "détruire" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
 
-            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
             self.swag_bank.destroy_cagnotte(cagnotte_idx, message.author.id)
             await message.channel.send(
                 f"La €agnotte €{cagnotte_idx} *{cagnotte_info.name}* est maintenant détruite de ce plan de l'existence ❌"
