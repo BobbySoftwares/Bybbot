@@ -136,6 +136,13 @@ class SwagDB:
     def get_cagnotte(self, idx):
         return Cagnotte(self, idx)
 
+    def get_active_cagnotte(self, cagnotte_idx):
+        cagnotte = self.get_cagnotte(cagnotte_idx)
+        if cagnotte.is_active:
+            return cagnotte
+        else:
+            raise NoCagnotteRegistered(cagnotte_idx)
+
     def get_accounts(self):
         return (SwagAccount(self, idx) for idx in range(self.user_number()))
 
