@@ -2,7 +2,6 @@ from apscheduler.triggers.cron import CronTrigger
 from decimal import Decimal, ROUND_DOWN
 from arrow import utcnow
 from discord import File
-import discord
 
 from .bank import (
     AlreadyMineToday,
@@ -58,10 +57,10 @@ class SwagClient(Module):
         # tout les jours, à 6h
         async def backup_job():
             await self.client.get_channel(BACKUP_CHANNEL_ID).send(
-                file=discord.File(self.swag_bank.db_path)
+                file=File(self.swag_bank.db_path)
             )
 
-        scheduler.add_job(backup_job, CronTrigger(day="*",hour="6"))
+        scheduler.add_job(backup_job, CronTrigger(day="*", hour="6"))
 
     async def process(self, message):
         try:
