@@ -148,9 +148,6 @@ class SwagDB:
     def get_cagnotte_infos(self):
         return (CagnotteInfo(cagnotte) for cagnotte in self.get_cagnottes())
 
-    def get_active_cagnotte_ids(self):
-        return {cagnotte.id for cagnotte in self.get_cagnottes() if cagnotte.is_active}
-
     def user_number(self):
         return self.next_id
 
