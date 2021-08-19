@@ -317,8 +317,9 @@ class SwagBank:
         return self.swagdb.cagnotte_number() - 1  # return the idx of the Cagnotte
 
     def get_active_cagnotte(self, cagnotte_idx) -> Cagnotte:
-        if cagnotte_idx in self.swagdb.get_active_cagnotte_ids():
-            return self.swagdb.get_cagnotte(cagnotte_idx)
+        cagnotte = self.swagdb.get_cagnotte(cagnotte_idx)
+        if cagnotte.is_active:
+            return cagnotte
         else:
             raise NoCagnotteRegistered(cagnotte_idx)
 
