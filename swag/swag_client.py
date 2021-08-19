@@ -525,9 +525,9 @@ class SwagClient(Module):
         elif "payer" in splited_command:
 
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
-            cagnotte = self.swag_bank.get_active_cagnotte(cagnotte_idx)
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
 
-            if cagnotte.currency == Currency.SWAG:
+            if cagnotte_info.currency == Currency.SWAG:
                 try:
                     value = int(
                         "".join(
@@ -537,7 +537,7 @@ class SwagClient(Module):
                 except ValueError:
                     raise InvalidSwagValue
 
-            elif cagnotte.currency == Currency.STYLE:
+            elif cagnotte_info.currency == Currency.STYLE:
                 try:
                     value = Decimal(
                         "".join(
@@ -551,7 +551,6 @@ class SwagClient(Module):
 
             self.swag_bank.pay_to_cagnotte(message.author.id, cagnotte_idx, value)
 
-            cagnotte_info = cagnotte.get_info()
             await message.channel.send(
                 "Transaction effectuée avec succès ! \n"
                 "```ini\n"
@@ -564,7 +563,7 @@ class SwagClient(Module):
 
         elif "donner" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
-            cagnotte = self.swag_bank.get_active_cagnotte(cagnotte_idx)
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
             receiver = message.mentions
             if len(receiver) != 1:
                 await message.channel.send(
@@ -574,7 +573,7 @@ class SwagClient(Module):
                 return
             receiver = receiver[0]
 
-            if cagnotte.currency == Currency.SWAG:
+            if cagnotte_info.currency == Currency.SWAG:
                 try:
                     value = int(
                         "".join(
@@ -584,7 +583,7 @@ class SwagClient(Module):
                 except ValueError:
                     raise InvalidSwagValue
 
-            elif cagnotte.currency == Currency.STYLE:
+            elif cagnotte_info.currency == Currency.STYLE:
                 try:
                     value = Decimal(
                         "".join(
@@ -600,7 +599,6 @@ class SwagClient(Module):
                 cagnotte_idx, receiver.id, value, message.author.id
             )
 
-            cagnotte_info = cagnotte.get_info()
             await message.channel.send(
                 "Transaction effectuée avec succès ! \n"
                 "```ini\n"

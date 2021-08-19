@@ -359,7 +359,7 @@ async def update_forbes_classement(guild, swag_client, client):
     forbes = swag_client.swag_bank.get_forbes()
 
     # Récupération de la liste des cagnottes
-    cagnottes = swag_client.swag_bank.get_all_active_cagnottes()
+    cagnottes = swag_client.swag_bank.get_all_active_cagnottes_infos()
 
     # Subdivision de la liste du classement en sous-liste de taille équitable
     forbes_chunks = list(chunks(forbes, line_in_message))

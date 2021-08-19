@@ -316,17 +316,10 @@ class SwagBank:
         self.transactional_save()
         return self.swagdb.cagnotte_number() - 1  # return the idx of the Cagnotte
 
-    def get_active_cagnotte(self, cagnotte_idx) -> Cagnotte:
-        cagnotte = self.swagdb.get_cagnotte(cagnotte_idx)
-        if cagnotte.is_active:
-            return cagnotte
-        else:
-            raise NoCagnotteRegistered(cagnotte_idx)
-
     def get_active_cagnotte_info(self, cagnotte_idx) -> CagnotteInfo:
-        return self.get_active_cagnotte(cagnotte_idx).get_info()
+        return self.swagdb.get_active_cagnotte(cagnotte_idx).get_info()
 
-    def get_all_active_cagnottes(self):
+    def get_all_active_cagnottes_infos(self):
         return [
             cagnotte
             for cagnotte in self.swagdb.get_cagnotte_infos()
