@@ -336,7 +336,7 @@ class SwagBank:
     def pay_to_cagnotte(
         self, donator_account_discord_id: int, cagnotte_idx: int, amount
     ):
-        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
         donator_account = self.swagdb.get_account(donator_account_discord_id)
         # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
         if cagnotte.currency == Currency.SWAG:
@@ -391,7 +391,7 @@ class SwagBank:
         amount,
         emiter_account_discord_id: int,
     ):
-        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
         receiver_account = self.swagdb.get_account(receiver_account_discord_id)
 
         if emiter_account_discord_id not in cagnotte.managers:
@@ -442,7 +442,7 @@ class SwagBank:
         lst_of_participant: List[int],
         emiter_account_discord_id: int,
     ):
-        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
 
         # si la liste des participants est vide, alors par défaut, ce sont ceux qui on participé à la cagnotte qui vont être tiré au sort
         if not lst_of_participant:
@@ -460,7 +460,7 @@ class SwagBank:
     def share_cagnotte(
         self, cagnotte_idx: str, account_list: List, emiter_account_discord_id: int
     ):
-        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
 
         if (
             not account_list
@@ -494,7 +494,7 @@ class SwagBank:
         return account_list, gain_for_everyone, winner_rest, rest
 
     def destroy_cagnotte(self, cagnotte_idx: int, emiter_account_discord_id: int):
-        cagnotte = self.get_active_cagnotte(cagnotte_idx)
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
 
         if emiter_account_discord_id not in cagnotte.managers:
             raise NotCagnotteManager
