@@ -425,14 +425,17 @@ class SwagClient(Module):
 
     async def execute_cagnotte_command(self, message):
         def get_cagnotte_idx_from_command(splited_command):
-            cagnotte_idx = int(
-                [
-                    identifiant[1:]
-                    for identifiant in splited_command
-                    if identifiant.startswith("€") and identifiant[1:].isnumeric()
-                ][0]
-            )
-            return cagnotte_idx
+            try:
+                cagnotte_idx = int(
+                    [
+                        identifiant[1:]
+                        for identifiant in splited_command
+                        if identifiant.startswith("€") and identifiant[1:].isnumeric()
+                    ][0]
+                )
+                return cagnotte_idx
+            except (IndexError):
+                raise CagnotteUnspecifiedException
 
         message_command = message.content
         splited_command = message_command.split()
@@ -485,8 +488,6 @@ class SwagClient(Module):
             )
 
         # À partir d'ici, toutes les commandes doivent impérativement passer l'identifiant de €agnotte (sous forme de €n)
-        elif not any(argument.startswith("€") for argument in splited_command[1:]):
-            raise CagnotteUnspecifiedException
 
         elif "info" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
