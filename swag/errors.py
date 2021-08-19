@@ -109,3 +109,9 @@ class CagnotteDestructionForbidden(Exception):
     """Raised when someone want to destroy a Cagnotte which still contain money inside"""
 
     pass
+
+
+class CagnotteUnspecifiedException(Exception):
+    """Raised when a €agnotte Identifier (€n) is missing for the associated command"""
+
+    pass

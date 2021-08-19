@@ -2,6 +2,7 @@ from swag.db import Currency
 from swag.errors import (
     CagnotteNameAlreadyExist,
     CagnotteDestructionForbidden,
+    CagnotteUnspecifiedException,
     NoCagnotteRegistered,
     NotEnoughMoneyInCagnotte,
     NotCagnotteManager,
@@ -162,6 +163,11 @@ class SwagClient(Module):
                 f"**Ligne 340 des conditions générales d'utilisations des €agnottes :**\n\n"
                 "*Il est formellement interdit de détruire une cagnotte qui n'est pas vidée "
                 "de son contenu. C'est comme ça.*"
+            )
+        except CagnotteUnspecifiedException:
+            await message.channel.send(
+                f"{message.author.mention}, il manque l'identifiant de la €agnotte"
+                " dans la commande (€3 par exemple) afin de pouvoir faire l'action que tu demandes."
             )
 
     async def execute_swag_command(self, message):
@@ -478,15 +484,9 @@ class SwagClient(Module):
                 "après le mot clef **créer**"
             )
 
-        elif set(splited_command).intersection(
-            {"info", "historique", "payer", "donner", "loto", "partager", "détruire"}
-        ) and all(
-            "€" not in argument for argument in splited_command[1:]
-        ):  # À partir d'ici, toute les commandes passe par l'identifiant de €agnotte (sous forme de €n)
-            await message.channel.send(
-                f"{message.author.mention}, il manque l'identifiant de la €agnotte"
-                " dans la commande (€3 par exemple) afin de pouvoir faire l'action que tu demandes."
-            )
+        # À partir d'ici, toutes les commandes doivent impérativement passer l'identifiant de €agnotte (sous forme de €n)
+        elif not any(argument.startswith("€") for argument in splited_command[1:]):
+            raise CagnotteUnspecifiedException
 
         elif "info" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
@@ -662,7 +662,7 @@ class SwagClient(Module):
                 cagnotte_idx, participants_id, message.author.id
             )
 
-            cagnotte_info = self.swag_bank.get_active_cagnotte(cagnotte_idx).get_info()
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
             await message.channel.send(
                 f"{message.guild.get_member(gagnant).mention} vient de gagner l'intégralité de la €agnotte "
                 f"€{cagnotte_idx} *{cagnotte_info.name}*, à savoir `{format_number(gain)} {currency_to_str(cagnotte_info.currency)}` ! 🎰"
