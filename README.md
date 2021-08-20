@@ -24,8 +24,8 @@ Oh, and cheers from the *Bobbycratie* ! *Baguette !*
 
 - Latest version of [Python 3](https://www.python.org/downloads/). If you're on linux, you should already have it, on macOS you may install it through your means of choice (`brew`'s my personal fav'), on Windows you should have plenty of options too, pick any.
 - Latest version of `pip`.
-- If you're on Apple Silicon, you'll need `brew` to install `numpy` and `scipy`
-- A discord bot token: <https://discord.com/developers/applications>
+- Latest version of [Poetry](https://python-poetry.org/).
+- A discord bot token: <https://discord.com/developers/applications>.
 
 ### Getting real
 
@@ -33,13 +33,9 @@ Clone the repo:
 ```
 git clone https://github.com/BobbySoftwares/Bybbot.git
 ```
-If you're on a mac M1, install `scipy` and  `numpy` with `brew`, otherwise skip this step:
-```
-brew install scipy
-```
 Install requirements:
 ```
-pip install -r requirements.txt
+poetry install
 ```
 Create a `config.json` file with the following content, replacing `"PUT YOUR TOKEN HERE"` with your actual bot token and `0`, `1` and `2` (and how many more bot admins you want) with the actuals discord ids of your crew:
 ```json
@@ -54,13 +50,13 @@ Create a `config.json` file with the following content, replacing `"PUT YOUR TOK
 ```
 Launch the bot:
 ```
-python3 main.py
+poetry run python main.py
 ```
 Done.
 
 Alternatively, you may want to run the bot through `launcher.py`:
 ```
-python3 launcher.py
+poetry run python launcher.py
 ```
 In this config, the bot will auto-reboot on shutdown, and will self-update when it reboots. Admins defined in `config.json` may trigger a reboot with the command `!sudo reboot`.
 

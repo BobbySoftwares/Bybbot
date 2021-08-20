@@ -1,14 +1,19 @@
+from typing import List
 from arrow.parser import ParserError
 from arrow import now, utcnow
-from decimal import Decimal, ROUND_UP
+from decimal import Decimal, ROUND_DOWN, ROUND_UP
 from numpy import log1p
 from shutil import move
+from random import choice
+from math import floor
+
 from cbor2 import CBORDecodeEOF
 
 from .cauchy import roll
 from .errors import *
-from .db import SwagDB
-from .transactions import TransactionType, concerns_user
+
+from .db import CagnotteInfo, Currency, SwagDB, Cagnotte
+from .transactions import TransactionType, concerns_cagnotte, concerns_user
 
 SWAG_BASE = 1000
 SWAG_LUCK = 100000
@@ -112,6 +117,9 @@ class SwagBank:
 
     def get_account_info(self, user):
         return self.swagdb.get_account(user).get_info()
+
+    def get_cagnotte_info(self, cagnotte_idx):
+        return self.swagdb.get_cagnotte(cagnotte_idx).get_info()
 
     def style_transaction(self, giver, recipient, amount):
         giver_account = self.swagdb.get_account(giver)
@@ -300,6 +308,210 @@ class SwagBank:
         self.transactional_save()
 
         return lock_date
+
+    ## Ajout des fonctions des cagnottes
+
+    def create_cagnotte(self, cagnotte_name: str, currency: Currency, creator_id: int):
+        self.swagdb.add_cagnotte(cagnotte_name, currency, creator_id)
+        self.transactional_save()
+        return self.swagdb.cagnotte_number() - 1  # return the idx of the Cagnotte
+
+    def get_active_cagnotte_info(self, cagnotte_idx) -> CagnotteInfo:
+        return self.swagdb.get_active_cagnotte(cagnotte_idx).get_info()
+
+    def get_all_active_cagnottes_infos(self):
+        return [
+            cagnotte
+            for cagnotte in self.swagdb.get_cagnotte_infos()
+            if cagnotte.is_active
+        ]
+
+    def get_cagnotte_history(self, cagnotte_idx):
+        return [
+            transaction
+            for transaction in self.swagdb.blockchain
+            if concerns_cagnotte(cagnotte_idx, transaction)
+        ]
+
+    def pay_to_cagnotte(
+        self, donator_account_discord_id: int, cagnotte_idx: int, amount
+    ):
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
+        donator_account = self.swagdb.get_account(donator_account_discord_id)
+        # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
+        if cagnotte.currency == Currency.SWAG:
+
+            # Check if the value of $wag is correct regardless its propriety
+            if not isinstance(amount, int) or amount < 0:
+                raise InvalidSwagValue
+
+            # Check if the donator have enough $wag:
+            if donator_account.swag_balance < amount:
+                raise NotEnoughSwagInBalance(donator_account_discord_id)
+
+            # Making the donation
+            donator_account.swag_balance -= amount
+            cagnotte.balance += amount
+
+        elif cagnotte.currency == Currency.STYLE:
+
+            # Check if the value of $tyle is correct regardless its propriety
+            if not isinstance(amount, (int, float, Decimal)) or amount < 0:
+                raise InvalidStyleValue
+
+            # Check if the donator have enough $tyle:
+            if donator_account.style_balance < amount:
+                raise NotEnoughStyleInBalance
+
+            donator_account.style_balance -= amount
+            cagnotte.balance += amount
+
+        # Write donation in the blockchain
+        self.swagdb.blockchain.append(
+            (
+                utcnow().datetime,
+                TransactionType.DONATION,
+                (
+                    donator_account.id,
+                    cagnotte.id,
+                    amount,
+                    cagnotte.currency,
+                ),
+            )
+        )
+
+        cagnotte.participants.add(donator_account_discord_id)
+
+        self.transactional_save()
+
+    def receive_from_cagnotte(
+        self,
+        cagnotte_idx: int,
+        receiver_account_discord_id: int,
+        amount,
+        emiter_account_discord_id: int,
+    ):
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
+        receiver_account = self.swagdb.get_account(receiver_account_discord_id)
+
+        if emiter_account_discord_id not in cagnotte.managers:
+            raise NotCagnotteManager
+
+        # Check if the €agnotte have enough Money ($wag or $tyle):
+        if cagnotte.balance < amount:
+            raise NotEnoughMoneyInCagnotte(cagnotte.id)
+
+        # On regarde le type de la cagnotte pour pouvoir correctement choisir les fonctions qui devront être utiliser
+        if cagnotte.currency == Currency.SWAG:
+
+            # Check if the value of $wag is correct regardless its propriety
+            if not isinstance(amount, int) or amount < 0:
+                raise InvalidSwagValue
+
+            # Making the distribution
+            receiver_account.swag_balance += amount
+            cagnotte.balance -= amount
+
+        elif cagnotte.currency == Currency.STYLE:
+
+            # Check if the value of $tyle is correct regardless its propriety
+            if not isinstance(amount, (int, float, Decimal)) or amount < 0:
+                raise InvalidStyleValue
+
+            receiver_account.style_balance += amount
+            cagnotte.balance -= amount
+
+            # Write distribution in the blockchain
+        self.swagdb.blockchain.append(
+            (
+                utcnow().datetime,
+                TransactionType.DISTRIBUTION,
+                (
+                    cagnotte.id,
+                    receiver_account.id,
+                    amount,
+                    cagnotte.currency,
+                ),
+            )
+        )
+        self.transactional_save()
+
+    def lottery_cagnotte(
+        self,
+        cagnotte_idx: str,
+        lst_of_participant: List[int],
+        emiter_account_discord_id: int,
+    ):
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
+
+        # si la liste des participants est vide, alors par défaut, ce sont ceux qui on participé à la cagnotte qui vont être tiré au sort
+        if not lst_of_participant:
+            lst_of_participant = cagnotte.participants
+
+        reward = cagnotte.balance
+        winner = choice(tuple(lst_of_participant))
+
+        self.receive_from_cagnotte(
+            cagnotte_idx, winner, reward, emiter_account_discord_id
+        )
+
+        return winner, reward
+
+    def share_cagnotte(
+        self, cagnotte_idx: str, account_list: List, emiter_account_discord_id: int
+    ):
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
+
+        if (
+            not account_list
+        ):  # Si la liste de compte est vide, tout les comptes de la bobbycratie seront pris par défaut
+            account_list = [
+                account.discord_id for account in self.swagdb.get_account_infos()
+            ]
+
+        gain_for_everyone = cagnotte.balance / len(account_list)
+
+        if cagnotte.currency == Currency.SWAG:
+            gain_for_everyone = int(gain_for_everyone)  # Le $wag est indivisible
+
+        if cagnotte.currency == Currency.STYLE:
+            gain_for_everyone = (cagnotte.balance / len(account_list)).quantize(
+                Decimal(".0001"), rounding=ROUND_DOWN
+            )
+
+        for account in account_list:
+            self.receive_from_cagnotte(
+                cagnotte_idx, account, gain_for_everyone, emiter_account_discord_id
+            )
+
+        # si il reste de l'argent à redistribuer, on tire au sort celui qui gagne ce reste
+        winner_rest, rest = None, None
+        if cagnotte.balance != 0:
+            winner_rest, rest = self.lottery_cagnotte(
+                cagnotte_idx, account_list, emiter_account_discord_id
+            )
+
+        return account_list, gain_for_everyone, winner_rest, rest
+
+    def destroy_cagnotte(self, cagnotte_idx: int, emiter_account_discord_id: int):
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
+
+        if emiter_account_discord_id not in cagnotte.managers:
+            raise NotCagnotteManager
+
+        if cagnotte.balance != 0:
+            raise CagnotteDestructionForbidden
+
+        cagnotte.is_active = False
+
+        self.transactional_save()
+
+    def get_cagnotte_history(self, cagnotte_idx):
+        return [
+            transaction
+            for transaction in self.swagdb.blockchain
+            if concerns_cagnotte(cagnotte_idx, transaction)
+        ]
 
 
 def assert_timezone(timezone):

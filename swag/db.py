@@ -2,8 +2,14 @@ import cbor2
 from decimal import Decimal
 from arrow import utcnow
 from os import remove
+from enum import IntEnum
 
 from .errors import *
+
+
+class Currency(IntEnum):
+    SWAG = 0
+    STYLE = 1
 
 
 class SwagDB:
@@ -24,6 +30,13 @@ class SwagDB:
         creation_date=[],
         blockchain=[],
         guild_timezone={},
+        next_cagnotte_id=0,
+        cagnotte_name=[],
+        cagnotte_balance=[],
+        cagnotte_currency=[],
+        cagnotte_managers=[],
+        cagnotte_participants=[],
+        cagnotte_activation_state=[],
     ) -> None:
         self.next_id = next_id
 
@@ -43,6 +56,14 @@ class SwagDB:
 
         self.blockchain = blockchain
         self.guild_timezone = guild_timezone
+
+        self.next_cagnotte_id = next_cagnotte_id
+        self.cagnotte_name = cagnotte_name
+        self.cagnotte_balance = cagnotte_balance
+        self.cagnotte_currency = cagnotte_currency
+        self.cagnotte_managers = cagnotte_managers
+        self.cagnotte_participants = cagnotte_participants
+        self.cagnotte_activation_state = cagnotte_activation_state
 
     @staticmethod
     def load_database(file):
@@ -85,6 +106,24 @@ class SwagDB:
         else:
             raise AccountAlreadyExist
 
+    def add_cagnotte(self, cagnotte_name, cagnotte_currency, cagnotte_creator_id):
+        if cagnotte_name not in self.cagnotte_name:
+            self.next_cagnotte_id += 1
+
+            self.cagnotte_name.append(cagnotte_name)
+            if cagnotte_currency == Currency.SWAG:
+                self.cagnotte_balance.append(0)
+            elif cagnotte_currency == Currency.STYLE:
+                self.cagnotte_balance.append(Decimal(0))
+
+            self.cagnotte_currency.append(cagnotte_currency)
+            self.cagnotte_managers.append([cagnotte_creator_id])
+            self.cagnotte_participants.append(set())
+            self.cagnotte_activation_state.append(True)
+
+        else:
+            raise CagnotteNameAlreadyExist
+
     def get_account(self, user):
         try:
             return SwagAccount(self, self.id[user])
@@ -94,14 +133,33 @@ class SwagDB:
     def get_account_from_index(self, idx):
         return SwagAccount(self, idx)
 
+    def get_cagnotte(self, idx):
+        return Cagnotte(self, idx)
+
+    def get_active_cagnotte(self, cagnotte_idx):
+        cagnotte = self.get_cagnotte(cagnotte_idx)
+        if cagnotte.is_active:
+            return cagnotte
+        else:
+            raise NoCagnotteRegistered(cagnotte_idx)
+
     def get_accounts(self):
         return (SwagAccount(self, idx) for idx in range(self.user_number()))
+
+    def get_cagnottes(self):
+        return (Cagnotte(self, idx) for idx in range(self.cagnotte_number()))
 
     def get_account_infos(self):
         return (AccountInfo(account) for account in self.get_accounts())
 
+    def get_cagnotte_infos(self):
+        return (CagnotteInfo(cagnotte) for cagnotte in self.get_cagnottes())
+
     def user_number(self):
         return self.next_id
+
+    def cagnotte_number(self):
+        return self.next_cagnotte_id
 
 
 class SwagAccount:
@@ -197,6 +255,63 @@ class SwagAccount:
         self.swagdb.creation_date[self.id] = value
 
 
+class Cagnotte:
+    def __init__(self, swagdb, cagnotte_id) -> None:
+        self.swagdb = swagdb
+        self.id = cagnotte_id
+
+    def get_info(self):
+        return CagnotteInfo(self)
+
+    @property
+    def name(self):
+        return self.swagdb.cagnotte_name[self.id]
+
+    @name.setter
+    def name(self, value):
+        self.swagdb.cagnotte_name[self.id] = value
+
+    @property
+    def balance(self):
+        return self.swagdb.cagnotte_balance[self.id]
+
+    @balance.setter
+    def balance(self, value):
+        self.swagdb.cagnotte_balance[self.id] = value
+
+    @property
+    def currency(self):
+        return self.swagdb.cagnotte_currency[self.id]
+
+    @currency.setter
+    def currency(self, value):
+        self.swagdb.cagnotte_currency[self.id] = value
+
+    @property
+    def managers(self):
+        return self.swagdb.cagnotte_managers[self.id]
+
+    @managers.setter
+    def managers(self, value):
+        self.swagdb.cagnotte_managers[self.id] = value
+
+    @property
+    def participants(self):
+        return self.swagdb.cagnotte_participants[self.id]
+
+    @participants.setter
+    def participants(self, value):
+        self.swagdb.cagnotte_participants[self.id] = value
+
+    @property
+    def is_active(self):
+        return self.swagdb.cagnotte_activation_state[self.id]
+
+    @is_active.setter
+    def is_active(self, value):
+        self.swagdb.cagnotte_activation_state[self.id] = value
+
+
 class AccountInfo:
     def __init__(self, account):
         self.id = account.id
@@ -211,3 +326,15 @@ class AccountInfo:
         self.timezone = account.timezone
         self.timezone_lock_date = account.timezone_lock_date
         self.creation_date = account.creation_date
+
+
+class CagnotteInfo:
+    def __init__(self, cagnotte) -> None:
+
+        self.id = cagnotte.id
+        self.name = cagnotte.name
+        self.balance = cagnotte.balance
+        self.currency = cagnotte.currency
+        self.managers = cagnotte.managers
+        self.participants = cagnotte.participants
+        self.is_active = cagnotte.is_active
