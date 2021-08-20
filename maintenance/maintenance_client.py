@@ -61,4 +61,4 @@ class MaintenanceClient(Module):
                 self.client,
             )
 
-                await self.client.close()
+            await self.client.close()
