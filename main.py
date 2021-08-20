@@ -22,10 +22,12 @@ intents.members = True
 # Création du client
 client = discord.Client(intents=intents)
 
+swag_module = SwagClient(client, "bybbank.swagdb")
+
 modules = [
-    SwagClient(client, "bybbank.swagdb"),
+    swag_module,
     JukeboxClient(client),
-    MaintenanceClient(client, client_config.get("admins")),
+    MaintenanceClient(client, client_config.get("admins"), swag_module),
 ]
 
 
