@@ -60,5 +60,3 @@ class MaintenanceClient(Module):
                 self.swag_module,
                 self.client,
             )
-
-            await self.client.close()
