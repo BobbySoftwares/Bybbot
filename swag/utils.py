@@ -168,6 +168,19 @@ async def mini_history_swag_message(
                 format_number(transaction_data[2]),
                 transaction_data[3],
             )
+        elif transaction_type == TransactionType.ADMIN:
+            return (
+                "Don administrateur",
+                await get_guild_member_name(
+                    swagbank.swagdb.get_account_from_index(
+                        transaction_data[0]
+                    ).discord_id,
+                    message_user.guild,
+                    client,
+                ),
+                format_number(transaction_data[1]),
+                "$wag",
+            )
 
     transactions = [
         (

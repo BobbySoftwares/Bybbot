@@ -11,6 +11,7 @@ class TransactionType(IntEnum):
     ROI = 6
     DONATION = 7  # Envoie de l'argent à une cagnotte
     DISTRIBUTION = 8  # Recevoir de l'argent depuis cagnotte
+    ADMIN = 9  # Réception d'argent après un event
 
 
 def concerns_user(id, transaction):
@@ -32,6 +33,8 @@ def concerns_user(id, transaction):
         return id == transaction[2][0]
     elif transaction[1] == TransactionType.DISTRIBUTION:
         return id == transaction[2][1]
+    elif transaction[1] == TransactionType.ADMIN:
+        return id == transaction[2][0]
 
 
 def concerns_cagnotte(id, transaction):
