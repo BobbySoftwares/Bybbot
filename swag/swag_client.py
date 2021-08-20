@@ -10,6 +10,7 @@ from swag.errors import (
 from apscheduler.triggers.cron import CronTrigger
 from decimal import Decimal, ROUND_DOWN
 from arrow import utcnow
+from discord import File
 
 from .bank import (
     AlreadyMineToday,
@@ -33,6 +34,7 @@ from .utils import (
 )
 
 from utils import (
+    BACKUP_CHANNEL_ID,
     GUILD_ID_BOBBYCRATIE,
     format_number,
     get_guild_member_name,
@@ -58,13 +60,22 @@ class SwagClient(Module):
     async def add_jobs(self, scheduler):
         # Programme la fonction update_the_style pour être lancée
         # toutes les heures.
-        async def job():
+        async def style_job():
             now = utcnow().replace(microsecond=0, second=0, minute=0)
             if self.last_update is None or self.last_update < now:
                 self.last_update = now
                 await update_the_style(self.client, self)
 
-        scheduler.add_job(job, CronTrigger(hour="*"))
+        scheduler.add_job(style_job, CronTrigger(hour="*"))
+
+        # Programme la fonction une fonction pour envoyer la db sur le serveur discord de dev
+        # tout les jours, à 6h
+        async def backup_job():
+            await self.client.get_channel(BACKUP_CHANNEL_ID).send(
+                file=File(self.swag_bank.db_path)
+            )
+
+        scheduler.add_job(backup_job, CronTrigger(day="*", hour="6"))
 
     async def process(self, message):
         try:
