@@ -5,4 +5,5 @@ g = Git()
 
 while True:
     print(g.pull())
-    run("python3 main.py", shell=True)
+    run("poetry install", shell=True)
+    run("poetry run python main.py", shell=True)

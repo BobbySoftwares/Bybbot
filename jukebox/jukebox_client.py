@@ -87,7 +87,7 @@ class JukeboxClient(Module):
 
         file_to_play = file_path
 
-        vc = await connect_to_chan(chan_to_go)
+        vc = await connect_to_chan(self.client, chan_to_go)
 
         # Si un autre son est actuellement entrain d'être joué, on
         # endors le tread pendant 1 secondes

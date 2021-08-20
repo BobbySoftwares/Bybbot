@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "Bybbot"
+version = "0.1.0"
+description = "A french discord bot to do useless stuff."
+authors = ["gggto <47183108+gggto@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+numpy = "^1.21.0"
+"discord.py" = "^1.7.3"
+discord-py-slash-command = "^2.3.2"
+arrow = "^1.1.1"
+APScheduler = "^3.7.0"
+cbor2 = "^5.4.0"
+GitPython = "^3.1.18"
+
+[tool.poetry.dev-dependencies]
+black = "^21.6b0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

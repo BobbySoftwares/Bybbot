@@ -38,8 +38,8 @@ async def on_ready():
     Utilisé pour programmer les fonctions récurrentes, comme la mise
     à jour du $tyle
     """
-    await client.change_presence(status=discord.Status.online)
-    print("Le bot est loggué avec les id {0.user}".format(client))
+
+    print(f"Le bot est loggué avec les id {client.user}")
 
     for module in modules:
         await module.setup()

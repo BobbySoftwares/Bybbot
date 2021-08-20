@@ -1,5 +1,7 @@
-from scipy.stats import cauchy
 from numpy import round, abs
+from numpy.random import Generator, Philox
+
+rng = Generator(Philox())
 
 
 def roll(loc, scale):
@@ -13,4 +15,5 @@ def roll(loc, scale):
     Returns:
         int: Nombre aléatoire généré.
     """
-    return int(abs(round(cauchy.rvs(loc, scale))))
+    rv = rng.standard_cauchy() * scale + loc
+    return int(abs(round(rv)))
