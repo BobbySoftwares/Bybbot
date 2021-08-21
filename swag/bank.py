@@ -493,6 +493,18 @@ class SwagBank:
 
         return account_list, gain_for_everyone, winner_rest, rest
 
+    def rename_cagnotte(
+        self, cagnotte_idx: int, new_name: str, emiter_account_discord_id: int
+    ):
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
+
+        if emiter_account_discord_id not in cagnotte.managers:
+            raise NotCagnotteManager
+
+        cagnotte.name = new_name
+
+        self.transactional_save()
+
     def destroy_cagnotte(self, cagnotte_idx: int, emiter_account_discord_id: int):
         cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
 

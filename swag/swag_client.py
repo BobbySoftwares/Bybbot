@@ -466,7 +466,7 @@ class SwagClient(Module):
                 new_cagnotte_idx
             ).get_info()
             await message.channel.send(
-                f"{message.author.mention} vient de créer une €agnotte de $tyle nommée **« {cagnotte_name} »**. "
+                f"{message.author.mention} vient de créer une €agnotte de $wag nommée **« {cagnotte_name} »**. "
                 f"Son identifiant est le €{cagnotte_info.id}"
             )
 
@@ -680,6 +680,27 @@ class SwagClient(Module):
 
             await update_forbes_classement(message.guild, self, self.client)
 
+        elif "renommer" in splited_command:
+            cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
+
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
+
+            new_name = [
+                word
+                for word in splited_command[1:]
+                if word not in {f"€{cagnotte_idx}", "renommer"}
+            ]
+
+            new_name = " ".join(new_name)
+
+            self.swag_bank.rename_cagnotte(cagnotte_idx, new_name, message.author.id)
+
+            await message.channel.send(
+                f'La €agnotte €{cagnotte_idx} anciennement nommé **"{cagnotte_info.name}"** s\'appelle maintenant **"{new_name}"**'
+            )
+
+            await update_forbes_classement(message.guild, self, self.client)
+
         elif "détruire" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
 
@@ -711,6 +732,7 @@ class SwagClient(Module):
                 "⭐!€agnotte loto €[n] [@mention1 @mention2 ...] ~~ "
                 "Tire au sort parmis les utilisateurs mentionnés celui qui remportera l'intégralité "
                 "de la €agnotte. Si personne n'est mentionné, le tirage au sort parmis les participants à la €agnotte\n"
+                "⭐!€agnotte renommer €[n] [Nouveau nom] ~~ Change le nom de la €agnotte"
                 "⭐!€agnotte détruire €[n] ~~ Détruit la €agnotte si elle est vide"
                 "```\n"
                 "*Seul le gestionnaire de la €agnotte peut faire les commandes précédées d'une  ⭐*"
