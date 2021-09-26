@@ -701,6 +701,18 @@ class SwagClient(Module):
 
             await update_forbes_classement(message.guild, self, self.client)
 
+        elif "reset" in splited_command:
+            cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
+            cagnotte_info = self.swag_bank.get_active_cagnotte_info(cagnotte_idx)
+
+            self.swag_bank.reset_cagnotte_participants(cagnotte_idx, message.author.id)
+
+            await message.channel.send(
+                f'La liste des participants de la €agnotte €{cagnotte_idx} **"{cagnotte_info.name}"** a été remis à zéro 🔄'
+            )
+
+            await update_forbes_classement(message.guild, self, self.client)
+
         elif "détruire" in splited_command:
             cagnotte_idx = get_cagnotte_idx_from_command(splited_command)
 
@@ -732,8 +744,9 @@ class SwagClient(Module):
                 "⭐!€agnotte loto €[n] [@mention1 @mention2 ...] ~~ "
                 "Tire au sort parmis les utilisateurs mentionnés celui qui remportera l'intégralité "
                 "de la €agnotte. Si personne n'est mentionné, le tirage au sort parmis les participants à la €agnotte\n"
-                "⭐!€agnotte renommer €[n] [Nouveau nom] ~~ Change le nom de la €agnotte"
-                "⭐!€agnotte détruire €[n] ~~ Détruit la €agnotte si elle est vide"
+                "⭐!€agnotte renommer €[n] [Nouveau nom] ~~ Change le nom de la €agnotte\n"
+                "⭐!€agnotte reset €[n] ~~ Enlève tout les participants de la €agnotte de la liste des participants\n"
+                "⭐!€agnotte détruire €[n] ~~ Détruit la €agnotte si elle est vide\n"
                 "```\n"
                 "*Seul le gestionnaire de la €agnotte peut faire les commandes précédées d'une  ⭐*"
             )

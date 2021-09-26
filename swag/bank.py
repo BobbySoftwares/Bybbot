@@ -505,6 +505,19 @@ class SwagBank:
 
         self.transactional_save()
 
+    def reset_cagnotte_participants(
+        self, cagnotte_idx: int, emiter_account_discord_id: int
+    ):
+
+        cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
+
+        if emiter_account_discord_id not in cagnotte.managers:
+            raise NotCagnotteManager
+
+        cagnotte.participants.clear()
+
+        self.transactional_save()
+
     def destroy_cagnotte(self, cagnotte_idx: int, emiter_account_discord_id: int):
         cagnotte = self.swagdb.get_active_cagnotte(cagnotte_idx)
 
