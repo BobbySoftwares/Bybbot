@@ -22,7 +22,7 @@ intents.members = True
 # Création du client
 client = discord.Client(intents=intents)
 
-swag_module = SwagClient(client, "bybbank.swagdb")
+swag_module = SwagClient(client)
 
 modules = [
     swag_module,
