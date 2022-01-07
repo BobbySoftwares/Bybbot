@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 from attr import attrs, attrib
 
-from ..artefacts import Cagnotte
+from ..artefacts import CagnotteAccount
 
 from ..block import Block
 
@@ -34,7 +34,7 @@ class CagnotteCreation(Block):
             raise CagnotteNameAlreadyExist
 
     def execute(self, db: SwagChain):
-        db._accounts[self.cagnotte_id] = Cagnotte(self.name, [self.creator])
+        db._accounts[self.cagnotte_id] = CagnotteAccount(self.name, [self.creator])
 
 
 @attrs(frozen=True, kw_only=True)

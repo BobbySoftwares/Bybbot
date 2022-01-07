@@ -7,7 +7,7 @@ from swag.errors import (
     CagnotteNameAlreadyExist,
     CagnotteDestructionForbidden,
     CagnotteUnspecifiedException,
-    NoCagnotteRegistered,
+    NoCagnotteAccountRegistered,
     NotEnoughMoneyInCagnotte,
     NotCagnotteManager,
 )
@@ -21,7 +21,7 @@ from ..errors import (
     InvalidTimeZone,
     NoReceiver,
     TimeZoneFieldLocked,
-    NoAccountRegistered,
+    NoSwagAccountRegistered,
     AccountAlreadyExist,
     NotEnoughStyleInBalance,
     NotEnoughSwagInBalance,
@@ -112,7 +112,7 @@ class SwagClient(Module):
                 "incorrecte, elle doit être supérieur à 0, car le $tyle est "
                 "**toujours positif** !"
             )
-        except NoAccountRegistered as e:
+        except NoSwagAccountRegistered as e:
             await message.channel.send(
                 f"{e.name}, tu ne possèdes pas de compte sur la $wagChain™ "
                 "<:rip:817165391846703114> !\n\n"
@@ -139,7 +139,7 @@ class SwagClient(Module):
                 "modération. Ceci était un message de la Fédération Bobbyique du "
                 "Minage*"
             )
-        except NoCagnotteRegistered as e:
+        except NoCagnotteAccountRegistered as e:
             await message.channel.send(
                 f"Aucune €agnotte n°€{e.name} est active sur la $wagChain ! "
                 f"{message.author.mention}, tu t'es sans doute trompé de numéro 🤨"

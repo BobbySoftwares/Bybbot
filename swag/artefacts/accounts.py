@@ -1,18 +1,18 @@
 from decimal import Decimal
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, List, Set
 from attr import Factory, attrs, attrib
 import arrow
 from arrow import Arrow
 from itertools import chain
 
-from swag.artefacts.cagnotte import Cagnotte, CagnotteDict
 from swag.id import CagnotteId, UserId
 
 from ..errors import (
     InvalidStyleValue,
     InvalidSwagValue,
     InvalidTimeZone,
-    NoAccountRegistered,
+    NoSwagAccountRegistered,
+    NoCagnotteAccountRegistered,
     NotEnoughStyleInBalance,
     NotEnoughSwagInBalance,
 )
@@ -27,17 +27,9 @@ def assert_timezone(self, attribute, timezone):
 
 
 @attrs(auto_attribs=True)
-class SwagAccount:
-    creation_date: Arrow
-    timezone: str = attrib(validator=assert_timezone)
+class Account:
     swag_balance: Swag = Swag(0)
     style_balance: Style = Style(0)
-    last_mining_date: Optional[Arrow] = None
-    style_rate: Decimal = Decimal(100)
-    blocked_swag: Swag = Swag(0)
-    unblocking_date: Optional[Arrow] = None
-    pending_style: Style = Style(0)
-    timezone_lock_date: Optional[Arrow] = None
 
     def __iadd__(self, value: Union[Swag, Style]):
         if type(value) is Swag:
@@ -69,23 +61,66 @@ class SwagAccount:
     def register(self, _):
         pass
 
-
 @attrs(frozen=True)
-class AccountInfo(SwagAccount):
+class AccountInfo(Account):
     @classmethod
-    def from_account(cls, account):
+    def get_info(cls, account):
         return cls(**vars(account))
 
 
-class AccountDict(dict):
-    def __missing__(self, key):
-        raise NoAccountRegistered(key)
+#------------------------------------#
+# Classes pour les comptes Cagnottes #
+#------------------------------------#
 
+@attrs(auto_attribs=True)
+class SwagAccount(Account):
+    creation_date: Arrow
+    timezone: str = attrib(validator=assert_timezone)
+    last_mining_date: Optional[Arrow] = None
+    style_rate: Decimal = Decimal(100)
+    blocked_swag: Swag = Swag(0)
+    unblocking_date: Optional[Arrow] = None
+    pending_style: Style = Style(0)
+    timezone_lock_date: Optional[Arrow] = None
+
+@attrs(frozen=True)
+class SwagAccountInfo(AccountInfo,SwagAccount):
+    pass
+
+class SwagAccountDict(dict):
+    def __missing__(self, key):
+        raise NoSwagAccountRegistered(key)
+
+
+#------------------------------------#
+# Classes pour les comptes Cagnottes #
+#------------------------------------#
+
+@attrs(auto_attribs=True)
+class CagnotteAccount:
+    name: str
+    managers: List[UserId]
+    participants: Set[UserId] = Factory(set)
+
+    def register(self, participant: UserId):
+        self.participants.add(participant)
+
+@attrs(frozen=True)
+class CagnotteAccountInfo(AccountInfo,CagnotteAccount):
+    pass
+
+class CagnotteAccountDict(dict):
+    def __missing__(self, key):
+        raise NoCagnotteAccountRegistered(key)
+
+#------------------------------------#
+# Classe de l'ensemble des comptes   #
+#------------------------------------#
 
 @attrs(auto_attribs=True)
 class Accounts:
-    users: Dict[UserId, SwagAccount] = attrib(init=False, factory=AccountDict)
-    cagnottes: Dict[CagnotteId, Cagnotte] = attrib(init=False, factory=CagnotteDict)
+    users: Dict[UserId, SwagAccount] = attrib(init=False, factory=SwagAccountDict)
+    cagnottes: Dict[CagnotteId, CagnotteAccount] = attrib(init=False, factory=CagnotteAccountDict)
 
     def __setitem__(self, key, item):
         if type(key) is UserId:

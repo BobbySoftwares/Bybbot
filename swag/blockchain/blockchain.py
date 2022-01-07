@@ -3,14 +3,13 @@ from random import choice
 from typing import Dict, List
 from attr import attrs, attrib
 
-from swag.artefacts.accounts import AccountDict, Accounts
-from swag.artefacts.cagnotte import CagnotteDict
+from swag.artefacts.accounts import Accounts
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
 from swag.currencies import Swag
 from swag.id import CagnotteId, UserId
 
-from ..artefacts import AccountInfo, SwagAccount, Cagnotte, CagnotteInfo, Guild
+from ..artefacts import SwagAccountInfo, CagnotteAccountInfo, Guild
 from ..stylog import unit_style_generation
 from ..blocks import (
     ReturnOnInvestment,
@@ -42,10 +41,10 @@ class SwagChain:
             self.append(block)
 
     def account(self, user_id):
-        return AccountInfo.from_account(self._accounts[UserId(user_id)])
+        return SwagAccountInfo.get_info(self._accounts[UserId(user_id)])
 
     def cagnotte(self, cagnotte_id):
-        return CagnotteInfo.from_cagnotte(self._accounts[CagnotteId(cagnotte_id)])
+        return CagnotteAccountInfo.get_info(self._accounts[CagnotteId(cagnotte_id)])
 
     def _guild(self, guild_id):
         try:
@@ -107,7 +106,7 @@ class SwagChain:
     def forbes(self):
         return sorted(
             (
-                (user_id, AccountInfo.from_account(user_account))
+                (user_id, SwagAccountInfo.get_info(user_account))
                 for user_id, user_account in self._accounts.users.items()
             ),
             key=lambda item: item[1].swag_balance,
@@ -117,7 +116,7 @@ class SwagChain:
     @property
     def cagnottes(self):
         return (
-            (cagnotte_id, CagnotteInfo.from_cagnotte(cagnotte))
+            (cagnotte_id, CagnotteAccountInfo.get_info(cagnotte))
             for cagnotte_id, cagnotte in self._accounts.cagnottes.items()
         )
 

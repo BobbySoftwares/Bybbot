@@ -1,4 +1,4 @@
-class NoAccountRegistered(Exception):
+class NoSwagAccountRegistered(Exception):
     """Raised when an account name is not present in the $wagChain"""
 
     def __init__(self, name):
@@ -73,7 +73,7 @@ class TimeZoneFieldLocked(Exception):
 ##Exception for €agnottes
 
 
-class NoCagnotteRegistered(Exception):
+class NoCagnotteAccountRegistered(Exception):
     """Raised when the cagnotte name or id is not present in the $wagChain™"""
 
     def __init__(self, name):

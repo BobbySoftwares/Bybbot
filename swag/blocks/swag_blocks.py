@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Union
 
-from swag.artefacts.cagnotte import Cagnotte
 from swag.id import CagnotteId, UserId
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
-
 
 from ..artefacts import SwagAccount
 
