@@ -59,10 +59,10 @@ async def execute_cagnotte_command(self, message):
 
         await self.swagchain.append(
             CagnotteCreation(
-                issuer_id=message.author.id,
+                issuer_id=UserId(message.author.id),
                 cagnotte_id=cagnotte_id,
                 name=cagnotte_name,
-                creator=message.author.id,
+                creator=UserId(message.author.id),
             )
         )
 
@@ -137,8 +137,8 @@ async def execute_cagnotte_command(self, message):
 
         await self.swagchain.append(
             Transaction(
-                issuer_id=message.author.id,
-                giver_id=message.author.id,
+                issuer_id=UserId(message.author.id),
+                giver_id=UserId(message.author.id),
                 recipient_id=cagnotte_id,
                 amount=amount,
             )
@@ -173,9 +173,9 @@ async def execute_cagnotte_command(self, message):
 
         await self.swagchain.append(
             Transaction(
-                issuer_id=message.author.id,
+                issuer_id=UserId(message.author.id),
                 giver_id=cagnotte_id,
-                recipient_id=message.author.id,
+                recipient_id=UserId(message.author.id),
                 amount=amount,
             )
         )
@@ -204,7 +204,7 @@ async def execute_cagnotte_command(self, message):
             swag_rest,
             style_rest,
         ) = self.swagchain.share_cagnotte(
-            cagnotte_id, message.author.id, participant_ids
+            cagnotte_id, UserId(message.author.id), participant_ids
         )
 
         participants_mentions = ", ".join(
@@ -256,7 +256,7 @@ async def execute_cagnotte_command(self, message):
 
         await self.swagchain.append(
             CagnotteRenaming(
-                issuer_id=message.author.id,
+                issuer_id=UserId(message.author.id),
                 cagnotte_id=cagnotte_id,
                 new_name=new_name,
             )
@@ -275,7 +275,7 @@ async def execute_cagnotte_command(self, message):
 
         await self.swagchain.append(
             CagnotteParticipantsReset(
-                issuer_id=message.author.id,
+                issuer_id=UserId(message.author.id),
                 cagnotte_id=cagnotte_id,
             )
         )
@@ -293,7 +293,7 @@ async def execute_cagnotte_command(self, message):
 
         await self.swagchain.append(
             CagnotteDeletion(
-                issuer_id=message.author.id,
+                issuer_id=UserId(message.author.id),
                 cagnotte_id=cagnotte_id,
             )
         )
