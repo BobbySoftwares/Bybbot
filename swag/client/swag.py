@@ -42,7 +42,9 @@ async def execute_swag_command(swag_client, message):
         await message.channel.send(
             f"⛏ {message.author.mention} a miné `{block.amount}` !"
         )
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "info" in command_swag:
         user = message.author
@@ -97,7 +99,9 @@ async def execute_swag_command(swag_client, message):
             f"{message.author.mention}, vous venez de bloquer `{block.amount}`, "
             f"vous les récupérerez dans **{BLOCKING_TIME} jours** à la même heure\n"
         )
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "payer" in command_swag:
         if len(message.mentions) != 1:
@@ -118,7 +122,9 @@ async def execute_swag_command(swag_client, message):
             f"-->\t{message.mentions[0].display_name}]\n"
             "```"
         )
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "timezone" in command_swag:
         timezone = command_swag[2]
@@ -152,4 +158,6 @@ async def execute_swag_command(swag_client, message):
             "effectuées sur ton compte\n"
             "```"
         )
-    await update_forbes_classement(message.guild, swag_client, swag_client.client)
+    await update_forbes_classement(
+        message.guild, swag_client, swag_client.discord_client
+    )

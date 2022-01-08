@@ -37,7 +37,9 @@ async def execute_style_command(swag_client, message):
             f"{message.author.mention}, vous venez de bloquer `{block.amount}`, "
             f"vous les récupérerez dans **{BLOCKING_TIME} jours** à la même heure\n"
         )
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "payer" in command_style:
         if len(message.mentions) != 1:
@@ -58,7 +60,9 @@ async def execute_style_command(swag_client, message):
             f"-->\t{message.mentions[0].display_name}]\n"
             "```"
         )
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     else:
         await message.channel.send(

@@ -41,8 +41,8 @@ SWAGCHAIN_ID = 913946510616567848
 
 
 class SwagClient(Module):
-    def __init__(self, client) -> None:
-        self.client = client
+    def __init__(self, discord_client) -> None:
+        self.discord_client = discord_client
         print("Initialisation de la $wagChain...\n")
         self.guilds = {}
         self.the_swaggest = None
@@ -50,11 +50,13 @@ class SwagClient(Module):
 
     async def setup(self):
         self.swagchain = await SyncedSwagChain.from_channel(
-            self.client.user.id, self.client.get_channel(SWAGCHAIN_ID)
+            self.discord_client.user.id, self.discord_client.get_channel(SWAGCHAIN_ID)
         )
         print("Mise à jour du classement et des bonus de blocage\n\n")
         await update_forbes_classement(
-            self.client.get_guild(GUILD_ID_BOBBYCRATIE), self, self.client
+            self.discord_client.get_guild(GUILD_ID_BOBBYCRATIE),
+            self,
+            self.discord_client,
         )
 
     async def add_jobs(self, scheduler):
@@ -64,7 +66,7 @@ class SwagClient(Module):
             now = utcnow().replace(microsecond=0, second=0, minute=0)
             if self.last_update is None or self.last_update < now:
                 self.last_update = now
-                await update_the_style(self.client, self)
+                await update_the_style(self.discord_client, self)
 
         scheduler.add_job(style_job, CronTrigger(hour="*"))
 

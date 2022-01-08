@@ -72,7 +72,9 @@ async def execute_cagnotte_command(swag_client, message):
             f"Son identifiant est le {cagnotte_id}"
         )
 
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     # À partir d'ici, toutes les commandes doivent impérativement passer l'identifiant
     # de €agnotte (sous forme de €n)
@@ -82,11 +84,15 @@ async def execute_cagnotte_command(swag_client, message):
         cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
         managers = [
-            await get_guild_member_name(manager, message.guild, swag_client.client)
+            await get_guild_member_name(
+                manager, message.guild, swag_client.discord_client
+            )
             for manager in cagnotte_info.managers
         ]
         participants = [
-            await get_guild_member_name(participant, message.guild, swag_client.client)
+            await get_guild_member_name(
+                participant, message.guild, swag_client.discord_client
+            )
             for participant in cagnotte_info.participants
         ]
         await message.channel.send(
@@ -151,7 +157,9 @@ async def execute_cagnotte_command(swag_client, message):
             f"-->\t€{cagnotte_id} {cagnotte_info.name}]\n"
             "```"
         )
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "donner" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
@@ -188,7 +196,9 @@ async def execute_cagnotte_command(swag_client, message):
             "```"
         )
 
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "partager" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
@@ -222,7 +232,9 @@ async def execute_cagnotte_command(swag_client, message):
                 "restants ! 🤑"
             )
 
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "loto" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
@@ -240,7 +252,9 @@ async def execute_cagnotte_command(swag_client, message):
             f"`{swag_gain}` et `{style_gain}` ! 🎰"
         )
 
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "renommer" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
@@ -267,7 +281,9 @@ async def execute_cagnotte_command(swag_client, message):
             f'** s\'appelle maintenant **"{new_name}"**'
         )
 
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "reset" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
@@ -285,7 +301,9 @@ async def execute_cagnotte_command(swag_client, message):
             f'"{cagnotte_info.name}"** a été remis à zéro 🔄'
         )
 
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     elif "détruire" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
@@ -302,7 +320,9 @@ async def execute_cagnotte_command(swag_client, message):
             f"La €agnotte {cagnotte_id} *{cagnotte_info.name}* est maintenant "
             "détruite de ce plan de l'existence ❌"
         )
-        await update_forbes_classement(message.guild, swag_client, swag_client.client)
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
 
     else:
         await message.channel.send(

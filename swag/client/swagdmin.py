@@ -28,7 +28,7 @@ async def execute_swagdmin_command(swag_client, message):
         )
 
     elif "jobs" in command:
-        await update_the_style(swag_client.client, swag_client)
+        await update_the_style(swag_client.discord_client, swag_client)
 
     else:
         await message.channel.send(
