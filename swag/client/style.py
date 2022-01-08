@@ -23,7 +23,7 @@ def style_from_command(command):
         raise InvalidStyleValue
 
 
-async def execute_style_command(self, message):
+async def execute_style_command(swag_client, message):
     command_style = message.content.split()
     if "bloquer" in command_style:
         block = SwagBlocking(
@@ -31,13 +31,13 @@ async def execute_style_command(self, message):
             user_id=message.author.id,
             amount=swag_from_command(command_style),
         )
-        await self.swagchain.append(block)
+        await swag_client.swagchain.append(block)
 
         await message.channel.send(
             f"{message.author.mention}, vous venez de bloquer `{block.amount}`, "
             f"vous les récupérerez dans **{BLOCKING_TIME} jours** à la même heure\n"
         )
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "payer" in command_style:
         if len(message.mentions) != 1:
@@ -49,7 +49,7 @@ async def execute_style_command(self, message):
             recipient_id=UserId(message.mentions[0].id),
             amount=style_from_command(command_style),
         )
-        await self.swagchain.append(block)
+        await swag_client.swagchain.append(block)
 
         await message.channel.send(
             "Transaction effectué avec succès ! \n"
@@ -58,7 +58,7 @@ async def execute_style_command(self, message):
             f"-->\t{message.mentions[0].display_name}]\n"
             "```"
         )
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     else:
         await message.channel.send(

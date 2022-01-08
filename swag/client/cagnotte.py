@@ -23,7 +23,7 @@ from utils import (
 )
 
 
-async def execute_cagnotte_command(self, message):
+async def execute_cagnotte_command(swag_client, message):
     def get_cagnotte_id_from_command(splited_command):
         try:
             cagnotte_idx = [
@@ -57,7 +57,7 @@ async def execute_cagnotte_command(self, message):
             )
             return
 
-        await self.swagchain.append(
+        await swag_client.swagchain.append(
             CagnotteCreation(
                 issuer_id=UserId(message.author.id),
                 cagnotte_id=cagnotte_id,
@@ -72,21 +72,21 @@ async def execute_cagnotte_command(self, message):
             f"Son identifiant est le {cagnotte_id}"
         )
 
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     # À partir d'ici, toutes les commandes doivent impérativement passer l'identifiant
     # de €agnotte (sous forme de €n)
 
     elif "info" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = self.swagchain.cagnotte(cagnotte_id)
+        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
         managers = [
-            await get_guild_member_name(manager, message.guild, self.client)
+            await get_guild_member_name(manager, message.guild, swag_client.client)
             for manager in cagnotte_info.managers
         ]
         participants = [
-            await get_guild_member_name(participant, message.guild, self.client)
+            await get_guild_member_name(participant, message.guild, swag_client.client)
             for participant in cagnotte_info.participants
         ]
         await message.channel.send(
@@ -123,7 +123,7 @@ async def execute_cagnotte_command(self, message):
 
     elif "payer" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = self.swagchain.cagnotte(cagnotte_id)
+        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
         if "$wag" in splited_command:
             amount = swag_from_command(splited_command)
@@ -135,7 +135,7 @@ async def execute_cagnotte_command(self, message):
             )
             return
 
-        await self.swagchain.append(
+        await swag_client.swagchain.append(
             Transaction(
                 issuer_id=UserId(message.author.id),
                 giver_id=UserId(message.author.id),
@@ -151,11 +151,11 @@ async def execute_cagnotte_command(self, message):
             f"-->\t€{cagnotte_id} {cagnotte_info.name}]\n"
             "```"
         )
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "donner" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = self.swagchain.cagnotte(cagnotte_id)
+        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
         receiver = message.mentions
         if len(receiver) != 1:
             raise NoReceiver
@@ -171,7 +171,7 @@ async def execute_cagnotte_command(self, message):
             )
             return
 
-        await self.swagchain.append(
+        await swag_client.swagchain.append(
             Transaction(
                 issuer_id=UserId(message.author.id),
                 giver_id=cagnotte_id,
@@ -188,11 +188,11 @@ async def execute_cagnotte_command(self, message):
             "```"
         )
 
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "partager" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = self.swagchain.cagnotte(cagnotte_id)
+        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
         participant_ids = [UserId(participant.id) for participant in message.mentions]
 
@@ -203,7 +203,7 @@ async def execute_cagnotte_command(self, message):
             winner_rest,
             swag_rest,
             style_rest,
-        ) = self.swagchain.share_cagnotte(
+        ) = swag_client.swagchain.share_cagnotte(
             cagnotte_id, UserId(message.author.id), participant_ids
         )
 
@@ -222,15 +222,15 @@ async def execute_cagnotte_command(self, message):
                 "restants ! 🤑"
             )
 
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "loto" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = self.swagchain.cagnotte(cagnotte_id)
+        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
         participant_ids = [participant.id for participant in message.mentions]
 
-        gagnant, swag_gain, style_gain = self.swagchain.cagnotte_lottery(
+        gagnant, swag_gain, style_gain = swag_client.swagchain.cagnotte_lottery(
             cagnotte_id, message.author.id, participant_ids
         )
 
@@ -240,11 +240,11 @@ async def execute_cagnotte_command(self, message):
             f"`{swag_gain}` et `{style_gain}` ! 🎰"
         )
 
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "renommer" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = self.swagchain.cagnotte(cagnotte_id)
+        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
         new_name = [
             word
@@ -254,7 +254,7 @@ async def execute_cagnotte_command(self, message):
 
         new_name = " ".join(new_name)
 
-        await self.swagchain.append(
+        await swag_client.swagchain.append(
             CagnotteRenaming(
                 issuer_id=UserId(message.author.id),
                 cagnotte_id=cagnotte_id,
@@ -267,13 +267,13 @@ async def execute_cagnotte_command(self, message):
             f'** s\'appelle maintenant **"{new_name}"**'
         )
 
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "reset" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = self.swagchain.cagnotte(cagnotte_id)
+        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
-        await self.swagchain.append(
+        await swag_client.swagchain.append(
             CagnotteParticipantsReset(
                 issuer_id=UserId(message.author.id),
                 cagnotte_id=cagnotte_id,
@@ -285,13 +285,13 @@ async def execute_cagnotte_command(self, message):
             f'"{cagnotte_info.name}"** a été remis à zéro 🔄'
         )
 
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "détruire" in splited_command:
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = self.swagchain.cagnotte(cagnotte_id)
+        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
-        await self.swagchain.append(
+        await swag_client.swagchain.append(
             CagnotteDeletion(
                 issuer_id=UserId(message.author.id),
                 cagnotte_id=cagnotte_id,
@@ -302,7 +302,7 @@ async def execute_cagnotte_command(self, message):
             f"La €agnotte {cagnotte_id} *{cagnotte_info.name}* est maintenant "
             "détruite de ce plan de l'existence ❌"
         )
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     else:
         await message.channel.send(

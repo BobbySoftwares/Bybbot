@@ -4,7 +4,7 @@ from ..utils import (
 )
 
 
-async def execute_swagdmin_command(self, message):
+async def execute_swagdmin_command(swag_client, message):
     user = message.author
     guild = message.guild
 
@@ -15,7 +15,7 @@ async def execute_swagdmin_command(self, message):
     if "timezone" in command:
         timezone = command[2]
 
-        await self.swagchain.append(
+        await swag_client.swagchain.append(
             GuildTimezoneUpdate(
                 issuer_id=message.author.id, guild_id=guild.id, timezone=timezone
             )
@@ -28,7 +28,7 @@ async def execute_swagdmin_command(self, message):
         )
 
     elif "jobs" in command:
-        await update_the_style(self.client, self)
+        await update_the_style(swag_client.client, swag_client)
 
     else:
         await message.channel.send(

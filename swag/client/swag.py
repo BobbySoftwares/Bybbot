@@ -17,11 +17,11 @@ def swag_from_command(command):
         raise InvalidSwagValue
 
 
-async def execute_swag_command(self, message):
+async def execute_swag_command(swag_client, message):
     command_swag = message.content.split()
 
     if "créer" in command_swag:
-        await self.swagchain.append(
+        await swag_client.swagchain.append(
             AccountCreation(
                 issuer_id=message.author.id,
                 user_id=message.author.id,
@@ -37,16 +37,16 @@ async def execute_swag_command(self, message):
 
     elif "miner" in command_swag:
         block = Mining(issuer_id=message.author.id, user_id=message.author.id)
-        await self.swagchain.append(block)
+        await swag_client.swagchain.append(block)
 
         await message.channel.send(
             f"⛏ {message.author.mention} a miné `{block.amount}` !"
         )
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "info" in command_swag:
         user = message.author
-        user_infos = self.swagchain.account(user.id)
+        user_infos = swag_client.swagchain.account(user.id)
 
         # TODO : Changer l'affichage pour avoir une affichage à la bonne heure,
         # et en français
@@ -91,13 +91,13 @@ async def execute_swag_command(self, message):
             user_id=message.author.id,
             amount=swag_from_command(command_swag),
         )
-        await self.swagchain.append(block)
+        await swag_client.swagchain.append(block)
 
         await message.channel.send(
             f"{message.author.mention}, vous venez de bloquer `{block.amount}`, "
             f"vous les récupérerez dans **{BLOCKING_TIME} jours** à la même heure\n"
         )
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "payer" in command_swag:
         if len(message.mentions) != 1:
@@ -109,7 +109,7 @@ async def execute_swag_command(self, message):
             recipient_id=UserId(message.mentions[0].id),
             amount=swag_from_command(command_swag),
         )
-        await self.swagchain.append(block)
+        await swag_client.swagchain.append(block)
 
         await message.channel.send(
             "Transaction effectué avec succès ! \n"
@@ -118,7 +118,7 @@ async def execute_swag_command(self, message):
             f"-->\t{message.mentions[0].display_name}]\n"
             "```"
         )
-        await update_forbes_classement(message.guild, self, self.client)
+        await update_forbes_classement(message.guild, swag_client, swag_client.client)
 
     elif "timezone" in command_swag:
         timezone = command_swag[2]
@@ -127,7 +127,7 @@ async def execute_swag_command(self, message):
         block = UserTimezoneUpdate(
             issuer_id=message.author.id, user_id=user.id, timezone=timezone
         )
-        await self.swagchain.append(block)
+        await swag_client.swagchain.append(block)
 
         await message.channel.send(
             f"Ta timezone est désormais {timezone} !\n"
@@ -152,4 +152,4 @@ async def execute_swag_command(self, message):
             "effectuées sur ton compte\n"
             "```"
         )
-    await update_forbes_classement(message.guild, self, self.client)
+    await update_forbes_classement(message.guild, swag_client, swag_client.client)
