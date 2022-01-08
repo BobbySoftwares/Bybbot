@@ -42,6 +42,11 @@ class CagnotteRenaming(Block):
     cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
     new_name = attrib(type=str)
 
+    def validate(self, db: SwagChain):
+        cagnotte_names = (cagnotte.name for cagnotte in db._accounts.cagnottes.values())
+        if self.name in cagnotte_names:
+            raise CagnotteNameAlreadyExist
+
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
 
