@@ -43,7 +43,7 @@ SWAGCHAIN_ID = 913946510616567848
 class SwagClient(Module):
     def __init__(self, client) -> None:
         self.client = client
-        print("Initialisation de la Banque Centrale du $wag...\n")
+        print("Initialisation de la $wagChain...\n")
         self.guilds = {}
         self.the_swaggest = None
         self.last_update = None
