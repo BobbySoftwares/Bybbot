@@ -1,3 +1,4 @@
+from swag.id import UserId
 from ..blocks import SwagBlocking, Transaction
 from .swag import swag_from_command
 from ..currencies import Style
@@ -44,8 +45,8 @@ async def execute_style_command(self, message):
 
         block = Transaction(
             issuer_id=message.author.id,
-            giver_id=message.author.id,
-            recipient_id=message.mentions[0].id,
+            giver_id=UserId(message.author.id),
+            recipient_id=UserId(message.mentions[0].id),
             amount=style_from_command(command_style),
         )
         await self.swagchain.append(block)

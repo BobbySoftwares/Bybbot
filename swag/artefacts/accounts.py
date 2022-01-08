@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Dict, Optional, Union, List, Set
+from typing import Any, Dict, Optional, Union, List, Set
 from attr import Factory, attrs, attrib
 import arrow
 from arrow import Arrow
@@ -26,10 +26,24 @@ def assert_timezone(self, attribute, timezone):
         raise InvalidTimeZone(timezone)
 
 
+class Info:
+    def __init__(self, orig) -> None:
+        self.__dict__ = orig.__dict__
+
+        def setattr(self, __name: str, __value: Any) -> None:
+            raise AttributeError
+
+        def delattr(self, __name: str) -> None:
+            raise AttributeError
+
+        self.__setattr__ = setattr
+        self.__delattr__ = delattr
+
+
 @attrs(auto_attribs=True)
 class Account:
-    swag_balance: Swag = Swag(0)
-    style_balance: Style = Style(0)
+    swag_balance: Swag = attrib(init=False, default=Swag(0))
+    style_balance: Style = attrib(init=False, default=Style(0))
 
     def __iadd__(self, value: Union[Swag, Style]):
         if type(value) is Swag:
@@ -61,16 +75,15 @@ class Account:
     def register(self, _):
         pass
 
-@attrs(frozen=True)
-class AccountInfo(Account):
-    @classmethod
-    def get_info(cls, account):
-        return cls(**vars(account))
+    @property
+    def is_empty(self):
+        return self.swag_balance == Swag(0) and self.style_balance == Style(0)
 
 
-#------------------------------------#
+# ------------------------------------#
 # Classes pour les comptes Cagnottes #
-#------------------------------------#
+# ------------------------------------#
+
 
 @attrs(auto_attribs=True)
 class SwagAccount(Account):
@@ -83,21 +96,19 @@ class SwagAccount(Account):
     pending_style: Style = Style(0)
     timezone_lock_date: Optional[Arrow] = None
 
-@attrs(frozen=True)
-class SwagAccountInfo(AccountInfo,SwagAccount):
-    pass
 
 class SwagAccountDict(dict):
     def __missing__(self, key):
         raise NoSwagAccountRegistered(key)
 
 
-#------------------------------------#
+# ------------------------------------#
 # Classes pour les comptes Cagnottes #
-#------------------------------------#
+# ------------------------------------#
+
 
 @attrs(auto_attribs=True)
-class CagnotteAccount:
+class CagnotteAccount(Account):
     name: str
     managers: List[UserId]
     participants: Set[UserId] = Factory(set)
@@ -105,22 +116,23 @@ class CagnotteAccount:
     def register(self, participant: UserId):
         self.participants.add(participant)
 
-@attrs(frozen=True)
-class CagnotteAccountInfo(AccountInfo,CagnotteAccount):
-    pass
 
 class CagnotteAccountDict(dict):
     def __missing__(self, key):
         raise NoCagnotteAccountRegistered(key)
 
-#------------------------------------#
+
+# ------------------------------------#
 # Classe de l'ensemble des comptes   #
-#------------------------------------#
+# ------------------------------------#
+
 
 @attrs(auto_attribs=True)
 class Accounts:
     users: Dict[UserId, SwagAccount] = attrib(init=False, factory=SwagAccountDict)
-    cagnottes: Dict[CagnotteId, CagnotteAccount] = attrib(init=False, factory=CagnotteAccountDict)
+    cagnottes: Dict[CagnotteId, CagnotteAccount] = attrib(
+        init=False, factory=CagnotteAccountDict
+    )
 
     def __setitem__(self, key, item):
         if type(key) is UserId:

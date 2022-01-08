@@ -1,2 +1,2 @@
-from .accounts import SwagAccount, SwagAccountInfo, CagnotteAccount, CagnotteAccountInfo
+from .accounts import SwagAccount, CagnotteAccount
 from .guild import Guild

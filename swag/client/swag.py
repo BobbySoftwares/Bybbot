@@ -1,6 +1,7 @@
 from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
 from swag.blocks import UserTimezoneUpdate
 from swag.currencies import Swag
+from swag.id import UserId
 
 from ..errors import InvalidSwagValue, NoReceiver
 from ..stylog import BLOCKING_TIME
@@ -54,13 +55,11 @@ async def execute_swag_command(self, message):
             if user_infos.blocked_swag != 0
             else ""
         )
-        balance_info = "\n           ".join(
-            f"{balance}" for balance in user_infos.balance.values()
-        )
         await message.channel.send(
             "```diff\n"
             f"Relevé de compte de {message.author.display_name}\n"
-            f"-Balance : {balance_info}\n"
+            f"-Balance : {user_infos.swag_balance}\n"
+            f"           {user_infos.style_balance}\n"
             f"-Taux de bloquage : {format_number(user_infos.style_rate)} %\n"
             "-$wag actuellement bloqué : "
             f"{user_infos.blocked_swag}\n"
@@ -106,8 +105,8 @@ async def execute_swag_command(self, message):
 
         block = Transaction(
             issuer_id=message.author.id,
-            giver_id=message.author.id,
-            recipient_id=message.mentions[0].id,
+            giver_id=UserId(message.author.id),
+            recipient_id=UserId(message.mentions[0].id),
             amount=swag_from_command(command_swag),
         )
         await self.swagchain.append(block)
