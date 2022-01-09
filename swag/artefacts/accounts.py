@@ -6,6 +6,7 @@ from arrow import Arrow
 from itertools import chain
 
 from swag.id import CagnotteId, UserId
+from swag.utils import assert_timezone
 
 from ..errors import (
     InvalidStyleValue,
@@ -17,13 +18,6 @@ from ..errors import (
     NotEnoughSwagInBalance,
 )
 from ..currencies import Money, Swag, Style
-
-
-def assert_timezone(self, attribute, timezone):
-    try:
-        arrow.now(timezone)
-    except arrow.parser.ParserError:
-        raise InvalidTimeZone(timezone)
 
 
 class Info:

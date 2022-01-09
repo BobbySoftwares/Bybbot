@@ -4,7 +4,9 @@ import random
 # from .db import Cagnotte, CagnotteInfo, Currency
 
 from arrow import Arrow
+import arrow
 from swag.currencies import Style, Swag
+from swag.errors import InvalidTimeZone
 
 from utils import (
     COMMAND_CHANNEL_ID_BOBBYCRATIE,
@@ -489,3 +491,10 @@ EMOJI_NUL = [
     "🍞",
     "🤏",
 ]
+
+
+def assert_timezone(self, attribute, timezone):
+    try:
+        arrow.now(timezone)
+    except arrow.parser.ParserError:
+        raise InvalidTimeZone(timezone)

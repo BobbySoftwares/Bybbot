@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Union
 
 from swag.id import CagnotteId, UserId
+from swag.utils import assert_timezone
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -20,18 +21,10 @@ from ..block import Block
 from ..errors import (
     AccountAlreadyExist,
     AlreadyMineToday,
-    InvalidTimeZone,
     StyleStillBlocked,
 )
 
 from ..currencies import Swag, Style
-
-
-def assert_timezone(self, attribute, timezone):
-    try:
-        arrow.now(timezone)
-    except arrow.parser.ParserError:
-        raise InvalidTimeZone(timezone)
 
 
 @attrs(frozen=True, kw_only=True)

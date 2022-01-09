@@ -1,14 +1,6 @@
 from attr import attrs, attrib
-import arrow
 
-from ..errors import InvalidTimeZone
-
-
-def assert_timezone(self, attribute, timezone):
-    try:
-        arrow.now(timezone)
-    except arrow.parser.ParserError:
-        raise InvalidTimeZone(timezone)
+from swag.utils import assert_timezone
 
 
 @attrs(auto_attribs=True)
