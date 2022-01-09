@@ -1,9 +1,9 @@
-class NoAccountRegistered(Exception):
-    """Raised when an account name is not present in the SwagBank"""
+class NoSwagAccountRegistered(Exception):
+    """Raised when an account name is not present in the $wagChain"""
 
     def __init__(self, name):
         self.name = name
-        message = f"{name} n'a pas de compte sur $wagBank"
+        message = f"{name} n'a pas de compte sur la $wagChain™"
         super().__init__(message)
 
 
@@ -73,14 +73,20 @@ class TimeZoneFieldLocked(Exception):
 ##Exception for €agnottes
 
 
-class NoCagnotteRegistered(Exception):
-    """Raised when the cagnotte name or id is not present in the Swagbank"""
+class NoCagnotteAccountRegistered(Exception):
+    """Raised when the cagnotte name or id is not present in the $wagChain™"""
 
     def __init__(self, name):
         self.name = name
-        message = f"La €agnotte {name} n'existe pas dans la $wagBank"
+        message = f"La €agnotte {name} n'existe pas dans la $wagChain™"
         super().__init__(message)
 
+
+class NoReceiver(Exception):
+    pass
+
+
+class InvalidCagnotteId(Exception):
     pass
 
 

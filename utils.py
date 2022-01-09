@@ -5,8 +5,10 @@ import asyncio
 # ID du serveur test
 GUILD_ID_BOBBYCRATIE = 856278929296195602
 ROLE_ID_BOBBY_SWAG = 867818116935319572
-FORBES_CHANNEL_ID_BOBBYCRATIE = 856279732009304074
+FORBES_CHANNEL_ID_BOBBYCRATIE = 868492058128699422
 COMMAND_CHANNEL_ID_BOBBYCRATIE = 856278929869242380
+
+COMMAND_CHANNEL_ID_BOBBYCRATIE = 923700240685613177
 
 # ID sur serveur Bobbycratie, à commenter pour faire les test
 
@@ -81,6 +83,11 @@ async def get_guild_member_name(user_id, guild, client, return_display_name=True
     # prendre en compte $wag mine et $style generator
     if user_id == "$wag Mine ⛏" or user_id == "$tyle Generator Inc.":
         return user_id
+
+    try:
+        user_id = user_id.id
+    except AttributeError:
+        pass
 
     user = guild.get_member(user_id)
     if user is None:
