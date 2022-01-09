@@ -1,3 +1,4 @@
+from arrow.arrow import Arrow
 from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
 from swag.blocks import UserTimezoneUpdate
 from swag.currencies import Swag
@@ -50,10 +51,9 @@ async def execute_swag_command(swag_client, message):
         user = message.author
         user_infos = swag_client.swagchain.account(user.id)
 
-        # TODO : Changer l'affichage pour avoir une affichage à la bonne heure,
-        # et en français
+        # TODO : Changer l'affichage pour avoir une affichage en français
         release_info = (
-            f"-Date du déblocage sur $wag : {user_infos.unblocking_date}\n"
+            f"-Date du déblocage sur $wag : {Arrow.fromdatetime(user_infos.unblocking_date).to(user_infos.timezone)}\n"
             if user_infos.blocked_swag != 0
             else ""
         )
