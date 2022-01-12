@@ -124,7 +124,7 @@ class SwagBlocking(Block):
         # If no $tyle was generated yet, reset blockage
         if user_account.unblocking_date == unblocking_date:
             user_account += user_account.blocked_swag
-            user_account.blocked_swag = 0
+            user_account.blocked_swag = Swag(0)
             user_account.unblocking_date = None
 
         user_account -= self.amount
