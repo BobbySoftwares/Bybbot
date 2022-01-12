@@ -1,5 +1,7 @@
 import discord
 
+import traceback
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import json
@@ -116,11 +118,13 @@ async def on_message(message):
         except Exception as e:
             await client.get_channel(930777218496479302).send(
                 "<@354685615402385419>, <@178947222103130123> ! Une erreur inattendue est "
-                f"survenue suite [à ce message]({message.jump_url}) de {message.author.mention}. "
+                f"survenue suite à ce message de {message.author.mention} : "
+                f"{message.jump_url}\n"
                 "Le contenu du message est le suivant :\n"
                 f"> {message.content}\n"
                 "L'erreur est la suivante :\n"
                 "```\n"
+                f"{traceback.format_exc()}\n"
                 f"{e}\n"
                 "```"
             )
