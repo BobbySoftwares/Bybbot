@@ -111,7 +111,24 @@ async def on_message(message):
         return
 
     for module in modules:
-        await module.process(message)
+        try:
+            await module.process(message)
+        except Exception as e:
+            await client.get_channel(930777218496479302).send(
+                "<@354685615402385419>, <@178947222103130123> ! Une erreur inattendue est "
+                f"survenue suite [à ce message]({message.jump_url}) de {message.author.mention}. "
+                "Le contenu du message est le suivant :\n"
+                f"> {message.content}\n"
+                "L'erreur est la suivante :\n"
+                "```\n"
+                f"{e}\n"
+                "```"
+            )
+            await message.channel.send(
+                f"{message.author.mention} ! Une erreur inattendue est survenue. "
+                "Les développeurs viennent d'en être informés. Merci de bien vouloir "
+                "patienter."
+            )
 
 
 # Lancement du client
