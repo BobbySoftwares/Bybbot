@@ -103,6 +103,23 @@ async def execute_swag_command(swag_client, message):
             message.guild, swag_client, swag_client.discord_client
         )
 
+    elif "garder" in command_swag:
+        account_info = swag_client.swagchain.account(UserId(message.author.id))
+        block = SwagBlocking(
+            issuer_id=message.author.id,
+            user_id=message.author.id,
+            amount=account_info.swag_amout - swag_from_command(command_swag),
+        )
+        await swag_client.swagchain.append(block)
+
+        await message.channel.send(
+            f"{message.author.mention}, vous venez de bloquer `{block.amount}`, "
+            f"vous les récupérerez dans **{BLOCKING_TIME} jours** à la même heure\n"
+        )
+        await update_forbes_classement(
+            message.guild, swag_client, swag_client.discord_client
+        )
+
     elif "payer" in command_swag:
         if len(message.mentions) != 1:
             raise NoReceiver
