@@ -1,0 +1,103 @@
+from __future__ import annotations
+
+from attr import attrib, attrs
+from typing import TYPE_CHECKING
+from ..yfu import Yfu, Yfu_Power
+
+if TYPE_CHECKING:
+    from ..blockchain import SwagChain
+
+from ..currencies import Style
+
+from ..id import UserId
+from ..utils import EMOJI_CLAN_YFU
+from ..cauchy import roll
+
+from ..block import Block
+
+import string
+import os
+import random
+
+
+@attrs(frozen=True, kw_only=True)
+class YfuGenerationBlock(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+    first_name = attrib(type=str)
+    last_name = attrib(type=str)
+    clan = attrib(type=str)
+    power_point = attrib(type=float)
+    activation_cost = attrib(type=Style)
+    greed = attrib(type=float)
+    zenitude = attrib(type=float)
+    avatar_local_path = attrib(type=str)
+    power = attrib(type=Yfu_Power)
+
+    @first_name.default
+    def _generate_letter(self):
+        return random.choice(string.ascii_uppercase) + "."
+
+    @last_name.default
+    def _generate_last_name(self):
+        with open(
+            "ressources/Yfu/japanese_familly_name.txt", "r", encoding="utf-8"
+        ) as f:  # TODO La lecture du fichier devrait se faire ailleurs ?
+            return random.choice(f.readlines()).strip("\n")
+
+    @clan.default
+    def _generate_clan(self):
+        return random.choice(EMOJI_CLAN_YFU)
+
+    @power_point.default
+    def _roll_powerpoint(self):
+        return roll(0, 30)  # TODO
+
+    ##TODO à modifier, car vont dépendre des powerpoint
+    @activation_cost.default
+    def _roll_cost(self):
+        return Style(random.randint(1, 100))
+
+    @greed.default
+    def _roll_greed(self):
+        return round((random.random() + 1) * 2, 1)  # TODO
+
+    @zenitude.default
+    def _roll_zenitude(self):
+        return round(random.random(), 1)  # TODO
+
+    @avatar_local_path.default
+    def _generate_avatar(self):
+        avatar_local_folder = "ressources/Yfu/avatar/psi-1.0/"  # TODO à renseigner ailleurs ? psi different en fonction des powerpoint
+        return random.choice(
+            [
+                os.path.join(avatar_local_folder, file)
+                for file in os.listdir(avatar_local_folder)
+            ]
+        )
+
+    @power.default
+    def _generate_power(self):
+        # Pouvoir temporaire, en attendant gggto #TODO
+        return Yfu_Power("POUVOIR X", "EFFET DU POUVOIR X")
+
+    def validate(self, db: SwagChain):
+        pass  ##TODO
+
+    def execute(self, db: SwagChain):
+        user_account = db._accounts[self.user_id]
+        user_account.yfu_wallet.append(
+            Yfu(
+                self.user_id,
+                self.first_name,
+                self.last_name,
+                self.clan,
+                self.timestamp,
+                user_account.timezone,
+                self.power_point,
+                self.activation_cost,
+                self.greed,
+                self.zenitude,
+                self.avatar_local_path,
+                self.power,
+            )
+        )

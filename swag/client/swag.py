@@ -1,8 +1,10 @@
 from arrow.arrow import Arrow
 from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
 from swag.blocks import UserTimezoneUpdate
+from swag.blocks import YfuGenerationBlock
 from swag.currencies import Swag
 from swag.id import UserId
+from swag.yfu import Embed_Yfu
 
 from ..errors import InvalidSwagValue, NoReceiver
 from ..stylog import BLOCKING_TIME
@@ -16,6 +18,9 @@ def swag_from_command(command):
         return Swag("".join(argent for argent in command if argent.isnumeric()))
     except ValueError:
         raise InvalidSwagValue
+
+
+YFU_GENERATION_MINING_THRESHOLD = Swag(1000000)
 
 
 async def execute_swag_command(swag_client, message):
@@ -37,12 +42,29 @@ async def execute_swag_command(swag_client, message):
         )
 
     elif "miner" in command_swag:
+        # Mining Swag
         block = Mining(issuer_id=message.author.id, user_id=message.author.id)
         await swag_client.swagchain.append(block)
 
         await message.channel.send(
             f"⛏ {message.author.mention} a miné `{block.amount}` !"
         )
+
+        # Yfu Generation
+        if block.amount >= YFU_GENERATION_MINING_THRESHOLD:
+            yfu_block = YfuGenerationBlock(
+                issuer_id=message.author.id, user_id=message.author.id
+            )
+            await swag_client.swagchain.append(yfu_block)
+
+            await message.channel.send(
+                f"{message.author.mention}, **{yfu_block.first_name} {yfu_block.last_name}** a rejoint vos rangs !",
+                embed=Embed_Yfu.from_yfu(
+                    swag_client.swagchain.account(yfu_block.user_id).yfu_wallet[-1]
+                ),
+            )
+
+        # Update classement
         await update_forbes_classement(
             message.guild, swag_client, swag_client.discord_client
         )

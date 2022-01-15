@@ -1,9 +1,13 @@
-import json
+from typing import Union
 from arrow.arrow import Arrow
 import discord
 
 from attr import attrib, attrs
 from enum import Enum
+from swag.currencies import Style
+from swag.id import CagnotteId, UserId
+
+from swag.utils import assert_timezone
 
 # Temporary class, waiting for gggto
 @attrs(auto_attribs=True)
@@ -17,12 +21,14 @@ class Yfu_Power:
 
 @attrs(auto_attribs=True)
 class Yfu:
+    owner: Union[UserId, CagnotteId]
     first_name: str
     last_name: str
     clan: str
     generation_date: Arrow
+    timezone: str = attrib(validator=assert_timezone)
     power_point: int
-    activation_cost: float
+    activation_cost: Style
     greed: float  # multiplier of the activation_cost after one activation, should be >= 1
     zenitude: float  # multiplier of the activation_cost after one activation, should be <= 1
     avatar_local_path: str
@@ -77,61 +83,18 @@ class Embed_Yfu(discord.Embed):
     def from_yfu(cls, yfu: Yfu):
         yfu_dict = {
             "title": f"{yfu.clan} {yfu.first_name} {yfu.last_name}",
-            "image": {"url": yfu.avatar_local_path},
+            "image": {"url": yfu.avatar_url},
             "color": yfu.YfuRarity.from_power_point(yfu.power_point).get_color(),
             "fields": [
                 {"name": yfu.power.name, "value": yfu.power.effect, "inline": False},
                 {
                     "name": "Coût",
-                    "value": f"{yfu.activation_cost} $tyle",
+                    "value": f"{yfu.activation_cost}",
                     "inline": True,
                 },
                 {"name": "Avidité", "value": f"{yfu.greed}", "inline": True},
                 {"name": "Zenitude", "value": f"{yfu.zenitude}", "inline": True},
             ],
-            "footer": {"text": f"{yfu.generation_date}"},
+            "footer": {"text": f"{yfu.generation_date.format('YYYY-MM-DD')}"},
         }
         return discord.Embed.from_dict(yfu_dict)
-
-
-### Temporary : Just for testing ###
-
-YFU_CHANNEL = 929447745822007388
-
-power = Yfu_Power(
-    "Erreur de l'administration bancaire", "Permet d'échanger le swag de deux joueurs"
-)
-
-yfu_test = Yfu(
-    "Sakura",
-    "Hitori",
-    "✊",
-    "09-01-2022",
-    64,
-    10,
-    2.0,
-    0.5,
-    "https://cdn.discordapp.com/attachments/929447745822007388/929777841980186714/seed0098.png",
-    power,
-)
-
-intents = discord.Intents.default()
-intents.members = True
-
-# Création du client
-client = discord.Client(intents=intents)
-
-
-@client.event
-async def on_ready():
-    await client.get_channel(YFU_CHANNEL).send(
-        client.get_user(178947222103130123).mention + " utilise une Yfu !",
-        embed=Embed_Yfu.from_yfu(yfu_test),
-    )
-    print("Yfu opérationnelle !")
-
-
-with open("config.json", "r") as json_file:
-    client_config = json.load(json_file)
-
-client.run(client_config.get("token"))
