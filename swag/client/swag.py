@@ -108,7 +108,7 @@ async def execute_swag_command(swag_client, message):
         block = SwagBlocking(
             issuer_id=message.author.id,
             user_id=message.author.id,
-            amount=account_info.swag_amout - swag_from_command(command_swag),
+            amount=account_info.swag_amount - swag_from_command(command_swag),
         )
         await swag_client.swagchain.append(block)
 
