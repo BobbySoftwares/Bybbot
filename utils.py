@@ -1,30 +1,25 @@
+import json
 import math
 import asyncio
 
 
-# ID du serveur test
-GUILD_ID_BOBBYCRATIE = 856278929296195602
-ROLE_ID_BOBBY_SWAG = 867818116935319572
-FORBES_CHANNEL_ID_BOBBYCRATIE = 868492058128699422
-COMMAND_CHANNEL_ID_BOBBYCRATIE = 856278929869242380
+with open("config.json", "r") as json_file:
+    client_config = json.load(json_file)
 
-COMMAND_CHANNEL_ID_BOBBYCRATIE = 923700240685613177
+# ID unique du serveur
+GUILD_ID = client_config.get("guild_id", 487244765558210580)
 
-# ID sur serveur Bobbycratie, à commenter pour faire les test
+# ID unique du role du plus swag
+ROLE_ID_SWAGGEST = client_config.get("swaggest_role", 846736189310238751)
 
-
-# ID unique du serveur Bobbycratie
-GUILD_ID_BOBBYCRATIE = 487244765558210580
-# ID unique du role Bobby_swag sur la Bobbycratie
-ROLE_ID_BOBBY_SWAG = 846736189310238751
 # ID unique du canal du swag forbes
-FORBES_CHANNEL_ID_BOBBYCRATIE = 848313360306536448
+FORBES_CHANNEL_ID = client_config.get("forbes_channel", 848313360306536448)
+
 # ID unique du canal swag-command
-COMMAND_CHANNEL_ID_BOBBYCRATIE = 848302082150760508
+COMMAND_CHANNEL_ID = client_config.get("command_channel", 848302082150760508)
 
-
-# ID du canal de backup
-BACKUP_CHANNEL_ID = 862240878818885632
+# ID unique du canal de la swag-chain
+SWAGCHAIN_CHANNEL_ID = client_config.get("swagchain_channel", 913946510616567848)
 
 
 def format_number(n):
