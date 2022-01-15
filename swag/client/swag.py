@@ -104,7 +104,7 @@ async def execute_swag_command(swag_client, message):
         )
 
     elif "garder" in command_swag:
-        account_info = swag_client.swagchain.account(UserId(message.author.id))
+        account_info = swag_client.swagchain.account(message.author.id)
         block = SwagBlocking(
             issuer_id=message.author.id,
             user_id=message.author.id,
