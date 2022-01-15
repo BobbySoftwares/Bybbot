@@ -33,11 +33,10 @@ from ..utils import (
 )
 
 from utils import (
-    GUILD_ID_BOBBYCRATIE,
+    GUILD_ID,
+    SWAGCHAIN_CHANNEL_ID,
 )
 from module import Module
-
-SWAGCHAIN_ID = 913946510616567848
 
 
 class SwagClient(Module):
@@ -50,11 +49,12 @@ class SwagClient(Module):
 
     async def setup(self):
         self.swagchain = await SyncedSwagChain.from_channel(
-            self.discord_client.user.id, self.discord_client.get_channel(SWAGCHAIN_ID)
+            self.discord_client.user.id,
+            self.discord_client.get_channel(SWAGCHAIN_CHANNEL_ID),
         )
         print("Mise à jour du classement et des bonus de blocage\n\n")
         await update_forbes_classement(
-            self.discord_client.get_guild(GUILD_ID_BOBBYCRATIE),
+            self.discord_client.get_guild(GUILD_ID),
             self,
             self.discord_client,
         )
