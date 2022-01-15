@@ -35,6 +35,7 @@ class Yfu:
     avatar_url: str = attrib(init=False)
 
     power: Yfu_Power
+    hash : str
 
     class YfuRarity(Enum):
         COMMON = int("0xffffff", base=16)
@@ -95,6 +96,6 @@ class Embed_Yfu(discord.Embed):
                 {"name": "Avidité", "value": f"{yfu.greed}", "inline": True},
                 {"name": "Zenitude", "value": f"{yfu.zenitude}", "inline": True},
             ],
-            "footer": {"text": f"{yfu.generation_date.format('YYYY-MM-DD')}"},
+            "footer": {"text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t{yfu.hash}"},
         }
         return discord.Embed.from_dict(yfu_dict)

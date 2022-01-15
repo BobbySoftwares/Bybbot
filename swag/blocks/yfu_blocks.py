@@ -1,4 +1,5 @@
 from __future__ import annotations
+import hashlib
 
 from attr import attrib, attrs
 from typing import TYPE_CHECKING
@@ -32,6 +33,7 @@ class YfuGenerationBlock(Block):
     zenitude = attrib(type=float)
     avatar_local_path = attrib(type=str)
     power = attrib(type=Yfu_Power)
+    hash = attrib(type=str)
 
     @first_name.default
     def _generate_letter(self):
@@ -80,6 +82,11 @@ class YfuGenerationBlock(Block):
         # Pouvoir temporaire, en attendant gggto #TODO
         return Yfu_Power("POUVOIR X", "EFFET DU POUVOIR X")
 
+    @hash.default
+    def _calculate_hash(self):
+        with open(self.avatar_local_path, "rb") as f:
+            return hashlib.md5(f.read()).hexdigest()
+
     def validate(self, db: SwagChain):
         pass  ##TODO
 
@@ -99,5 +106,6 @@ class YfuGenerationBlock(Block):
                 self.zenitude,
                 self.avatar_local_path,
                 self.power,
+                self.hash
             )
         )
