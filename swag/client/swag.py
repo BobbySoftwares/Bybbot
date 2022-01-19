@@ -26,8 +26,7 @@ async def execute_swag_command(swag_client, message):
             AccountCreation(
                 issuer_id=message.author.id,
                 user_id=message.author.id,
-                # timezone=self.guilds.get(message.guild, "UTC").timezone,
-                timezone="UTC",
+                timezone=swag_client.swagchain._guild(message.guild.id).timezone,
             )
         )
 
