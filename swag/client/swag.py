@@ -53,7 +53,7 @@ async def execute_swag_command(swag_client, message):
         # TODO : Changer l'affichage pour avoir une affichage en français
         release_info = (
             f"-Date du déblocage sur $wag : {Arrow.fromdatetime(user_infos.unblocking_date).to(user_infos.timezone)}\n"
-            if user_infos.blocked_swag != 0
+            if user_infos.blocked_swag != Swag(0)
             else ""
         )
         await message.channel.send(
