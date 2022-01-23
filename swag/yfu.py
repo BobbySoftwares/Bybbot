@@ -11,7 +11,7 @@ from swag.utils import assert_timezone
 
 # Temporary class, waiting for gggto
 @attrs(auto_attribs=True)
-class Yfu_Power:
+class YfuPower:
     name: str
     effect: str
 
@@ -21,7 +21,7 @@ class Yfu_Power:
 
 @attrs(auto_attribs=True)
 class Yfu:
-    owner: Union[UserId, CagnotteId]
+    owner_id: Union[UserId, CagnotteId]
     first_name: str
     last_name: str
     clan: str
@@ -34,8 +34,8 @@ class Yfu:
     avatar_local_path: str
     avatar_url: str = attrib(init=False)
 
-    power: Yfu_Power
-    hash : str
+    power: YfuPower
+    hash: str
 
     class YfuRarity(Enum):
         COMMON = int("0xffffff", base=16)
@@ -79,7 +79,7 @@ class Yfu:
 
 
 # TODO move this class
-class Embed_Yfu(discord.Embed):
+class YfuEmbed(discord.Embed):
     @classmethod
     def from_yfu(cls, yfu: Yfu):
         yfu_dict = {
@@ -96,6 +96,17 @@ class Embed_Yfu(discord.Embed):
                 {"name": "Avidité", "value": f"{yfu.greed}", "inline": True},
                 {"name": "Zenitude", "value": f"{yfu.zenitude}", "inline": True},
             ],
-            "footer": {"text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t{yfu.hash}"},
+            "footer": {
+                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t{yfu.hash}"
+            },
         }
         return discord.Embed.from_dict(yfu_dict)
+
+
+class YfuNotFound(Exception):
+    pass
+
+
+class YfuDict(dict):
+    def __missing__(self, key):
+        raise YfuNotFound(key)
