@@ -1,4 +1,5 @@
 import re
+from typing import Union
 from attr import attrib, attrs
 
 from .errors import InvalidCagnotteId
@@ -40,3 +41,22 @@ class CagnotteId:
 
     def __str__(self) -> str:
         return self.id
+
+
+def yfu_id_converter(yfu_id):
+    if type(yfu_id) is YfuId:
+        return yfu_id.id
+    else:
+        return int(yfu_id)
+
+
+@attrs(frozen=True, auto_attribs=True)
+class YfuId:
+    id: int = attrib(converter=yfu_id_converter)
+
+    def __str__(self) -> str:
+        return f"¥{self.id}"
+
+
+AccountId = Union[UserId, CagnotteId]
+GenericId = Union[UserId, CagnotteId, YfuId]
