@@ -3,7 +3,7 @@ import hashlib
 
 from attr import attrib, attrs
 from typing import TYPE_CHECKING
-from ..yfu import Yfu, Yfu_Power
+from ..yfu import Yfu, YfuPower
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -32,7 +32,7 @@ class YfuGenerationBlock(Block):
     greed = attrib(type=float)
     zenitude = attrib(type=float)
     avatar_local_path = attrib(type=str)
-    power = attrib(type=Yfu_Power)
+    power = attrib(type=YfuPower)
     hash = attrib(type=str)
 
     @first_name.default
@@ -80,7 +80,7 @@ class YfuGenerationBlock(Block):
     @power.default
     def _generate_power(self):
         # Pouvoir temporaire, en attendant gggto #TODO
-        return Yfu_Power("POUVOIR X", "EFFET DU POUVOIR X")
+        return YfuPower("POUVOIR X", "EFFET DU POUVOIR X")
 
     @hash.default
     def _calculate_hash(self):
@@ -106,6 +106,6 @@ class YfuGenerationBlock(Block):
                 self.zenitude,
                 self.avatar_local_path,
                 self.power,
-                self.hash
+                self.hash,
             )
         )
