@@ -175,7 +175,7 @@ async def execute_cagnotte_command(swag_client, message):
             amount = style_from_command(splited_command)
         else:
             await message.channel.send(
-                f"{message.authod.mention}, avec le nom de la monnaie c'est mieux !"
+                f"{message.author.mention}, avec le nom de la monnaie c'est mieux !"
             )
             return
 
