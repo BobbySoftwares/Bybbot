@@ -76,6 +76,9 @@ class Account:
     def is_empty(self):
         return self.swag_balance == Swag(0) and self.style_balance == Style(0)
 
+    def check_immunity(self, power):
+        pass
+
 
 # ------------------------------------#
 # Classes pour les comptes Cagnottes #
