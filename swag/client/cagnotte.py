@@ -240,10 +240,10 @@ async def execute_cagnotte_command(swag_client, message):
         cagnotte_id = get_cagnotte_id_from_command(splited_command)
         cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
-        participant_ids = [participant.id for participant in message.mentions]
+        participant_ids = [UserId(participant.id) for participant in message.mentions]
 
         gagnant, swag_gain, style_gain = swag_client.swagchain.cagnotte_lottery(
-            cagnotte_id, message.author.id, participant_ids
+            cagnotte_id, UserId(message.author.id), participant_ids
         )
 
         await message.channel.send(
