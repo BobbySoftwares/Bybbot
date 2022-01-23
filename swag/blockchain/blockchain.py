@@ -7,7 +7,8 @@ from swag.artefacts.accounts import Accounts, Info
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
 from swag.currencies import Swag
-from swag.id import CagnotteId, UserId
+from swag.id import CagnotteId, UserId, YfuId
+from swag.yfu import Yfu, YfuDict
 
 from ..artefacts import Guild
 from ..stylog import unit_style_generation
@@ -25,6 +26,7 @@ class SwagChain:
     _chain: List[Block] = attrib()
     _accounts: Accounts = attrib(init=False, factory=Accounts)
     _guilds: Dict[int, Guild] = attrib(init=False, factory=GuildDict)
+    _yfus: Dict[YfuId, Yfu] = attrib(init=False, factory=YfuDict)
 
     def __attrs_post_init__(self):
         for block in self._chain:
