@@ -57,6 +57,10 @@ async def on_ready():
 
     print("Bybbot opérationnel !")
 
+    await client.get_channel(930777218496479302).send(
+        "Démarrage terminé, prêt à bybbotter des clous !"
+    )
+
 
 @client.event
 async def on_disconnect():
