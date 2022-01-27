@@ -178,3 +178,11 @@ class SwagClient(Module):
                 f"{message.author.mention}, merci de mentionner un destinataire"
                 "(@Bobby Machin) !"
             )
+        except AttributeError as e:
+            if e.name == "swagchain":
+                await message.channel.send(
+                    f"{message.author.mention}, la $wagChain n'est pas encore disponible. "
+                    "Veuillez réessayer d'ici quelques secondes !"
+                )
+            else:
+                raise
