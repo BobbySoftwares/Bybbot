@@ -1,5 +1,7 @@
+from copy import deepcopy
+from typing import List
 from swag.blockchain.blockchain import SwagChain
-from swag.powers.actives import Targetting
+from swag.powers.actives.user_actives import Targetting
 from swag.id import AccountId, YfuId
 
 
@@ -59,7 +61,12 @@ class Cloning:
     has_value = False
 
     def _activation(self, chain: SwagChain, owner_id: AccountId, target_id: YfuId):
-        raise NotImplementedError
+        owner = chain._accounts[owner_id]
+        yfu = deepcopy(chain._yfus[target_id])
+        yfu.owner_id = owner_id
+        yfu.hash = ""  # TODO
+        owner.yfu_wallet.insert(yfu)
+        chain._yfus[yfu.hash] = yfu
 
 
 class Copy:
@@ -68,5 +75,21 @@ class Copy:
     target = Targetting.YFU
     has_value = False
 
-    def _activation(self, chain: SwagChain, owner_id: AccountId, target_id: YfuId):
-        raise NotImplementedError
+    def _activation(
+        self, chain: SwagChain, owner_id: AccountId, target_id: YfuId, payload: List
+    ):
+        chain._yfus[target_id].power._activation(chain, owner_id, *payload)
+
+
+class Clone:
+    title = "Clone"
+    tier = "S"
+    effect = "Copie de manière permanente le pouvoir d'une waifu"
+    target = Targetting.YFU
+    has_value = False
+
+    def _activation(
+        self, chain: SwagChain, yfu_id: YfuId, owner_id: AccountId, target_id: YfuId
+    ):
+        # Would it be fun to let the power linked?
+        chain._yfus[yfu_id].power = deepcopy(chain._yfus[target_id].power)

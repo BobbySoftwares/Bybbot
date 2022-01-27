@@ -2,7 +2,7 @@ from swag.blockchain.blockchain import SwagChain
 from swag.currencies import Style, Swag
 from swag.errors import NotEnoughStyleInBalance, NotEnoughSwagInBalance
 from swag.id import AccountId, CagnotteId
-from swag.powers.actives import Targetting
+from swag.powers.actives.user_actives import Targetting
 from swag.stylog import stylog
 
 

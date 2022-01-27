@@ -1,7 +1,25 @@
-Sauvage
-Effet : transforme un effet déterministe en effet aléatoire
+from typing import Type
 
 
-À l'aveuglette
-Effet : transforme un effet ciblé en ciblage aléatoire
+class Savage:
+    """Random variant of the power. Default."""
 
+    sub_power: Type
+
+
+class Targetted:
+    """Targetted variant of the power. Default."""
+
+    sub_power: Type
+
+
+class Blind:
+    """Random targetted variant of the power."""
+
+    sub_power: Type
+
+
+class Measured:
+    """Constant variant of the power."""
+
+    sub_power: Type

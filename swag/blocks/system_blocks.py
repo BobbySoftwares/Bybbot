@@ -54,6 +54,24 @@ class GuildTimezoneUpdate(Block):
 
 
 @attrs(frozen=True, kw_only=True)
+class GuildSystemChannelUpdate(Block):
+    guild_id = attrib(type=int)
+    channel_id = attrib(type=int)
+
+    def execute(self, db: SwagChain):
+        db._guilds[self.guild_id].system_channel_id = self.channel_id
+
+
+@attrs(frozen=True, kw_only=True)
+class GuildForbesChannelUpdate(Block):
+    guild_id = attrib(type=int)
+    channel_id = attrib(type=int)
+
+    def execute(self, db: SwagChain):
+        db._guilds[self.guild_id].forbes_channel_id = self.channel_id
+
+
+@attrs(frozen=True, kw_only=True)
 class EventGiveaway(Block):
     user_id = attrib(type=UserId, converter=UserId)
     amount = attrib(type=Union[Swag, Style])

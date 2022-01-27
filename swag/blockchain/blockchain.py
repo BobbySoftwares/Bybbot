@@ -1,7 +1,7 @@
 from decimal import ROUND_DOWN, ROUND_UP, Decimal
-from random import choice
 from typing import Dict, List
 from attr import attrs, attrib
+from numpy import array
 
 from swag.artefacts.accounts import Accounts, Info
 from swag.artefacts.guild import GuildDict
@@ -17,6 +17,7 @@ from ..blocks import (
     StyleGeneration,
 )
 from ..block import Block
+from ..cauchy import choice
 
 from ..errors import StyleStillBlocked
 
@@ -140,7 +141,12 @@ class SwagChain:
 
         swag_reward = cagnotte.swag_balance
         style_reward = cagnotte.style_balance
-        winner = choice(tuple(participants))
+        weights = array(
+            self._accounts[participant].bonuses(self).lottery_luck
+            for participant in participants
+        )
+        weights /= sum(weights)
+        winner = choice(tuple(participants), p=weights)
 
         self.append(
             Transaction(

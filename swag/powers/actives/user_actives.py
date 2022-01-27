@@ -4,6 +4,7 @@ from swag.blockchain.blockchain import SwagChain
 from swag.currencies import Style, Swag
 from swag.errors import NotEnoughStyleInBalance, NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
+from swag.powers.power import Active
 from swag.stylog import stylog
 
 
@@ -21,7 +22,7 @@ class Targetting(Flag):
     ANYTHINGS = ACCOUNTS | YFUS
 
 
-class Robbery:
+class Robbery(Active):
     title = "Cambriolage"
     effect = "Permet de voler du swag"
     target = Targetting.USER
@@ -43,7 +44,7 @@ class Robbery:
             target.swag_balance = Swag(0)
 
 
-class HoldUp:
+class HoldUp(Active):
     title = "Hold-up"
     effect = "Permet de voler du swag bloqué"
     target = Targetting.USER
@@ -65,7 +66,7 @@ class HoldUp:
             target.blocked_swag = Swag(0)
 
 
-class Takeover:
+class Takeover(Active):
     title = "OPA"
     effect = "Permet de voler du style généré"
     target = Targetting.USER
@@ -87,7 +88,7 @@ class Takeover:
             target.pending_style = Style(0)
 
 
-class AssetLoss:
+class AssetLoss(Active):
     title = "Perte d'actifs"
     effect = "Permet de débloquer une partie du swag de quelqu'un"
     target = Targetting.USER
@@ -108,7 +109,7 @@ class AssetLoss:
             target.blocked_swag = Swag(0)
 
 
-class InsiderTrading:
+class InsiderTrading(Active):
     title = "Délit d'initié"
     effect = "Permet de détruire une partie du style généré d'autrui"
     target = Targetting.USER
@@ -127,7 +128,7 @@ class InsiderTrading:
             target.style_balance = Style(0)
 
 
-class DryLoss:
+class DryLoss(Active):
     title = "Perte sèche"
     effect = "Permet de détruire le swag d'un compte"
     target = Targetting.USER
@@ -146,7 +147,7 @@ class DryLoss:
             target = Swag(0)
 
 
-class TaxAudit:
+class TaxAudit(Active):
     title = "Contrôle fiscal"
     effect = "Permet d'envoyer du swag d'un autre joueur vers la cagnotte 0"
     target = Targetting.USER
@@ -168,7 +169,7 @@ class TaxAudit:
             target = Swag(0)
 
 
-class BankingBan:
+class BankingBan(Active):
     title = "Interdit bancaire"
     effect = "Empêche quelqu'un de miner pendant X jours"
     target = Targetting.USER

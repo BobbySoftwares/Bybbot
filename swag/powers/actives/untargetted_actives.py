@@ -3,7 +3,7 @@ from swag.blockchain.blockchain import SwagChain
 from swag.currencies import Swag
 from swag.errors import NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
-from swag.powers.actives import Targetting
+from swag.powers.actives.user_actives import Targetting
 from swag.stylog import stylog
 
 
@@ -131,6 +131,30 @@ class FiredampCryptoExplosion:
                     pass
                 except AttributeError:
                     pass
+
+
+class TaxEvasion:
+    title = "Fraude fiscale"
+    effect = "Permet de miner X fois de plus par jour"
+    target = Targetting.NONE
+    has_value = True
+
+    @property
+    def _x_value(self):
+        return int(stylog(self._raw_x))
+
+    def _activation(self, chain: SwagChain, owner_id: AccountId, target_id: None):
+        owner = chain._accounts[owner_id]
+        bonuses = owner.bonuses(chain)
+
+        if (
+            owner.last_mining_date is not None
+            and owner.last_mining_date.date() > self.timestamp.to(owner.timezone).date()
+        ):
+            raise NotImplementedError
+
+        amounts = [Swag(bonuses.roll()) for _ in range(self._x_value)]
+        owner += sum(amounts)
 
 
 class Harvest:

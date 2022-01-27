@@ -3,7 +3,7 @@ from swag.blockchain.blockchain import SwagChain
 from swag.currencies import Swag
 from swag.errors import NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
-from swag.powers.actives import Targetting
+from swag.powers.actives.user_actives import Targetting
 
 
 class AfricanPrince:

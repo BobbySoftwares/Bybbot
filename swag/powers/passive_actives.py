@@ -1,10 +1,4 @@
-from swag.powers.actives import Targetting
-
-
-class Clone:
-    title = "Clone"
-    tier = "S"
-    effect = "Copie de manière permanente le pouvoir d'une waifu"
+from swag.powers.actives.user_actives import Targetting
 
 
 class Metamorphosis:
@@ -38,13 +32,6 @@ class Cheat:
 class StateGrants:
     title = "Subventions de l’État"
     effect = "Multiplie les résultats d’un minage par X"
-    target = Targetting.USER
-    has_value = True
-
-
-class TaxEvasion:
-    title = "Fraude fiscale"
-    effect = "Permet de miner X fois de plus par jour"
     target = Targetting.USER
     has_value = True
 
