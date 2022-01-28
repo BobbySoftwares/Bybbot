@@ -5,7 +5,7 @@ from swag.id import CagnotteId, UserId
 
 # from cattr import structure, unstructure
 from .. import blocks
-from cattrs_extras.converter import Converter
+from cattr import Converter
 
 converter = Converter()
 
