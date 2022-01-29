@@ -1,4 +1,5 @@
-from typing import Dict, Union
+from decimal import Decimal
+from typing import Any, Dict, Type, Union
 
 from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId
@@ -28,6 +29,17 @@ def structure_id(o, _):
 def unstructure_id(o):
     return o.id
 
+
+def structure_decimal(obj: Any, cls: Type) -> Decimal:
+    return cls(str(obj))
+
+
+def unstructure_decimal(obj: Decimal) -> str:
+    return str(obj)
+
+
+converter.register_structure_hook(Decimal, structure_decimal)
+converter.register_unstructure_hook(Decimal, unstructure_decimal)
 
 converter.register_unstructure_hook(Swag, unstructure_money)
 converter.register_unstructure_hook(Style, unstructure_money)
