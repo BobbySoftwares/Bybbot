@@ -213,7 +213,7 @@ async def execute_cagnotte_command(swag_client, message):
             winner_rest,
             swag_rest,
             style_rest,
-        ) = swag_client.swagchain.share_cagnotte(
+        ) = await swag_client.swagchain.share_cagnotte(
             cagnotte_id, UserId(message.author.id), participant_ids
         )
 
@@ -242,7 +242,7 @@ async def execute_cagnotte_command(swag_client, message):
 
         participant_ids = [UserId(participant.id) for participant in message.mentions]
 
-        gagnant, swag_gain, style_gain = swag_client.swagchain.cagnotte_lottery(
+        gagnant, swag_gain, style_gain = await swag_client.swagchain.cagnotte_lottery(
             cagnotte_id, UserId(message.author.id), participant_ids
         )
 
