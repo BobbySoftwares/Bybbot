@@ -6,7 +6,7 @@ from attr import attrs, attrib
 from swag.artefacts.accounts import Accounts, Info
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
-from swag.currencies import Swag
+from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId
 
 from ..artefacts import Guild
@@ -140,22 +140,24 @@ class SwagChain:
         style_reward = cagnotte.style_balance
         winner = choice(tuple(participants))
 
-        await self.append(
-            Transaction(
-                issuer_id=issuer_id,
-                giver_id=cagnotte_id,
-                recipient_id=winner,
-                amount=swag_reward,
+        if swag_reward != Swag(0):
+            await self.append(
+                Transaction(
+                    issuer_id=issuer_id,
+                    giver_id=cagnotte_id,
+                    recipient_id=winner,
+                    amount=swag_reward,
+                )
             )
-        )
-        await self.append(
-            Transaction(
-                issuer_id=issuer_id,
-                giver_id=cagnotte_id,
-                recipient_id=winner,
-                amount=style_reward,
+        if style_reward != Style(0):
+            await self.append(
+                Transaction(
+                    issuer_id=issuer_id,
+                    giver_id=cagnotte_id,
+                    recipient_id=winner,
+                    amount=style_reward,
+                )
             )
-        )
 
         return winner, swag_reward, style_reward
 
@@ -173,22 +175,25 @@ class SwagChain:
         )
 
         for account_id in account_list:
-            await self.append(
-                Transaction(
-                    issuer_id=issuer_id,
-                    giver_id=cagnotte_id,
-                    recipient_id=account_id,
-                    amount=swag_gain,
+            if swag_gain != Swag(0):
+                await self.append(
+                    Transaction(
+                        issuer_id=issuer_id,
+                        giver_id=cagnotte_id,
+                        recipient_id=account_id,
+                        amount=swag_gain,
+                    )
                 )
-            )
-            await self.append(
-                Transaction(
-                    issuer_id=issuer_id,
-                    giver_id=cagnotte_id,
-                    recipient_id=account_id,
-                    amount=style_gain,
+
+            if style_gain != Style(0):
+                await self.append(
+                    Transaction(
+                        issuer_id=issuer_id,
+                        giver_id=cagnotte_id,
+                        recipient_id=account_id,
+                        amount=style_gain,
+                    )
                 )
-            )
 
         if cagnotte.is_empty:
             winner_rest, swag_rest, style_rest = None, None, None
