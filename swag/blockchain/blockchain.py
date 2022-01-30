@@ -125,7 +125,7 @@ class SwagChain:
         for key, _ in self.forbes:
             return key
 
-    def cagnotte_lottery(
+    async def cagnotte_lottery(
         self,
         cagnotte_id: CagnotteId,
         issuer_id: UserId,
@@ -140,7 +140,7 @@ class SwagChain:
         style_reward = cagnotte.style_balance
         winner = choice(tuple(participants))
 
-        self.append(
+        await self.append(
             Transaction(
                 issuer_id=issuer_id,
                 giver_id=cagnotte_id,
@@ -148,7 +148,7 @@ class SwagChain:
                 amount=swag_reward,
             )
         )
-        self.append(
+        await self.append(
             Transaction(
                 issuer_id=issuer_id,
                 giver_id=cagnotte_id,
@@ -159,7 +159,7 @@ class SwagChain:
 
         return winner, swag_reward, style_reward
 
-    def share_cagnotte(
+    async def share_cagnotte(
         self, cagnotte_id: CagnotteId, issuer_id: UserId, account_list: List[UserId]
     ):
         cagnotte = self._accounts[cagnotte_id]
@@ -173,7 +173,7 @@ class SwagChain:
         )
 
         for account_id in account_list:
-            self.append(
+            await self.append(
                 Transaction(
                     issuer_id=issuer_id,
                     giver_id=cagnotte_id,
@@ -181,7 +181,7 @@ class SwagChain:
                     amount=swag_gain,
                 )
             )
-            self.append(
+            await self.append(
                 Transaction(
                     issuer_id=issuer_id,
                     giver_id=cagnotte_id,
@@ -193,7 +193,7 @@ class SwagChain:
         if cagnotte.is_empty:
             winner_rest, swag_rest, style_rest = None, None, None
         else:
-            winner_rest, swag_rest, style_rest = self.cagnotte_lottery(
+            winner_rest, swag_rest, style_rest = await self.cagnotte_lottery(
                 cagnotte_id, issuer_id, account_list
             )
 
