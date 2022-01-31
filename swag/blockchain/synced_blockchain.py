@@ -2,6 +2,9 @@ import json
 from attr import attrs, attrib
 from arrow import Arrow
 from discord import TextChannel
+import discord
+
+from swag.blocks.yfu_blocks import YfuGenerationBlock
 
 from .blockchain_parser import structure_block, unstructure_block
 from .blockchain import SwagChain
@@ -25,13 +28,31 @@ class SyncedSwagChain(SwagChain):
             unstructured_block = json.loads(message.content)
             block = structure_block(unstructured_block)
             SwagChain.append(synced_chain, block)
+            if isinstance(block, YfuGenerationBlock):
+                # Mise à jour de l'url de l'avatar dans la Yfu
+                avatar_url = message.attachments[0].url
+                synced_chain._accounts[block.user_id].yfu_wallet[
+                    -1
+                ].avatar_url = avatar_url
+
         return synced_chain
 
     async def append(self, block):
         SwagChain.append(self, block)
-        await self._channel.send(
-            json.dumps(unstructure_block(block), default=json_converter)
-        )
+
+        # Envoie de l'avatar si generation de Yfu
+        if isinstance(block, YfuGenerationBlock):
+            avatar_mes = await self._channel.send(
+                json.dumps(unstructure_block(block), default=json_converter),
+                file=discord.File(block.avatar_local_path),
+            )
+            # Mise à jour de l'url de l'avatar dans la Yfu
+            avatar_url = avatar_mes.attachments[0].url
+            self._accounts[block.user_id].yfu_wallet[-1].avatar_url = avatar_url
+        else:
+            await self._channel.send(
+                json.dumps(unstructure_block(block), default=json_converter)
+            )
         # try:
         #     self._chain.append(block)
         #     await self._channel.send(json.dumps(unstructure_block(block)))

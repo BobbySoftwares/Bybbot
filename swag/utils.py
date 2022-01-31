@@ -9,10 +9,10 @@ from swag.currencies import Style, Swag
 from swag.errors import InvalidTimeZone
 
 from utils import (
-    COMMAND_CHANNEL_ID_BOBBYCRATIE,
-    FORBES_CHANNEL_ID_BOBBYCRATIE,
-    GUILD_ID_BOBBYCRATIE,
-    ROLE_ID_BOBBY_SWAG,
+    COMMAND_CHANNEL_ID,
+    FORBES_CHANNEL_ID,
+    GUILD_ID,
+    ROLE_ID_SWAGGEST,
     chunks,
     format_number,
     get_guild_member_name,
@@ -303,8 +303,8 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
     bloqué leurs $wag, et débloque les comptes déblocables
     """
 
-    bobbycratie_guild = client.get_guild(id=GUILD_ID_BOBBYCRATIE)
-    command_channel = client.get_channel(id=COMMAND_CHANNEL_ID_BOBBYCRATIE)
+    bobbycratie_guild = client.get_guild(id=GUILD_ID)
+    command_channel = client.get_channel(id=COMMAND_CHANNEL_ID)
 
     # Faire gagner du style à ceux qui ont du swag bloqué :
     await swag_client.swagchain.generate_style()
@@ -332,9 +332,7 @@ async def update_the_swaggest(guild, swag_client):
     # Récupération du nouveau premier au classement
     swaggest = swag_client.swagchain.swaggest
     if (
-        swaggest is None
-        or swaggest == swag_client.the_swaggest
-        or guild.id != GUILD_ID_BOBBYCRATIE
+        swaggest is None or swaggest == swag_client.the_swaggest or guild.id != GUILD_ID
     ):  # La gestion de rôle n'est qu'en bobbycratie
         return  # rien ne se passe si le plus riche est toujours le même
 
@@ -347,7 +345,7 @@ async def update_the_swaggest(guild, swag_client):
     if member is None:  # Si l'utilisateur n'existe pas, alors ne rien faire
         return
     # get the role
-    role_swag = guild.get_role(ROLE_ID_BOBBY_SWAG)
+    role_swag = guild.get_role(ROLE_ID_SWAGGEST)
     # get the older swaggest
     older_swaggers = role_swag.members
 
@@ -371,7 +369,7 @@ async def update_forbes_classement(guild, swag_client, client):
     line_in_message = 15  # Chaque message du $wag forbes ne contient que 15 places
 
     # Récupération du canal #$wag-forbes
-    channel_forbes = guild.get_channel(FORBES_CHANNEL_ID_BOBBYCRATIE)
+    channel_forbes = guild.get_channel(FORBES_CHANNEL_ID)
 
     # Récupération du classement complet
     forbes = swag_client.swagchain.forbes
@@ -490,6 +488,36 @@ EMOJI_NUL = [
     "🙊",
     "🍞",
     "🤏",
+]
+
+# Listes des emojis utilisé pour les clans des Yfu :
+
+EMOJI_CLAN_YFU = [
+    "🤏",
+    "👈",
+    "👉",
+    "☝️",
+    "👆",
+    "👇",
+    "✌️",
+    "🤞",
+    "🖖",
+    "🤘",
+    "🤙",
+    "🖐️",
+    "✋",
+    "👌",
+    "🤌",
+    "👍",
+    "👎",
+    "✊",
+    "👊",
+    "🤛",
+    "🤜",
+    "🤚",
+    "👋",
+    "🤟",
+    "🍞",
 ]
 
 

@@ -1,13 +1,15 @@
 from decimal import ROUND_DOWN, ROUND_UP, Decimal
-from random import choice
 from typing import Dict, List
 from attr import attrs, attrib
+from numpy import array
 
 from swag.artefacts.accounts import Accounts, Info
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
-from swag.currencies import Style, Swag
-from swag.id import CagnotteId, UserId
+
+from swag.currencies import Swag
+from swag.id import CagnotteId, UserId, YfuId
+from swag.yfu import Yfu, YfuDict
 
 from ..artefacts import Guild
 from ..stylog import unit_style_generation
@@ -16,6 +18,7 @@ from ..blocks import (
     StyleGeneration,
 )
 from ..block import Block
+from ..cauchy import choice
 
 from ..errors import StyleStillBlocked
 
@@ -25,6 +28,7 @@ class SwagChain:
     _chain: List[Block] = attrib()
     _accounts: Accounts = attrib(init=False, factory=Accounts)
     _guilds: Dict[int, Guild] = attrib(init=False, factory=GuildDict)
+    _yfus: Dict[YfuId, Yfu] = attrib(init=False, factory=YfuDict)
 
     def __attrs_post_init__(self):
         for block in self._chain:
@@ -138,7 +142,12 @@ class SwagChain:
 
         swag_reward = cagnotte.swag_balance
         style_reward = cagnotte.style_balance
-        winner = choice(tuple(participants))
+        weights = array(
+            self._accounts[participant].bonuses(self).lottery_luck
+            for participant in participants
+        )
+        weights /= sum(weights)
+        winner = choice(tuple(participants), p=weights)
 
         if swag_reward != Swag(0):
             await self.append(

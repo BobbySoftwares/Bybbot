@@ -1,4 +1,4 @@
-from utils import GUILD_ID_BOBBYCRATIE
+from utils import GUILD_ID
 from swag.utils import update_forbes_classement
 from module import Module
 
@@ -17,7 +17,7 @@ class MaintenanceClient(Module):
                 await self.client.logout()
 
             await update_forbes_classement(
-                self.client.get_guild(GUILD_ID_BOBBYCRATIE),
+                self.client.get_guild(GUILD_ID),
                 self.swag_module,
                 self.client,
             )

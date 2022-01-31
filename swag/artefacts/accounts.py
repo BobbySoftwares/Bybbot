@@ -4,11 +4,16 @@ from attr import Factory, attrs, attrib
 import arrow
 from arrow import Arrow
 from itertools import chain
+from swag.artefacts.bonuses import Bonuses
+from swag.cauchy import roll
+
+from swag.yfu import Yfu
 
 from swag.id import CagnotteId, UserId
 from swag.utils import assert_timezone
 
 from ..errors import (
+    AlreadyMineToday,
     InvalidStyleValue,
     InvalidSwagValue,
     InvalidTimeZone,
@@ -38,6 +43,7 @@ class Info:
 class Account:
     swag_balance: Swag = attrib(init=False, default=Swag(0))
     style_balance: Style = attrib(init=False, default=Style(0))
+    yfu_wallet: List[Yfu] = attrib(init=False, default=list())
 
     def __iadd__(self, value: Union[Swag, Style]):
         if type(value) is Swag:
@@ -72,6 +78,24 @@ class Account:
     @property
     def is_empty(self):
         return self.swag_balance == Swag(0) and self.style_balance == Style(0)
+
+    def check_immunity(self, power):
+        cost = Style("inf")
+        for yfu_id in self.yfu_wallet:
+            cost = min(cost, chain._yfus[yfu_id].power.protection_cost(power))
+        try:
+            self -= cost
+            raise NotImplementedError
+        except NotEnoughStyleInBalance:
+            pass
+
+    def mine(self, chain):
+        return self.bonuses(chain).roll()
+
+    def bonuses(self, chain, **kwargs):
+        bonuses = Bonuses(**kwargs)
+        for yfu_id in self.yfu_wallet:
+            chain._yfus[yfu_id].power.add_bonus(bonuses)
 
 
 # ------------------------------------#

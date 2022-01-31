@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from swag.id import CagnotteId, UserId
 from swag.utils import assert_timezone
@@ -40,22 +40,27 @@ class AccountCreation(Block):
         db._accounts[self.user_id] = SwagAccount(self.timestamp, self.timezone)
 
 
-SWAG_BASE = 1000
-SWAG_LUCK = 100000
+class Uncomputed:
+    @classmethod
+    def converter(cls, type_converter):
+        def cv(input):
+            if input is cls:
+                return input
+            else:
+                return type_converter(input)
+
+        return cv
 
 
 @attrs(frozen=True, kw_only=True)
 class Mining(Block):
     user_id = attrib(type=UserId, converter=UserId)
-    amount = attrib(type=Swag, converter=Swag)
+    amounts = attrib(type=List[Swag], default=Uncomputed)
     harvest = attrib(type=None, default=None)
 
-    @amount.default
-    def _mining_booty(self):
-        return roll(SWAG_BASE, SWAG_LUCK)
-
-    def validate(self, db: SwagChain):
+    def execute(self, db: SwagChain):
         user_account = db._accounts[self.user_id]
+        bonuses = user_account.bonuses(db)
 
         if (
             user_account.last_mining_date is not None
@@ -64,11 +69,13 @@ class Mining(Block):
         ):
             raise AlreadyMineToday
 
-    def execute(self, db: SwagChain):
-        user_account = db._accounts[self.user_id]
+        if self.amount is Uncomputed:
+            self.__dict__["amounts"] = [
+                Swag(bonuses.roll()) for _ in range(bonuses.minings)
+            ]
 
         user_account.last_mining_date = self.timestamp.to(user_account.timezone)
-        user_account += self.amount
+        user_account += sum(self.amounts)
 
 
 @attrs(frozen=True, kw_only=True)
