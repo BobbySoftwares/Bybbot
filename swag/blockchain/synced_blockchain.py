@@ -31,9 +31,7 @@ class SyncedSwagChain(SwagChain):
             if isinstance(block, YfuGenerationBlock):
                 # Mise à jour de l'url de l'avatar dans la Yfu
                 avatar_url = message.attachments[0].url
-                synced_chain._accounts[block.user_id].yfu_wallet[
-                    -1
-                ].avatar_url = avatar_url
+                synced_chain._yfus[block.yfu_id].avatar_url = avatar_url
 
         return synced_chain
 
@@ -48,7 +46,7 @@ class SyncedSwagChain(SwagChain):
             )
             # Mise à jour de l'url de l'avatar dans la Yfu
             avatar_url = avatar_mes.attachments[0].url
-            self._accounts[block.user_id].yfu_wallet[-1].avatar_url = avatar_url
+            self._yfus[block.yfu_id].avatar_url = avatar_url
         else:
             await self._channel.send(
                 json.dumps(unstructure_block(block), default=json_converter)

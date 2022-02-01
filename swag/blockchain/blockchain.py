@@ -50,6 +50,9 @@ class SwagChain:
     def cagnotte(self, cagnotte_id):
         return Info(self._accounts[CagnotteId(cagnotte_id)])
 
+    def yfu(self, yfu_id):
+        return self._yfus[yfu_id]  # TODO doit être une vue
+
     def _guild(self, guild_id):
         try:
             return self._guilds[guild_id]
@@ -128,6 +131,10 @@ class SwagChain:
     def swaggest(self):
         for key, _ in self.forbes:
             return key
+
+    @property
+    def yfu_nbr(self):
+        return len(self._yfus)
 
     async def cagnotte_lottery(
         self,
