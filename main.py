@@ -1,4 +1,4 @@
-import discord
+import disnake
 
 import traceback
 
@@ -18,11 +18,11 @@ print("Lancement du bot...")
 
 # Mise à jour des droit du bot, qui lui permet d'avoir la liste entière
 # des membres d'un serveur
-intents = discord.Intents.default()
+intents = disnake.Intents.default()
 intents.members = True
 
 # Création du client
-client = discord.Client(intents=intents)
+client = disnake.Client(intents=intents)
 
 swag_module = SwagClient(client)
 
@@ -65,7 +65,7 @@ async def on_ready():
 @client.event
 async def on_disconnect():
     """Fonction lancé lorsque le bot se déconnecte"""
-    await client.change_presence(status=discord.Status.offline)
+    await client.change_presence(status=disnake.Status.offline)
 
 
 @client.event

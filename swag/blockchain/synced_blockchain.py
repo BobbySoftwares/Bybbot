@@ -1,7 +1,10 @@
 import json
 from attr import attrs, attrib
 from arrow import Arrow
-from discord import TextChannel
+
+from disnake import TextChannel
+import disnake
+
 
 from .blockchain_parser import structure_block, unstructure_block
 from .blockchain import SwagChain
