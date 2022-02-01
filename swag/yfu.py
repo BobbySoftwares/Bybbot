@@ -1,6 +1,6 @@
 from typing import Union
 from arrow.arrow import Arrow
-import discord
+import disnake
 
 from attr import attrib, attrs
 from enum import Enum
@@ -79,7 +79,7 @@ class Yfu:
 
 
 # TODO move this class
-class YfuEmbed(discord.Embed):
+class YfuEmbed(disnake.Embed):
     @classmethod
     def from_yfu(cls, yfu: Yfu):
         yfu_dict = {
@@ -100,7 +100,7 @@ class YfuEmbed(discord.Embed):
                 "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t{yfu.hash}"
             },
         }
-        return discord.Embed.from_dict(yfu_dict)
+        return disnake.Embed.from_dict(yfu_dict)
 
 
 class YfuNotFound(Exception):

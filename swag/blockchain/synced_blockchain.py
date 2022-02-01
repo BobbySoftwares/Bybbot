@@ -1,8 +1,8 @@
 import json
 from attr import attrs, attrib
 from arrow import Arrow
-from discord import TextChannel
-import discord
+from disnake import TextChannel
+import disnake
 
 from swag.blocks.yfu_blocks import YfuGenerationBlock
 
@@ -44,7 +44,7 @@ class SyncedSwagChain(SwagChain):
         if isinstance(block, YfuGenerationBlock):
             avatar_mes = await self._channel.send(
                 json.dumps(unstructure_block(block), default=json_converter),
-                file=discord.File(block.avatar_local_path),
+                file=disnake.File(block.avatar_local_path),
             )
             # Mise à jour de l'url de l'avatar dans la Yfu
             avatar_url = avatar_mes.attachments[0].url
