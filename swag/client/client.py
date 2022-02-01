@@ -3,6 +3,7 @@ from swag.client.style import execute_style_command
 from swag.client.swag import execute_swag_command
 from swag.client.swagdmin import execute_swagdmin_command
 from swag.blockchain import SyncedSwagChain
+from swag.client.yfu import execute_yfu_command
 from swag.errors import (
     CagnotteNameAlreadyExist,
     CagnotteDestructionForbidden,
@@ -80,6 +81,8 @@ class SwagClient(Module):
                 await execute_style_command(self, message)
             elif message.content.startswith("!€agnotte"):
                 await execute_cagnotte_command(self, message)
+            elif message.content.startswith("!Yfu"):
+                await execute_yfu_command(self, message)
         except NotEnoughSwagInBalance:
             await message.channel.send(
                 f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour "
