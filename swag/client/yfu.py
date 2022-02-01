@@ -19,7 +19,63 @@ async def execute_yfu_command(swag_client, message):
             embed=YfuEmbed.from_yfu(swag_client.swagchain._yfus[yfu_block.yfu_id]),
         )
     else:
-        pass
+
+        # TODO gérer le cas où il n'y a pas de Yfu
+
+        first_yfu_id = swag_client.swagchain.account(message.author.id).yfu_wallet[0]
+
+        # Envoie du message publique
+        await message.channel.send(f"{message.author.mention}, regarde ses Yfus 👀")
+        # Message privée #TODO voir comment utiliser le mot clef ephemeral
+        await message.channel.send(
+            embed=YfuEmbed.from_yfu(swag_client.swagchain.yfu(first_yfu_id)),
+            view=YfuNavigation(swag_client, message.author.id),
+        )
+
+
+class YfuNavigation(disnake.ui.View):
+    def __init__(self, swag_client, user_id):
+        super().__init__(timeout=None)
+
+        self.swag_client = swag_client
+        self.user_id = user_id
+        self.yfu_ids = swag_client.swagchain.account(user_id).yfu_wallet
+        self.selected_yfu_index = 0
+        self.previous_yfu.disabled = True
+
+    @disnake.ui.button(label="Précédente", emoji="⬅", style=disnake.ButtonStyle.blurple)
+    async def previous_yfu(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        self.selected_yfu_index -= 1
+        selected_yfu = self.swag_client.swagchain.yfu(
+            self.yfu_ids[self.selected_yfu_index]
+        )
+
+        self.next_yfu.disabled = False
+        if self.selected_yfu_index == 0:
+            self.previous_yfu.disabled = True
+
+        await interaction.response.edit_message(
+            embed=YfuEmbed.from_yfu(selected_yfu), view=self
+        )
+
+    @disnake.ui.button(label="Suivante", emoji="➡", style=disnake.ButtonStyle.blurple)
+    async def next_yfu(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        self.selected_yfu_index += 1
+        selected_yfu = self.swag_client.swagchain.yfu(
+            self.yfu_ids[self.selected_yfu_index]
+        )
+
+        self.previous_yfu.disabled = False
+        if self.selected_yfu_index >= len(self.yfu_ids) - 1:
+            self.next_yfu.disabled = True
+
+        await interaction.response.edit_message(
+            embed=YfuEmbed.from_yfu(selected_yfu), view=self
+        )
 
 
 class YfuEmbed(disnake.Embed):
