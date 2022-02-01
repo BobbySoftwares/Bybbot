@@ -8,15 +8,15 @@ async def execute_yfu_command(swag_client, message):
 
     if "générer" in command_yfu:
         yfu_block = YfuGenerationBlock(
-            issuer_id=message.author.id, user_id=message.author.id
+            issuer_id=message.author.id,
+            user_id=message.author.id,
+            yfu_id=swag_client.swagchain.yfu_nbr,
         )
         await swag_client.swagchain.append(yfu_block)
 
         await message.channel.send(
             f"{message.author.mention}, **{yfu_block.first_name} {yfu_block.last_name}** a rejoint vos rangs à des fins de test !",
-            embed=YfuEmbed.from_yfu(
-                swag_client.swagchain.account(yfu_block.user_id).yfu_wallet[-1]
-            ),
+            embed=YfuEmbed.from_yfu(swag_client.swagchain._yfus[yfu_block.yfu_id]),
         )
     else:
         pass

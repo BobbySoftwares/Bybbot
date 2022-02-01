@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 from ..currencies import Style
 
-from ..id import UserId
+from ..id import UserId, YfuId
 from ..utils import EMOJI_CLAN_YFU
 from ..cauchy import roll
 
@@ -24,6 +24,7 @@ import random
 @attrs(frozen=True, kw_only=True)
 class YfuGenerationBlock(Block):
     user_id = attrib(type=UserId, converter=UserId)
+    yfu_id = attrib(type=YfuId, converter=YfuId)
     first_name = attrib(type=str)
     last_name = attrib(type=str)
     clan = attrib(type=str)
@@ -91,21 +92,19 @@ class YfuGenerationBlock(Block):
         pass  ##TODO
 
     def execute(self, db: SwagChain):
-        user_account = db._accounts[self.user_id]
-        user_account.yfu_wallet.append(
-            Yfu(
-                self.user_id,
-                self.first_name,
-                self.last_name,
-                self.clan,
-                self.timestamp,
-                user_account.timezone,
-                self.power_point,
-                self.activation_cost,
-                self.greed,
-                self.zenitude,
-                self.avatar_local_path,
-                self.power,
-                self.hash,
-            )
+        db._accounts[self.user_id].yfu_wallet.append(self.yfu_id)
+        db._yfus[self.yfu_id] = Yfu(
+            self.user_id,
+            self.first_name,
+            self.last_name,
+            self.clan,
+            self.timestamp,
+            db._accounts[self.user_id].timezone,
+            self.power_point,
+            self.activation_cost,
+            self.greed,
+            self.zenitude,
+            self.avatar_local_path,
+            self.power,
+            self.hash,
         )
