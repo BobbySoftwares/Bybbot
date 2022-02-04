@@ -1,3 +1,6 @@
+from multiprocessing.sharedctypes import Value
+from turtle import update
+from typing import TYPE_CHECKING
 import disnake
 from swag.yfu import Yfu
 from swag.blocks.yfu_blocks import YfuGenerationBlock
@@ -40,39 +43,69 @@ class YfuNavigation(disnake.ui.View):
         self.swag_client = swag_client
         self.user_id = user_id
         self.yfu_ids = swag_client.swagchain.account(user_id).yfu_wallet
+        self.yfus = [swag_client.swagchain.yfu(yfu_id) for yfu_id in self.yfu_ids]
+
+        # Generation des options du dropdown de waifu
+        for index, yfu in enumerate(self.yfus):
+            self.dropdown_yfu.append_option(
+                disnake.SelectOption(
+                    label=f"{yfu.first_name} {yfu.last_name}",
+                    description=yfu.power.effect,
+                    emoji=yfu.clan,
+                    value=index,
+                )
+            )
+
         self.selected_yfu_index = 0
-        self.previous_yfu.disabled = True
+        self.update_view()
+
+    @disnake.ui.select(placeholder="Choisis ta Yfu...")
+    async def dropdown_yfu(
+        self, select: disnake.ui.Select, interaction: disnake.MessageInteraction
+    ):
+        self.selected_yfu_index = int(self.dropdown_yfu.values[0])
+
+        await self.update_view()
+
+        await self.send_yfu_view(interaction)
 
     @disnake.ui.button(label="Précédente", emoji="⬅", style=disnake.ButtonStyle.blurple)
     async def previous_yfu(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
         self.selected_yfu_index -= 1
-        selected_yfu = self.swag_client.swagchain.yfu(
-            self.yfu_ids[self.selected_yfu_index]
-        )
 
-        self.next_yfu.disabled = False
-        if self.selected_yfu_index == 0:
-            self.previous_yfu.disabled = True
+        await self.update_view()
 
-        await interaction.response.edit_message(
-            embed=YfuEmbed.from_yfu(selected_yfu), view=self
-        )
+        await self.send_yfu_view(interaction)
 
     @disnake.ui.button(label="Suivante", emoji="➡", style=disnake.ButtonStyle.blurple)
     async def next_yfu(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
         self.selected_yfu_index += 1
+
+        await self.update_view()
+
+        await self.send_yfu_view(interaction)
+
+    async def update_view(self):
+
+        if self.selected_yfu_index == 0:
+            self.previous_yfu.disabled = True
+        else:
+            self.previous_yfu.disabled = False
+
+        if self.selected_yfu_index >= len(self.yfu_ids) - 1:
+            self.next_yfu.disabled = True
+        else:
+            self.next_yfu.disabled = False
+
+    async def send_yfu_view(self, interaction: disnake.MessageInteraction):
+
         selected_yfu = self.swag_client.swagchain.yfu(
             self.yfu_ids[self.selected_yfu_index]
         )
-
-        self.previous_yfu.disabled = False
-        if self.selected_yfu_index >= len(self.yfu_ids) - 1:
-            self.next_yfu.disabled = True
-
         await interaction.response.edit_message(
             embed=YfuEmbed.from_yfu(selected_yfu), view=self
         )
