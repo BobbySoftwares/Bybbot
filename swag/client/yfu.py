@@ -65,7 +65,7 @@ class YfuNavigation(disnake.ui.View):
     ):
         self.selected_yfu_index = int(self.dropdown_yfu.values[0])
 
-        await self.update_view()
+        self.update_view()
 
         await self.send_yfu_view(interaction)
 
@@ -75,7 +75,7 @@ class YfuNavigation(disnake.ui.View):
     ):
         self.selected_yfu_index -= 1
 
-        await self.update_view()
+        self.update_view()
 
         await self.send_yfu_view(interaction)
 
@@ -85,29 +85,56 @@ class YfuNavigation(disnake.ui.View):
     ):
         self.selected_yfu_index += 1
 
-        await self.update_view()
+        self.update_view()
 
         await self.send_yfu_view(interaction)
 
-    async def update_view(self):
+    @disnake.ui.button(label="Activer", emoji="⚡", style=disnake.ButtonStyle.green)
+    async def activate_button(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        # TODO Activer Waifu
+        self.update_view()
 
+    @disnake.ui.button(label="Renommer", emoji="✏", style=disnake.ButtonStyle.gray)
+    async def rename_button(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        # TODO renommer la yfu
+        pass
+
+    def update_view(self):
+
+        self.selected_yfu = self.swag_client.swagchain.yfu(
+            self.yfu_ids[self.selected_yfu_index]
+        )
+        # previous button
         if self.selected_yfu_index == 0:
             self.previous_yfu.disabled = True
         else:
             self.previous_yfu.disabled = False
 
+        # next button
         if self.selected_yfu_index >= len(self.yfu_ids) - 1:
             self.next_yfu.disabled = True
         else:
             self.next_yfu.disabled = False
 
+        # activate button
+        if (
+            self.swag_client.swagchain.account(self.user_id).style_balance
+            < self.selected_yfu.activation_cost
+        ):
+            self.activate_button.style = disnake.ButtonStyle.red
+            self.activate_button.disabled = True
+        else:
+            self.activate_button.style = disnake.ButtonStyle.green
+            self.activate_button.disabled = False
+
     async def send_yfu_view(self, interaction: disnake.MessageInteraction):
 
-        selected_yfu = self.swag_client.swagchain.yfu(
-            self.yfu_ids[self.selected_yfu_index]
-        )
         await interaction.response.edit_message(
-            embed=YfuEmbed.from_yfu(selected_yfu), view=self
+            embed=YfuEmbed.from_yfu(self.selected_yfu), view=self
         )
 
 
