@@ -95,6 +95,7 @@ class YfuGenerationBlock(Block):
         db._accounts[self.user_id].yfu_wallet.append(self.yfu_id)
         db._yfus[self.yfu_id] = Yfu(
             self.user_id,
+            self.yfu_id,
             self.first_name,
             self.last_name,
             self.clan,

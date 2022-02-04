@@ -5,7 +5,7 @@ import disnake
 from attr import attrib, attrs
 from enum import Enum
 from swag.currencies import Style
-from swag.id import CagnotteId, UserId
+from swag.id import CagnotteId, UserId, YfuId
 
 from swag.utils import assert_timezone
 
@@ -22,6 +22,7 @@ class YfuPower:
 @attrs(auto_attribs=True)
 class Yfu:
     owner_id: Union[UserId, CagnotteId]
+    yfu_id: YfuId
     first_name: str
     last_name: str
     clan: str
