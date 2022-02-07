@@ -109,3 +109,17 @@ class YfuGenerationBlock(Block):
             self.power,
             self.hash,
         )
+
+
+@attrs(frozen=True, kw_only=True)
+class RenameYfuBlock(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+    yfu_id = attrib(type=YfuId, converter=YfuId)
+    new_first_name = attrib(type=str)
+
+    def validate(self, db: SwagChain):
+        pass  ##TODO
+
+    def execute(self, db: SwagChain):
+        db._accounts[self.user_id].yfu_wallet.append(self.yfu_id)
+        db._yfus[self.yfu_id].first_name = self.new_first_name

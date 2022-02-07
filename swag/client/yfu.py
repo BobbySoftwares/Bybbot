@@ -1,9 +1,10 @@
+import asyncio
 from multiprocessing.sharedctypes import Value
 from turtle import update
 from typing import TYPE_CHECKING
 import disnake
 from swag.yfu import Yfu
-from swag.blocks.yfu_blocks import YfuGenerationBlock
+from swag.blocks.yfu_blocks import RenameYfuBlock, YfuGenerationBlock
 
 
 async def execute_yfu_command(swag_client, message):
@@ -36,6 +37,7 @@ async def execute_yfu_command(swag_client, message):
         )
 
 
+##TODO apparition du bouton "Renommer" et "Activer" dynamique
 class YfuNavigation(disnake.ui.View):
     def __init__(self, swag_client, user_id):
         super().__init__(timeout=None)
@@ -100,8 +102,48 @@ class YfuNavigation(disnake.ui.View):
     async def rename_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
-        # TODO renommer la yfu
-        pass
+
+        await interaction.response.edit_message(
+            embed=YfuEmbed.from_yfu(self.selected_yfu),
+            view=disnake.ui.View(),  # view vide
+        )
+
+        await interaction.send(
+            content=f"Quel prénom souhaites-tu donner cette ¥fu ? (Doit commencer par **{self.selected_yfu.first_name[0]}**).",
+            ephemeral=True,
+        )
+
+        def check_yfu_name(new_yfu_name_message):
+            return (
+                new_yfu_name_message.author.id == self.user_id
+                and new_yfu_name_message.content[0] == self.selected_yfu.first_name[0]
+            )
+
+        try:
+            name_message = await self.swag_client.discord_client.wait_for(
+                "message", timeout=60.0, check=check_yfu_name
+            )
+        except asyncio.TimeoutError:
+            await self.send_yfu_view(
+                interaction
+            )  # Retour au menu par défaut lors du timeout
+        else:
+
+            old_first_name = self.selected_yfu.first_name
+            # Generation du bloc de renommage
+            renaming_block = RenameYfuBlock(
+                issuer_id=self.user_id,
+                user_id=self.user_id,
+                yfu_id=self.yfu_ids[self.selected_yfu_index],
+                new_first_name=name_message.content,
+            )
+            await self.swag_client.swagchain.append(renaming_block)
+
+            self.update_view()
+            await interaction.send(
+                f"**{old_first_name} {self.selected_yfu.last_name}** s'appelle maintenant **{renaming_block.new_first_name} {self.selected_yfu.last_name}**.",
+                embed=YfuEmbed.from_yfu(self.selected_yfu),
+            )
 
     def update_view(self):
 
