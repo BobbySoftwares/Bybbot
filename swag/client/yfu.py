@@ -202,7 +202,7 @@ class YfuEmbed(disnake.Embed):
                 {"name": "Zenitude", "value": f"{yfu.zenitude}", "inline": True},
             ],
             "footer": {
-                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t{yfu.hash}"
+                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t{yfu.hash}-{yfu.yfu_id} "
             },
         }
         return disnake.Embed.from_dict(yfu_dict)
