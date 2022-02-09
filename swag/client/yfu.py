@@ -6,6 +6,8 @@ import disnake
 from swag.yfu import Yfu
 from swag.blocks.yfu_blocks import RenameYfuBlock, YfuGenerationBlock
 
+from .IHS_toolkit import *
+
 
 async def execute_yfu_command(swag_client, message):
     command_yfu = message.content.split()
@@ -26,7 +28,9 @@ async def execute_yfu_command(swag_client, message):
 
         # TODO gérer le cas où il n'y a pas de Yfu
 
-        first_yfu_id = swag_client.swagchain.account(message.author.id).yfu_wallet[0]
+        first_yfu_id = sort_yfus_id(
+            swag_client.swagchain.account(message.author.id).yfu_wallet
+        )[0]
 
         # Envoie du message publique
         await message.channel.send(f"{message.author.mention}, regarde ses Yfus 👀")
@@ -44,19 +48,16 @@ class YfuNavigation(disnake.ui.View):
 
         self.swag_client = swag_client
         self.user_id = user_id
-        self.yfu_ids = swag_client.swagchain.account(user_id).yfu_wallet
+        self.yfu_ids = sort_yfus_id(
+            swag_client.swagchain.account(self.user_id).yfu_wallet
+        )
         self.yfus = [swag_client.swagchain.yfu(yfu_id) for yfu_id in self.yfu_ids]
 
         # Generation des options du dropdown de waifu
-        for index, yfu in enumerate(self.yfus):
+        for option in yfus_to_select_options(self.yfus):
             self.dropdown_yfu.append_option(
-                disnake.SelectOption(
-                    label=f"{yfu.first_name} {yfu.last_name}",
-                    description=yfu.power.effect,
-                    emoji=yfu.clan,
-                    value=index,
-                )
-            )
+                option
+            )  ##TODO gérer quand il y a plus de 25 options
 
         self.selected_yfu_index = 0
         self.update_view()
@@ -96,6 +97,13 @@ class YfuNavigation(disnake.ui.View):
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
         # TODO Activer Waifu
+        self.update_view()
+
+    @disnake.ui.button(label="Échanger", emoji="🤝", style=disnake.ButtonStyle.secondary)
+    async def exchange_button(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        # TODO échanger Waifu
         self.update_view()
 
     @disnake.ui.button(label="Renommer", emoji="✏", style=disnake.ButtonStyle.gray)

@@ -17,7 +17,7 @@ class Kidnapping:
         target = chain._accounts[yfu.owner_id]
         target.check_immunity(self)
         target.yfu_wallet.remove(target_id)
-        owner.yfu_wallet.insert(target_id)
+        owner.yfu_wallet.add(target_id)
         yfu.owner_id = owner_id
 
 
@@ -31,7 +31,7 @@ class Resurrection:
         owner = chain._accounts[owner_id]
         yfu = chain._yfus[target_id]
         if yfu.owner_id == owner_id:
-            owner.yfu_wallet.insert(target_id)
+            owner.yfu_wallet.add(target_id)
         else:
             raise NotImplementedError
 
@@ -51,7 +51,7 @@ class UltimateResurrection:
         if target_id in target.yfu_wallet:
             raise NotImplementedError
         yfu.owner_id = owner_id
-        owner.yfu_wallet.insert(target_id)
+        owner.yfu_wallet.add(target_id)
 
 
 class Cloning:
@@ -65,7 +65,8 @@ class Cloning:
         yfu = deepcopy(chain._yfus[target_id])
         yfu.owner_id = owner_id
         yfu.hash = ""  # TODO
-        owner.yfu_wallet.insert(yfu)
+        # TODO : il faut générer un nouvel id, le hash est purement cosmétique.
+        owner.yfu_wallet.add(yfu)
         chain._yfus[yfu.hash] = yfu
 
 
