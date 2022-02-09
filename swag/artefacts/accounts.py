@@ -41,7 +41,7 @@ class Info:
 class Account:
     swag_balance: Swag = attrib(init=False, default=Swag(0))
     style_balance: Style = attrib(init=False, default=Style(0))
-    yfu_wallet: List[YfuId] = attrib(init=False, default=list())
+    yfu_wallet: Set[YfuId] = attrib(init=False, default=set())
 
     def __iadd__(self, value: Union[Swag, Style]):
         if type(value) is Swag:
