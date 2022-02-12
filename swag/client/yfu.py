@@ -3,6 +3,9 @@ from multiprocessing.sharedctypes import Value
 from turtle import update
 from typing import TYPE_CHECKING
 import disnake
+from swag.blocks.swag_blocks import Transaction
+from swag.client import swag
+from swag.id import CagnotteId, UserId
 from swag.yfu import Yfu
 from swag.blocks.yfu_blocks import RenameYfuBlock, YfuGenerationBlock
 
@@ -33,17 +36,17 @@ async def execute_yfu_command(swag_client, message):
         )[0]
 
         # Envoie du message publique
-        await message.channel.send(f"{message.author.mention}, regarde ses Yfus 👀")
+        await message.channel.send(f"{message.author.mention} regarde ses Yfus 👀")
         # Message privée #TODO voir comment utiliser le mot clef ephemeral
         await message.channel.send(
             embed=YfuEmbed.from_yfu(swag_client.swagchain.yfu(first_yfu_id)),
-            view=YfuNavigation(swag_client, message.author.id),
+            view=YfuNavigation(swag_client, message.author.id, first_yfu_id),
         )
 
 
 ##TODO apparition du bouton "Renommer" et "Activer" dynamique
 class YfuNavigation(disnake.ui.View):
-    def __init__(self, swag_client, user_id):
+    def __init__(self, swag_client, user_id, first_yfu_id):
         super().__init__(timeout=None)
 
         self.swag_client = swag_client
@@ -59,7 +62,7 @@ class YfuNavigation(disnake.ui.View):
                 option
             )  ##TODO gérer quand il y a plus de 25 options
 
-        self.selected_yfu_index = 0
+        self.selected_yfu_index = self.yfu_ids.index(first_yfu_id)
         self.update_view()
 
     @disnake.ui.select(placeholder="Choisis ta Yfu...")
@@ -103,8 +106,13 @@ class YfuNavigation(disnake.ui.View):
     async def exchange_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
-        # TODO échanger Waifu
-        self.update_view()
+
+        #Oblige de l'appelle ici à cause du await TODO trouver une meilleure solution.
+        exchange_option = await forbes_to_select_options(self.swag_client) + cagnottes_to_select_options(self.swag_client)
+        await interaction.response.edit_message(
+                embed=YfuEmbed.from_yfu(self.selected_yfu),
+                view=YfuExchange(self.swag_client,self.user_id,self.selected_yfu,exchange_option)
+            )
 
     @disnake.ui.button(label="Renommer", emoji="✏", style=disnake.ButtonStyle.gray)
     async def rename_button(
@@ -186,6 +194,68 @@ class YfuNavigation(disnake.ui.View):
         await interaction.response.edit_message(
             embed=YfuEmbed.from_yfu(self.selected_yfu), view=self
         )
+
+
+class YfuExchange(disnake.ui.View):
+    def __init__(self, swag_client, user_id, selected_yfu, select_options):
+        super().__init__(timeout=None)
+
+        self.swag_client = swag_client
+        self.user_id = user_id
+        self.selected_yfu = selected_yfu
+
+        for option in select_options:
+            self.dropdown_account.append_option(option)
+
+    @disnake.ui.select(placeholder="Destinataire de la ¥fu...")
+    async def dropdown_account(
+        self, select: disnake.ui.Select, interaction: disnake.MessageInteraction
+    ):  
+        #On attends que l'utilisateur appuie sur confirmé
+        await interaction.response.defer()
+
+    @disnake.ui.button(label="Confirmer",emoji="✅",style=disnake.ButtonStyle.green)
+    async def confirm(
+        self, confirm_button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        #Si pas de valeur selectionné, alors on ne fait juste rien
+        if not self.dropdown_account.values:
+            await interaction.response.defer()
+            return
+
+        ##TODO methode detection type id en fonction du début
+        selected_id = self.dropdown_account.values[0]
+        if selected_id.startswith('€'):
+            selected_id = CagnotteId(selected_id)
+        else:
+            selected_id = UserId(selected_id)
+
+        block = Transaction(
+            issuer_id=UserId(self.user_id),
+            giver_id=UserId(self.user_id),
+            recipient_id=selected_id,
+            amount=self.selected_yfu.yfu_id,
+        )
+        await self.swag_client.swagchain.append(block)
+
+        await interaction.response.edit_message(view=disnake.ui.View())
+
+        await interaction.send(
+            f"{block.giver_id} cède "
+            f"**{self.selected_yfu.first_name} {self.selected_yfu.last_name}** ({self.selected_yfu.yfu_id})"
+            f" à {selected_id}",
+            embed=YfuEmbed.from_yfu(self.swag_client.swagchain.yfu(self.selected_yfu.yfu_id))
+            )
+
+    @disnake.ui.button(label="Annuler",emoji="❌",style=disnake.ButtonStyle.red)
+    async def cancel(
+        self, cancel_button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+    #On revient sur la vu précédente
+        await interaction.response.edit_message(
+            embed=YfuEmbed.from_yfu(self.swag_client.swagchain.yfu(self.selected_yfu.yfu_id)),
+            view=YfuNavigation(self.swag_client, self.user_id, self.selected_yfu.yfu_id)
+    )
 
 
 class YfuEmbed(disnake.Embed):

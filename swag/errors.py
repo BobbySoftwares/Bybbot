@@ -121,3 +121,8 @@ class CagnotteUnspecifiedException(Exception):
     """Raised when a €agnotte Identifier (€n) is missing for the associated command"""
 
     pass
+
+##Exception for ¥fus
+
+class InvalidYfuId(Exception):
+    pass

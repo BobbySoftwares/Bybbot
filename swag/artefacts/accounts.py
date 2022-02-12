@@ -9,6 +9,7 @@ from swag.cauchy import roll
 
 from swag.id import CagnotteId, UserId, YfuId
 from swag.utils import assert_timezone
+from swag.yfu import Yfu
 
 from ..errors import (
     AlreadyMineToday,
@@ -41,28 +42,32 @@ class Info:
 class Account:
     swag_balance: Swag = attrib(init=False, default=Swag(0))
     style_balance: Style = attrib(init=False, default=Style(0))
-    yfu_wallet: Set[YfuId] = attrib(init=False, default=set())
+    yfu_wallet: Set[YfuId] = attrib(init=False, factory=set)
 
-    def __iadd__(self, value: Union[Swag, Style]):
+    def __iadd__(self, value: Union[Swag, Style, YfuId]):
         if type(value) is Swag:
             self.swag_balance += value
         elif type(value) is Style:
             self.style_balance += value
+        elif type(value) is YfuId:
+            self.yfu_wallet.add(value)
         else:
             raise TypeError(
-                "Amounts added to SwagAccount should be either Swag or Style."
+                "Amounts added to SwagAccount should be either Swag, Style or YfuId."
             )
         return self
 
-    def __isub__(self, value: Union[Swag, Style]):
+    def __isub__(self, value: Union[Swag, Style, YfuId]):
         try:
             if type(value) is Swag:
                 self.swag_balance -= value
             elif type(value) is Style:
                 self.style_balance -= value
+            elif type(value) is YfuId:
+                self.yfu_wallet.remove(value)
             else:
                 raise TypeError(
-                    "Amounts subtracted to SwagAccount should be either Swag or Style."
+                    "Amounts subtracted to SwagAccount should be either Swag, Style or YfuId."
                 )
         except InvalidSwagValue:
             raise NotEnoughSwagInBalance(self.swag_balance)

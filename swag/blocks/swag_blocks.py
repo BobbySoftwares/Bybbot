@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from swag.id import CagnotteId, UserId
+from swag.id import CagnotteId, UserId, YfuId
 from swag.utils import assert_timezone
+from swag.yfu import Yfu
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -82,7 +83,7 @@ class Mining(Block):
 class Transaction(Block):
     giver_id = attrib(type=Union[UserId, CagnotteId])
     recipient_id = attrib(type=Union[UserId, CagnotteId])
-    amount = attrib(type=Union[Swag, Style])
+    amount = attrib(type=Union[Swag, Style, YfuId])
 
     def execute(self, db: SwagChain):
         db._accounts[self.giver_id] -= self.amount
