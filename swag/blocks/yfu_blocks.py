@@ -92,7 +92,7 @@ class YfuGenerationBlock(Block):
         pass  ##TODO
 
     def execute(self, db: SwagChain):
-        db._accounts[self.user_id].yfu_wallet.add(self.yfu_id)
+        db._accounts[self.user_id] += self.yfu_id
         db._yfus[self.yfu_id] = Yfu(
             self.user_id,
             self.yfu_id,
@@ -121,5 +121,4 @@ class RenameYfuBlock(Block):
         pass  ##TODO
 
     def execute(self, db: SwagChain):
-        db._accounts[self.user_id].yfu_wallet.add(self.yfu_id)
         db._yfus[self.yfu_id].first_name = self.new_first_name

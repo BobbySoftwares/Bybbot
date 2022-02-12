@@ -2,7 +2,7 @@ import re
 from typing import Union
 from attr import attrib, attrs
 
-from .errors import InvalidCagnotteId
+from .errors import InvalidCagnotteId, InvalidYfuId
 
 
 def user_id_converter(user_id):
@@ -43,19 +43,28 @@ class CagnotteId:
         return self.id
 
 
+yfu_id_regex = re.compile("^¥\d*$",re.A)
+
 def yfu_id_converter(yfu_id):
     if type(yfu_id) is YfuId:
         return yfu_id.id
+    elif type(yfu_id) is int:
+        return f"¥{yfu_id}"
     else:
-        return int(yfu_id)
+        return str(yfu_id)
 
 
 @attrs(frozen=True, auto_attribs=True)
 class YfuId:
-    id: int = attrib(converter=yfu_id_converter)
+    id: str = attrib(converter=yfu_id_converter)
+
+    @id.validator
+    def _validate(self, attribute, value):
+        if not re.match(yfu_id_regex, value):
+            raise InvalidYfuId
 
     def __str__(self) -> str:
-        return f"¥{self.id}"
+        return self.id
 
 
 AccountId = Union[UserId, CagnotteId]
