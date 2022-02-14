@@ -65,7 +65,7 @@ class YfuNavigation(disnake.ui.View):
         self.selected_yfu_index = self.yfu_ids.index(first_yfu_id)
         self.update_view()
 
-    @disnake.ui.select(placeholder="Choisis ta Yfu...")
+    @disnake.ui.select(placeholder="Choisis ta Yfu...", row=1)
     async def dropdown_yfu(
         self, select: disnake.ui.Select, interaction: disnake.MessageInteraction
     ):
@@ -75,7 +75,9 @@ class YfuNavigation(disnake.ui.View):
 
         await self.send_yfu_view(interaction)
 
-    @disnake.ui.button(label="Précédente", emoji="⬅", style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        label="Précédente", emoji="⬅", style=disnake.ButtonStyle.blurple, row=2
+    )
     async def previous_yfu(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
@@ -85,7 +87,9 @@ class YfuNavigation(disnake.ui.View):
 
         await self.send_yfu_view(interaction)
 
-    @disnake.ui.button(label="Suivante", emoji="➡", style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        label="Suivante", emoji="➡", style=disnake.ButtonStyle.blurple, row=2
+    )
     async def next_yfu(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
@@ -95,26 +99,30 @@ class YfuNavigation(disnake.ui.View):
 
         await self.send_yfu_view(interaction)
 
-    @disnake.ui.button(label="Activer", emoji="⚡", style=disnake.ButtonStyle.green)
+    @disnake.ui.button(
+        label="Activer", emoji="⚡", style=disnake.ButtonStyle.green, row=2
+    )
     async def activate_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
         # TODO Activer Waifu
         self.update_view()
 
-    @disnake.ui.button(label="Échanger", emoji="🤝", style=disnake.ButtonStyle.secondary)
-    async def exchange_button(
+    @disnake.ui.button(
+        label="Montrer", emoji="🎴", style=disnake.ButtonStyle.grey, row=3
+    )
+    async def show_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
+        await interaction.send(
+            f"{UserId(self.user_id)} montre fièrement sa ¥fu !",
+            embed=YfuEmbed.from_yfu(self.selected_yfu),
+            view=disnake.ui.View(),
+        )
 
-        #Oblige de l'appelle ici à cause du await TODO trouver une meilleure solution.
-        exchange_option = await forbes_to_select_options(self.swag_client) + cagnottes_to_select_options(self.swag_client)
-        await interaction.response.edit_message(
-                embed=YfuEmbed.from_yfu(self.selected_yfu),
-                view=YfuExchange(self.swag_client,self.user_id,self.selected_yfu,exchange_option)
-            )
-
-    @disnake.ui.button(label="Renommer", emoji="✏", style=disnake.ButtonStyle.gray)
+    @disnake.ui.button(
+        label="Renommer", emoji="✏", style=disnake.ButtonStyle.gray, row=3
+    )
     async def rename_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
@@ -160,6 +168,23 @@ class YfuNavigation(disnake.ui.View):
                 f"**{old_first_name} {self.selected_yfu.last_name}** s'appelle maintenant **{renaming_block.new_first_name} {self.selected_yfu.last_name}**.",
                 embed=YfuEmbed.from_yfu(self.selected_yfu),
             )
+
+    @disnake.ui.button(
+        label="Échanger", emoji="🤝", style=disnake.ButtonStyle.secondary, row=3
+    )
+    async def exchange_button(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        # Oblige de l'appelle ici à cause du await TODO trouver une meilleure solution.
+        exchange_option = await forbes_to_select_options(
+            self.swag_client
+        ) + cagnottes_to_select_options(self.swag_client)
+        await interaction.response.edit_message(
+            embed=YfuEmbed.from_yfu(self.selected_yfu),
+            view=YfuExchange(
+                self.swag_client, self.user_id, self.selected_yfu, exchange_option
+            ),
+        )
 
     def update_view(self):
 
@@ -210,22 +235,22 @@ class YfuExchange(disnake.ui.View):
     @disnake.ui.select(placeholder="Destinataire de la ¥fu...")
     async def dropdown_account(
         self, select: disnake.ui.Select, interaction: disnake.MessageInteraction
-    ):  
-        #On attends que l'utilisateur appuie sur confirmé
+    ):
+        # On attends que l'utilisateur appuie sur confirmé
         await interaction.response.defer()
 
-    @disnake.ui.button(label="Confirmer",emoji="✅",style=disnake.ButtonStyle.green)
+    @disnake.ui.button(label="Confirmer", emoji="✅", style=disnake.ButtonStyle.green)
     async def confirm(
         self, confirm_button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
-        #Si pas de valeur selectionné, alors on ne fait juste rien
+        # Si pas de valeur selectionné, alors on ne fait juste rien
         if not self.dropdown_account.values:
             await interaction.response.defer()
             return
 
         ##TODO methode detection type id en fonction du début
         selected_id = self.dropdown_account.values[0]
-        if selected_id.startswith('€'):
+        if selected_id.startswith("€"):
             selected_id = CagnotteId(selected_id)
         else:
             selected_id = UserId(selected_id)
@@ -244,18 +269,24 @@ class YfuExchange(disnake.ui.View):
             f"{block.giver_id} cède "
             f"**{self.selected_yfu.first_name} {self.selected_yfu.last_name}** ({self.selected_yfu.yfu_id})"
             f" à {selected_id}",
-            embed=YfuEmbed.from_yfu(self.swag_client.swagchain.yfu(self.selected_yfu.yfu_id))
-            )
+            embed=YfuEmbed.from_yfu(
+                self.swag_client.swagchain.yfu(self.selected_yfu.yfu_id)
+            ),
+        )
 
-    @disnake.ui.button(label="Annuler",emoji="❌",style=disnake.ButtonStyle.red)
+    @disnake.ui.button(label="Annuler", emoji="❌", style=disnake.ButtonStyle.red)
     async def cancel(
         self, cancel_button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
-    #On revient sur la vu précédente
+        # On revient sur la vu précédente
         await interaction.response.edit_message(
-            embed=YfuEmbed.from_yfu(self.swag_client.swagchain.yfu(self.selected_yfu.yfu_id)),
-            view=YfuNavigation(self.swag_client, self.user_id, self.selected_yfu.yfu_id)
-    )
+            embed=YfuEmbed.from_yfu(
+                self.swag_client.swagchain.yfu(self.selected_yfu.yfu_id)
+            ),
+            view=YfuNavigation(
+                self.swag_client, self.user_id, self.selected_yfu.yfu_id
+            ),
+        )
 
 
 class YfuEmbed(disnake.Embed):
