@@ -2,6 +2,7 @@ import asyncio
 from multiprocessing.sharedctypes import Value
 from turtle import update
 from typing import TYPE_CHECKING
+from disnake.ext import commands
 import disnake
 from swag.blocks.swag_blocks import Transaction
 from swag.client import swag
@@ -12,35 +13,49 @@ from swag.blocks.yfu_blocks import RenameYfuBlock, YfuGenerationBlock
 from .IHS_toolkit import *
 
 
-async def execute_yfu_command(swag_client, message):
-    command_yfu = message.content.split()
+class YfuCommand(commands.Cog):
+    def __init__(self, swag_client):
+        self.swag_client = swag_client
 
-    if "générer" in command_yfu:
-        yfu_block = YfuGenerationBlock(
-            issuer_id=message.author.id,
-            user_id=message.author.id,
-            yfu_id=swag_client.swagchain.yfu_nbr,
-        )
-        await swag_client.swagchain.append(yfu_block)
+    @commands.slash_command(name="yfu", guild_ids=[856278929296195602])
+    async def yfu(self, interaction: disnake.ApplicationCommandInteraction):
+        """Ouvre le menu des ¥fus"""
+        await interaction.response.defer()
 
-        await message.channel.send(
-            f"{message.author.mention}, **{yfu_block.first_name} {yfu_block.last_name}** a rejoint vos rangs à des fins de test !",
-            embed=YfuEmbed.from_yfu(swag_client.swagchain._yfus[yfu_block.yfu_id]),
-        )
-    else:
-
+    @yfu.sub_command(name="menu")
+    async def open_menu(self, interaction: disnake.ApplicationCommandInteraction):
+        """Ouvre le menu des ¥fus"""
         # TODO gérer le cas où il n'y a pas de Yfu
 
         first_yfu_id = sort_yfus_id(
-            swag_client.swagchain.account(message.author.id).yfu_wallet
+            self.swag_client.swagchain.account(interaction.author.id).yfu_wallet
         )[0]
 
         # Envoie du message publique
-        await message.channel.send(f"{message.author.mention} regarde ses Yfus 👀")
-        # Message privée #TODO voir comment utiliser le mot clef ephemeral
-        await message.channel.send(
-            embed=YfuEmbed.from_yfu(swag_client.swagchain.yfu(first_yfu_id)),
-            view=YfuNavigation(swag_client, message.author.id, first_yfu_id),
+        await interaction.send(f"{interaction.author.mention} regarde ses Yfus 👀")
+
+        # Message privée
+        await interaction.followup.send(
+            embed=YfuEmbed.from_yfu(self.swag_client.swagchain.yfu(first_yfu_id)),
+            view=YfuNavigation(self.swag_client, interaction.author.id, first_yfu_id),
+            ephemeral=True,
+        )
+
+    @yfu.sub_command(name="générer")
+    async def generate(self, interaction: disnake.ApplicationCommandInteraction):
+        """Génère une ¥fu"""
+
+        yfu_block = YfuGenerationBlock(
+            issuer_id=UserId(interaction.author.id),
+            user_id=UserId(interaction.author.id),
+            yfu_id=self.swag_client.swagchain.yfu_nbr,
+        )
+
+        await self.swag_client.swagchain.append(yfu_block)
+
+        await interaction.send(
+            f"{interaction.author.mention}, **{yfu_block.first_name} {yfu_block.last_name}** a rejoint vos rangs à des fins de test !",
+            embed=YfuEmbed.from_yfu(self.swag_client.swagchain._yfus[yfu_block.yfu_id]),
         )
 
 
@@ -114,6 +129,7 @@ class YfuNavigation(disnake.ui.View):
     async def show_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
+
         await interaction.send(
             f"{UserId(self.user_id)} montre fièrement sa ¥fu !",
             embed=YfuEmbed.from_yfu(self.selected_yfu),
