@@ -1,4 +1,5 @@
 import disnake
+from disnake.ext.commands import Bot
 
 import traceback
 
@@ -9,7 +10,9 @@ import json
 from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
 from maintenance.maintenance_client import MaintenanceClient
+from swag.client.yfu import YfuCommand
 
+from disnake.ext import commands
 
 with open("config.json", "r") as json_file:
     client_config = json.load(json_file)
@@ -22,7 +25,7 @@ intents = disnake.Intents.default()
 intents.members = True
 
 # Création du client
-client = disnake.Client(intents=intents)
+client = Bot(intents=intents)
 
 swag_module = SwagClient(client)
 
@@ -31,6 +34,8 @@ modules = [
     JukeboxClient(client),
     MaintenanceClient(client, client_config.get("admins"), swag_module),
 ]
+
+client.add_cog(YfuCommand(swag_module))
 
 
 @client.event
