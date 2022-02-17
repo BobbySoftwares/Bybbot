@@ -3,7 +3,6 @@ from swag.client.style import execute_style_command
 from swag.client.swag import execute_swag_command
 from swag.client.swagdmin import execute_swagdmin_command
 from swag.blockchain import SyncedSwagChain
-from swag.client.yfu import execute_yfu_command
 from swag.errors import (
     CagnotteNameAlreadyExist,
     CagnotteDestructionForbidden,
