@@ -51,7 +51,7 @@ class SwagChain:
         return Info(self._accounts[CagnotteId(cagnotte_id)])
 
     def yfu(self, yfu_id):
-        return self._yfus[yfu_id]  # TODO doit être une vue
+        return Info(self._yfus[YfuId(yfu_id)])
 
     def _guild(self, guild_id):
         try:
