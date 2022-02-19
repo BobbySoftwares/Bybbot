@@ -64,10 +64,9 @@ class Cloning:
         owner = chain._accounts[owner_id]
         yfu = deepcopy(chain._yfus[target_id])
         yfu.owner_id = owner_id
-        yfu.hash = ""  # TODO
-        # TODO : il faut générer un nouvel id, le hash est purement cosmétique.
+        yfu.yfu_id = YfuId(chain.yfu_nbr)
         owner.yfu_wallet.add(yfu)
-        chain._yfus[yfu.hash] = yfu
+        chain._yfus[yfu.yfu_id] = yfu
 
 
 class Copy:
