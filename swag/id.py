@@ -43,7 +43,8 @@ class CagnotteId:
         return self.id
 
 
-yfu_id_regex = re.compile("^¥\d*$",re.A)
+yfu_id_regex = re.compile("^¥\d+$", re.A)
+
 
 def yfu_id_converter(yfu_id):
     if type(yfu_id) is YfuId:
