@@ -80,8 +80,8 @@ class SwagClient(Module):
                 await execute_style_command(self, message)
             elif message.content.startswith("!€agnotte"):
                 await execute_cagnotte_command(self, message)
-            elif message.content.startswith("!Yfu"):
-                await execute_yfu_command(self, message)
+#            elif message.content.startswith("!Yfu"):
+#                await execute_yfu_command(self, message)
         except NotEnoughSwagInBalance:
             await message.channel.send(
                 f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour "
