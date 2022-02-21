@@ -133,7 +133,7 @@ class SwagChain:
             return key
 
     @property
-    def yfu_nbr(self):
+    def next_yfu_id(self):
         return len(self._yfus)
 
     async def cagnotte_lottery(
