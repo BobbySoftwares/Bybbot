@@ -20,10 +20,11 @@ class YfuNavigation(disnake.ui.View):
         self.yfus = [swag_client.swagchain.yfu(yfu_id) for yfu_id in self.yfu_ids]
 
         # Generation des options du dropdown de waifu
+         ##TODO gérer quand il y a plus de 25 options
         for option in yfus_to_select_options(self.yfus):
             self.dropdown_yfu.append_option(
                 option
-            )  ##TODO gérer quand il y a plus de 25 options
+            )
 
         self.selected_yfu_index = self.yfu_ids.index(first_yfu_id)
         self.update_view()
