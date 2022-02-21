@@ -4,7 +4,7 @@ from swag.id import UserId
 from swag.blocks.yfu_blocks import YfuGenerationBlock
 from utils import GUILD_ID
 
-from .ui.IHS_toolkit import sort_yfus_id
+from .ui.ihs_toolkit import sort_yfus_id
 from .ui.yfu_view import YfuEmbed, YfuNavigation, YfuExchange
 
 
