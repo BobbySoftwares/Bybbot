@@ -30,7 +30,7 @@ class SwagCommand(commands.Cog):
 
     @commands.slash_command(name="swag", guild_ids=[GUILD_ID])
     async def swag(self, interaction: disnake.ApplicationCommandInteraction):
-        await interaction.response.defer()
+        pass
 
     @swag.sub_command(name="créer")
     async def create(self, interaction: disnake.ApplicationCommandInteraction):
@@ -117,7 +117,7 @@ class SwagCommand(commands.Cog):
             )
 
     @swag.sub_command(name="bloquer")
-    async def block(self, interaction: disnake.ApplicationCommandInteraction, montant : int):
+    async def block(self, interaction: disnake.ApplicationCommandInteraction, montant : str):
         """
         Bloque un montant de $wag pour générer du $tyle.
         
@@ -142,7 +142,7 @@ class SwagCommand(commands.Cog):
         )
 
     @swag.sub_command(name="garder")
-    async def keep(self, interaction: disnake.ApplicationCommandInteraction, montant : int):
+    async def keep(self, interaction: disnake.ApplicationCommandInteraction, montant : str):
         """
         Garde un montant de $wag et utilise le reste pour générer du $tyle.
         
@@ -168,7 +168,7 @@ class SwagCommand(commands.Cog):
         )
 
     @swag.sub_command(name="payer")
-    async def pay(self, interaction: disnake.ApplicationCommandInteraction, montant : int, destinataire : disnake.Member):
+    async def pay(self, interaction: disnake.ApplicationCommandInteraction, montant : str, destinataire : disnake.Member):
         """
         Envoie un montant de $wag au destinataire spécifié
 
@@ -186,7 +186,7 @@ class SwagCommand(commands.Cog):
         )
         await self.swag_client.swagchain.append(block)
 
-        await interaction.channel.send(
+        await interaction.response.send_message(
             "Transaction effectué avec succès ! \n"
             "```ini\n"
             f"[{interaction.author.display_name}\t{block.amount}\t"
