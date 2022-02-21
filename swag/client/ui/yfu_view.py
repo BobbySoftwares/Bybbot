@@ -14,7 +14,7 @@ class YfuNavigation(disnake.ui.View):
 
         self.swag_client = swag_client
         self.user_id = user_id
-        self.yfu_ids = sort_yfus_id(
+        self.yfu_ids = sort_yfu_ids(
             swag_client.swagchain.account(self.user_id).yfu_wallet
         )
         self.yfus = [swag_client.swagchain.yfu(yfu_id) for yfu_id in self.yfu_ids]
