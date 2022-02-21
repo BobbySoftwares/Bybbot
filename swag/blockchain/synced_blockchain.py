@@ -40,12 +40,12 @@ class SyncedSwagChain(SwagChain):
 
         # Envoie de l'avatar si generation de Yfu
         if isinstance(block, YfuGenerationBlock):
-            avatar_mes = await self._channel.send(
+            avatar_message = await self._channel.send(
                 json.dumps(unstructure_block(block), default=json_converter),
                 file=disnake.File(block.avatar_local_path),
             )
             # Mise à jour de l'url de l'avatar dans la Yfu
-            avatar_url = avatar_mes.attachments[0].url
+            avatar_url = avatar_message.attachments[0].url
             self._yfus[block.yfu_id].avatar_url = avatar_url
         else:
             await self._channel.send(
