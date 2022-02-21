@@ -4,7 +4,7 @@ from swag.blocks import UserTimezoneUpdate
 from swag.blocks import YfuGenerationBlock
 from swag.currencies import Swag
 from swag.id import UserId
-from swag.yfu import YfuEmbed
+from .ui.yfu_view import YfuEmbed
 
 from ..errors import InvalidSwagValue, NoReceiver
 from ..stylog import BLOCKING_TIME

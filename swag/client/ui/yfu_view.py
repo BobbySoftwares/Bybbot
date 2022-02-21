@@ -2,7 +2,7 @@ import asyncio
 import disnake
 from swag.blocks.swag_blocks import Transaction
 from swag.id import CagnotteId, UserId
-from swag.yfu import Yfu
+from swag.yfu import Yfu, YfuRarity
 from swag.blocks.yfu_blocks import RenameYfuBlock
 
 from .IHS_toolkit import *
@@ -258,7 +258,7 @@ class YfuEmbed(disnake.Embed):
         yfu_dict = {
             "title": f"{yfu.clan} {yfu.first_name} {yfu.last_name}",
             "image": {"url": yfu.avatar_url},
-            "color": yfu.YfuRarity.from_power_point(yfu.power_point).get_color(),
+            "color": YfuRarity.from_power_point(yfu.power_point).get_color(),
             "fields": [
                 {"name": yfu.power.name, "value": yfu.power.effect, "inline": False},
                 {"name": "Coût", "value": f"{yfu.activation_cost}", "inline": True},
