@@ -1,9 +1,8 @@
 import asyncio
 import disnake
-from swag.blocks.swag_blocks import Transaction
 from swag.id import CagnotteId, UserId
 from swag.yfu import Yfu, YfuRarity
-from swag.blocks.yfu_blocks import RenameYfuBlock
+from swag.blocks.yfu_blocks import RenameYfuBlock, TokenTransactionBlock
 
 from .ihs_toolkit import *
 
@@ -220,11 +219,11 @@ class YfuExchange(disnake.ui.View):
         else:
             selected_id = UserId(selected_id)
 
-        block = Transaction(
+        block = TokenTransactionBlock(
             issuer_id=UserId(self.user_id),
             giver_id=UserId(self.user_id),
             recipient_id=selected_id,
-            amount=self.selected_yfu.id,
+            token_id=self.selected_yfu.id,
         )
         await self.swag_client.swagchain.append(block)
 
