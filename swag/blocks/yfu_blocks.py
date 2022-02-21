@@ -110,6 +110,7 @@ class YfuGenerationBlock(Block):
             self.hash,
         )
 
+
 @attrs(frozen=True, kw_only=True)
 class TokenTransactionBlock(Block):
     giver_id = attrib(type=Union[UserId, CagnotteId])
@@ -117,13 +118,13 @@ class TokenTransactionBlock(Block):
     token_id = attrib(type=YfuId)
 
     def execute(self, db: SwagChain):
-        #moving token through account
+        # moving token through account
         db._accounts[self.giver_id].yfu_wallet.remove(self.token_id)
+        # write the owner into the token
+        db._yfus[self.token_id].owner_id = self.recipient_id
         db._accounts[self.recipient_id].yfu_wallet.add(self.token_id)
         db._accounts[self.recipient_id].register(self.giver_id)
 
-        #write the owner into the token
-        db._yfus[self.token_id].owner_id = self.recipient_id
 
 @attrs(frozen=True, kw_only=True)
 class RenameYfuBlock(Block):
