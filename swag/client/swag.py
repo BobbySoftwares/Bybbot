@@ -54,7 +54,7 @@ async def execute_swag_command(swag_client, message):
             yfu_block = YfuGenerationBlock(
                 issuer_id=message.author.id,
                 user_id=message.author.id,
-                yfu_id=swag_client.swagchain.yfu_nbr,
+                yfu_id=swag_client.swagchain.next_yfu_id,
             )
             await swag_client.swagchain.append(yfu_block)
 

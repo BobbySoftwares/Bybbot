@@ -43,7 +43,7 @@ class YfuCommand(commands.Cog):
         yfu_block = YfuGenerationBlock(
             issuer_id=UserId(interaction.author.id),
             user_id=UserId(interaction.author.id),
-            yfu_id=self.swag_client.swagchain.yfu_nbr,
+            yfu_id=self.swag_client.swagchain.next_yfu_id,
         )
 
         await self.swag_client.swagchain.append(yfu_block)
