@@ -83,16 +83,12 @@ class Mining(Block):
 class Transaction(Block):
     giver_id = attrib(type=Union[UserId, CagnotteId])
     recipient_id = attrib(type=Union[UserId, CagnotteId])
-    amount = attrib(type=Union[Swag, Style, YfuId])
+    amount = attrib(type=Union[Swag, Style])
 
     def execute(self, db: SwagChain):
         db._accounts[self.giver_id] -= self.amount
         db._accounts[self.recipient_id] += self.amount
         db._accounts[self.recipient_id].register(self.giver_id)
-
-        #Changement of owner if it's a Yfu
-        if isinstance(self.amount, YfuId):
-            db._yfus[self.amount].owner_id = self.recipient_id
 
 
 # In days

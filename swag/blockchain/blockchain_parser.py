@@ -57,11 +57,6 @@ converter.register_structure_hook(CagnotteId, lambda o, _: CagnotteId(o))
 converter.register_structure_hook(YfuId, lambda o, _: YfuId(o))
 converter.register_structure_hook(Union[UserId, CagnotteId], structure_id)
 
-converter.register_structure_hook(
-    Union[Swag, Style, YfuId],
-    lambda o, _: converter.structure(o, YfuId if o.startswith("¥") else Union[Swag, Style]),
-)
-
 block_types = {
     name: cls for name, cls in blocks.__dict__.items() if isinstance(cls, type)
 }
