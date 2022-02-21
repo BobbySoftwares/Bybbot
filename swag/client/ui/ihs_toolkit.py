@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from swag.client import SwagClient
 
 
-def sort_yfus_id(yfu_set):
+def sort_yfu_ids(yfu_set):
     return sorted(list(yfu_set), key=lambda yfu: yfu.id)
 
 

@@ -4,7 +4,7 @@ from swag.id import UserId
 from swag.blocks.yfu_blocks import YfuGenerationBlock
 from utils import GUILD_ID
 
-from .ui.ihs_toolkit import sort_yfus_id
+from .ui.ihs_toolkit import sort_yfu_ids
 from .ui.yfu_view import YfuEmbed, YfuNavigation, YfuExchange
 
 
@@ -22,7 +22,7 @@ class YfuCommand(commands.Cog):
         """Ouvre le menu des ¥fus"""
         # TODO gérer le cas où il n'y a pas de Yfu
 
-        first_yfu_id = sort_yfus_id(
+        first_yfu_id = sort_yfu_ids(
             self.swag_client.swagchain.account(interaction.author.id).yfu_wallet
         )[0]
 
