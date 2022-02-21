@@ -44,30 +44,26 @@ class Account:
     style_balance: Style = attrib(init=False, default=Style(0))
     yfu_wallet: Set[YfuId] = attrib(init=False, factory=set)
 
-    def __iadd__(self, value: Union[Swag, Style, YfuId]):
+    def __iadd__(self, value: Union[Swag, Style]):
         if type(value) is Swag:
             self.swag_balance += value
         elif type(value) is Style:
             self.style_balance += value
-        elif type(value) is YfuId:
-            self.yfu_wallet.add(value)
         else:
             raise TypeError(
-                "Amounts added to SwagAccount should be either Swag, Style or YfuId."
+                "Amounts added to SwagAccount should be either Swag, Style."
             )
         return self
 
-    def __isub__(self, value: Union[Swag, Style, YfuId]):
+    def __isub__(self, value: Union[Swag, Style]):
         try:
             if type(value) is Swag:
                 self.swag_balance -= value
             elif type(value) is Style:
                 self.style_balance -= value
-            elif type(value) is YfuId:
-                self.yfu_wallet.remove(value)
             else:
                 raise TypeError(
-                    "Amounts subtracted to SwagAccount should be either Swag, Style or YfuId."
+                    "Amounts subtracted to SwagAccount should be either Swag, Style."
                 )
         except InvalidSwagValue:
             raise NotEnoughSwagInBalance(self.swag_balance)

@@ -2,7 +2,7 @@ from __future__ import annotations
 import hashlib
 
 from attr import attrib, attrs
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from ..yfu import Yfu, YfuPower
 
 if TYPE_CHECKING:
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 from ..currencies import Style
 
-from ..id import UserId, YfuId
+from ..id import CagnotteId, UserId, YfuId
 from ..utils import EMOJI_CLAN_YFU
 from ..cauchy import roll
 
@@ -92,7 +92,7 @@ class YfuGenerationBlock(Block):
         pass  ##TODO
 
     def execute(self, db: SwagChain):
-        db._accounts[self.user_id] += self.yfu_id
+        db._accounts[self.user_id].yfu_wallet.add(self.yfu_id)
         db._yfus[self.yfu_id] = Yfu(
             self.user_id,
             self.yfu_id,
@@ -110,6 +110,20 @@ class YfuGenerationBlock(Block):
             self.hash,
         )
 
+@attrs(frozen=True, kw_only=True)
+class TokenTransactionBlock(Block):
+    giver_id = attrib(type=Union[UserId, CagnotteId])
+    recipient_id = attrib(type=Union[UserId, CagnotteId])
+    token_id = attrib(type=YfuId)
+
+    def execute(self, db: SwagChain):
+        #moving token through account
+        db._accounts[self.giver_id].yfu_wallet.remove(self.token_id)
+        db._accounts[self.recipient_id].yfu_wallet.add(self.token_id)
+        db._accounts[self.recipient_id].register(self.giver_id)
+
+        #write the owner into the token
+        db._yfus[self.token_id].owner_id = self.recipient_id
 
 @attrs(frozen=True, kw_only=True)
 class RenameYfuBlock(Block):
