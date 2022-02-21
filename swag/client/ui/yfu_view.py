@@ -224,7 +224,7 @@ class YfuExchange(disnake.ui.View):
             issuer_id=UserId(self.user_id),
             giver_id=UserId(self.user_id),
             recipient_id=selected_id,
-            amount=self.selected_yfu.yfu_id,
+            amount=self.selected_yfu.id,
         )
         await self.swag_client.swagchain.append(block)
 
@@ -232,10 +232,10 @@ class YfuExchange(disnake.ui.View):
 
         await interaction.send(
             f"{block.giver_id} cède "
-            f"**{self.selected_yfu.first_name} {self.selected_yfu.last_name}** ({self.selected_yfu.yfu_id})"
+            f"**{self.selected_yfu.first_name} {self.selected_yfu.last_name}** ({self.selected_yfu.id})"
             f" à {selected_id}",
             embed=YfuEmbed.from_yfu(
-                self.swag_client.swagchain.yfu(self.selected_yfu.yfu_id)
+                self.swag_client.swagchain.yfu(self.selected_yfu.id)
             ),
         )
 
@@ -246,10 +246,10 @@ class YfuExchange(disnake.ui.View):
         # On revient sur la vu précédente
         await interaction.response.edit_message(
             embed=YfuEmbed.from_yfu(
-                self.swag_client.swagchain.yfu(self.selected_yfu.yfu_id)
+                self.swag_client.swagchain.yfu(self.selected_yfu.id)
             ),
             view=YfuNavigation(
-                self.swag_client, self.user_id, self.selected_yfu.yfu_id
+                self.swag_client, self.user_id, self.selected_yfu.id
             ),
         )
 
@@ -267,7 +267,7 @@ class YfuEmbed(disnake.Embed):
                 {"name": "Zenitude", "value": f"{yfu.zenitude}", "inline": True},
             ],
             "footer": {
-                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t{yfu.hash}-{yfu.yfu_id} "
+                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t{yfu.hash}-{yfu.id} "
             },
         }
         return disnake.Embed.from_dict(yfu_dict)
