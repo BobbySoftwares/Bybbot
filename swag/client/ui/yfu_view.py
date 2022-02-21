@@ -5,7 +5,7 @@ from swag.id import CagnotteId, UserId
 from swag.yfu import Yfu, YfuRarity
 from swag.blocks.yfu_blocks import RenameYfuBlock
 
-from .IHS_toolkit import *
+from .ihs_toolkit import *
 
 ##TODO apparition du bouton "Renommer" et "Activer" dynamique
 class YfuNavigation(disnake.ui.View):
