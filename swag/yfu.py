@@ -22,7 +22,7 @@ class YfuPower:
 @attrs(auto_attribs=True)
 class Yfu:
     owner_id: Union[UserId, CagnotteId]
-    yfu_id: YfuId
+    id: YfuId
     first_name: str
     last_name: str
     clan: str
