@@ -90,6 +90,10 @@ class Transaction(Block):
         db._accounts[self.recipient_id] += self.amount
         db._accounts[self.recipient_id].register(self.giver_id)
 
+        #Changement of owner if it's a Yfu
+        if isinstance(self.amount, YfuId):
+            db._yfus[self.amount].owner_id = self.recipient_id
+
 
 # In days
 BLOCKING_TIME = 3
