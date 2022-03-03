@@ -6,7 +6,7 @@ from swag.blocks import UserTimezoneUpdate
 from swag.currencies import Swag
 from swag.id import UserId
 
-from ..errors import InvalidSwagValue, NoReceiver
+from ..errors import InvalidSwagValue
 from ..stylog import BLOCKING_TIME
 from ..utils import update_forbes_classement
 
