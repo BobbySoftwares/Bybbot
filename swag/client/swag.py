@@ -8,7 +8,7 @@ from swag.currencies import Swag
 from swag.id import UserId
 from .ui.yfu_view import YfuEmbed
 
-from ..errors import InvalidSwagValue, NoReceiver
+from ..errors import InvalidSwagValue
 from ..stylog import BLOCKING_TIME
 from ..utils import update_forbes_classement
 

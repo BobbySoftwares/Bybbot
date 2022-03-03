@@ -11,6 +11,7 @@ from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
 from maintenance.maintenance_client import MaintenanceClient
 from swag.blockchain.blockchain import SwagChain
+from swag.client.client import ClientError
 from swag.client.swag import SwagCommand
 from swag.client.yfu import YfuCommand
 
@@ -39,6 +40,7 @@ modules = [
 
 client.add_cog(SwagCommand(swag_module))
 client.add_cog(YfuCommand(swag_module))
+client.add_cog(ClientError())
 
 
 @client.event
