@@ -156,14 +156,7 @@ class SwagCommand(commands.Cog):
         destinataire : utilisateur à qui donner la monnaie.
         """
 
-        # Il y a sans doute un moyen plus habile de le faire
-        # En passant par une méthode de l'énum, pour eviter de faire ca dans chaque cas
-        if monnaie == Currency.Swag:
-            amount_to_send = Swag.from_command(montant)
-        elif monnaie == Currency.Style:
-            amount_to_send = Style.from_command(montant)
-        else:
-            return
+        amount_to_send = Currency.get_class(monnaie)(montant)
 
         block = Transaction(
             issuer_id=interaction.author.id,

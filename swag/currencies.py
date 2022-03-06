@@ -115,3 +115,12 @@ class Currency(str, Enum):
 
     Swag = Swag(0).currency
     Style = Style(0).currency
+
+    @classmethod
+    def get_class(cls,currency_str):
+        if currency_str == cls.Swag:
+            return Swag
+        elif currency_str == cls.Style:
+            return Style
+        else:
+            return ValueError
