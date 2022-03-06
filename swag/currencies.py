@@ -1,4 +1,5 @@
 from decimal import ROUND_DOWN, Decimal
+from enum import Enum
 from attr import attrs, attrib
 from swag.errors import InvalidStyleValue, InvalidSwagValue
 
@@ -11,6 +12,10 @@ class Money:
     def currency(self):
         raise NotImplementedError
 
+    @classmethod
+    def from_str(cls, text : str):
+        raise NotImplementedError
+
     def __str__(self) -> str:
         return f"{format_number(self.value)} {self.currency}"
 
@@ -18,6 +23,13 @@ class Money:
 @attrs(frozen=True)
 class Swag(Money):
     value: int = attrib(converter=int)
+
+    @classmethod
+    def from_command(cls, text : str):
+        try:
+            return cls(text.replace(" ",""))
+        except ValueError:
+            raise InvalidSwagValue
 
     @value.validator
     def _check_amount(self, attribute, value):
@@ -58,6 +70,13 @@ def style_decimal(amount):
 class Style(Money):
     value: Decimal = attrib(converter=style_decimal)
 
+    @classmethod
+    def from_command(cls, text : str):
+        try:
+            return cls(value=text.replace(" ","").replace(",","."))
+        except ValueError:
+            raise InvalidStyleValue
+
     @value.validator
     def _check_amount(self, attribute, value):
         if value < 0:
@@ -86,3 +105,13 @@ class Style(Money):
             return self
         else:
             raise InvalidStyleValue
+
+
+class Currency(str, Enum): 
+    """
+    Only used by slash command, 
+    Could be automaticly built thanks to Money children I guess ?
+    """
+
+    Swag = Swag(0).currency
+    Style = Style(0).currency

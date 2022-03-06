@@ -1,7 +1,6 @@
 import disnake
 from disnake.ext import commands
 from swag.client.cagnotte import execute_cagnotte_command
-from swag.client.style import execute_style_command
 from swag.client.swagdmin import execute_swagdmin_command
 from swag.blockchain import SyncedSwagChain
 from swag.errors import (
@@ -79,8 +78,8 @@ class SwagClient(Module):
                 await execute_swagdmin_command(self, message)
 #            elif message.content.startswith("!$wag"):
 #                await execute_swag_command(self, message)
-            elif message.content.startswith("!$tyle"):
-                await execute_style_command(self, message)
+            # elif message.content.startswith("!$tyle"):
+            #     await execute_style_command(self, message)
             elif message.content.startswith("!€agnotte"):
                 await execute_cagnotte_command(self, message)
 #            elif message.content.startswith("!Yfu"):
