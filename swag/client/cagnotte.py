@@ -5,8 +5,7 @@ from swag.blocks.cagnotte_blocks import (
     CagnotteRenaming,
 )
 from swag.blocks.swag_blocks import Transaction
-from swag.client.style import style_from_command
-from swag.client.swag import swag_from_command
+from swag.currencies import Style, Swag
 from swag.errors import CagnotteUnspecifiedException, NoReceiver
 from swag.id import CagnotteId, UserId
 
@@ -132,9 +131,9 @@ async def execute_cagnotte_command(swag_client, message):
         cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
 
         if "$wag" in splited_command:
-            amount = swag_from_command(splited_command)
+            amount = Swag.from_command(splited_command)
         elif "$tyle" in splited_command:
-            amount = style_from_command(splited_command)
+            amount = Style.from_command(splited_command)
         else:
             await message.channel.send(
                 f"{message.author.mention}, avec le nom de la monnaie c'est mieux !"
@@ -170,9 +169,9 @@ async def execute_cagnotte_command(swag_client, message):
         receiver = receiver[0]
 
         if "$wag" in splited_command:
-            amount = swag_from_command(splited_command)
+            amount = Swag.from_command(splited_command)
         elif "$tyle" in splited_command:
-            amount = style_from_command(splited_command)
+            amount = Style.from_command(splited_command)
         else:
             await message.channel.send(
                 f"{message.author.mention}, avec le nom de la monnaie c'est mieux !"

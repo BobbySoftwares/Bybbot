@@ -3,7 +3,7 @@ import disnake
 from arrow.arrow import Arrow
 from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
 from swag.blocks import UserTimezoneUpdate
-from swag.currencies import Swag
+from swag.currencies import Currency, Style, Swag
 from swag.id import UserId
 
 from ..errors import InvalidSwagValue
@@ -12,11 +12,6 @@ from ..utils import update_forbes_classement
 
 from utils import GUILD_ID, format_number
 
-def swag_from_command(command):
-    try:
-        return Swag("".join(argent for argent in command if argent.isnumeric()))
-    except ValueError:
-        raise InvalidSwagValue
 
 
 YFU_GENERATION_MINING_THRESHOLD = Swag(1000000)
@@ -111,7 +106,7 @@ class SwagCommand(commands.Cog):
         block = SwagBlocking(
             issuer_id=interaction.author.id,
             user_id=interaction.author.id,
-            amount=swag_from_command(montant),
+            amount=Swag.from_command(montant),
         )
         await self.swag_client.swagchain.append(block)
 
@@ -137,7 +132,7 @@ class SwagCommand(commands.Cog):
             issuer_id=interaction.author.id,
             user_id=interaction.author.id,
             amount=(account_info.swag_balance + account_info.blocked_swag)
-            - swag_from_command(montant),
+            - Swag.from_command(montant),
         )
         await self.swag_client.swagchain.append(block)
 
@@ -150,21 +145,31 @@ class SwagCommand(commands.Cog):
         )
 
     @swag.sub_command(name="payer")
-    async def pay(self, interaction: disnake.ApplicationCommandInteraction, montant : str, destinataire : disnake.Member):
+    async def pay(self, interaction: disnake.ApplicationCommandInteraction, montant : str, monnaie : Currency ,destinataire : disnake.Member):
         """
         Envoie un montant de $wag au destinataire spécifié
 
         Parameters
         ----------
-        montant : nombre de $wag à envoyer.
-        destinataire : utilisateur à qui donner du $wag
+        montant : montant à envoyer.
+        monnaie : monnaie à envoyer.
+        destinataire : utilisateur à qui donner la monnaie.
         """
+
+        # Il y a sans doute un moyen plus habile de le faire
+        # En passant par une méthode de l'énum, pour eviter de faire ca dans chaque cas
+        if monnaie == Currency.Swag:
+            amount_to_send = Swag.from_command(montant)
+        elif monnaie == Currency.Style:
+            amount_to_send = Style.from_command(montant)
+        else:
+            return
 
         block = Transaction(
             issuer_id=interaction.author.id,
             giver_id=UserId(interaction.author.id),
             recipient_id=UserId(destinataire.id),
-            amount=swag_from_command(montant),
+            amount=amount_to_send
         )
         await self.swag_client.swagchain.append(block)
 
