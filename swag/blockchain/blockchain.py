@@ -7,7 +7,7 @@ from swag.artefacts.accounts import Accounts, Info
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
 
-from swag.currencies import Swag
+from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId, YfuId
 from swag.yfu import Yfu, YfuDict
 
@@ -185,9 +185,11 @@ class SwagChain:
         if not account_list:
             account_list = [account_id for account_id in self._accounts.users]
 
-        swag_gain = int(cagnotte.swag_balance / len(account_list))
-        style_gain = (cagnotte.style_balance / len(account_list)).quantize(
-            Decimal(".0001"), rounding=ROUND_DOWN
+        swag_gain = Swag(int(cagnotte.swag_balance.value / len(account_list)))
+        style_gain = Style(
+            (cagnotte.style_balance.value / len(account_list)).quantize(
+                Decimal(".0001"), rounding=ROUND_DOWN
+            )
         )
 
         for account_id in account_list:
