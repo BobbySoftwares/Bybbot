@@ -1,6 +1,5 @@
 import disnake
 from disnake.ext import commands
-from swag.client.cagnotte import execute_cagnotte_command
 from swag.client.swagdmin import execute_swagdmin_command
 from swag.blockchain import SyncedSwagChain
 from swag.errors import (
@@ -15,11 +14,13 @@ from apscheduler.triggers.cron import CronTrigger
 from arrow import utcnow
 
 from ..errors import (
+    AlreadyCagnotteManager,
     AlreadyMineToday,
     InvalidSwagValue,
     InvalidStyleValue,
     InvalidTimeZone,
     NoReceiver,
+    OrphanCagnotte,
     TimeZoneFieldLocked,
     NoSwagAccountRegistered,
     AccountAlreadyExist,
@@ -70,18 +71,17 @@ class SwagClient(Module):
 
         scheduler.add_job(style_job, CronTrigger(hour="*"))
 
-
-##TODO Effacer cette fonction au fur et à mesure
+    ##TODO Effacer cette fonction au fur et à mesure
     async def process(self, message):
         try:
             if message.content.startswith("!$wagdmin"):
                 await execute_swagdmin_command(self, message)
-#            elif message.content.startswith("!$wag"):
-#                await execute_swag_command(self, message)
-            # elif message.content.startswith("!$tyle"):
-            #     await execute_style_command(self, message)
-            elif message.content.startswith("!€agnotte"):
-                await execute_cagnotte_command(self, message)
+        #            elif message.content.startswith("!$wag"):
+        #                await execute_swag_command(self, message)
+        # elif message.content.startswith("!$tyle"):
+        #     await execute_style_command(self, message)
+        # elif message.content.startswith("!€agnotte"):
+        #     await execute_cagnotte_command(self, message)
         except NotEnoughSwagInBalance:
             await message.channel.send(
                 f"{message.author.mention} ! Tu ne possèdes pas assez de $wag pour "
@@ -193,25 +193,30 @@ class SwagClient(Module):
 ##TODO : Possible amélioration
 ## Créer un ClientCommand qui sera un Cog qui importera les autres Cog (Swag, Style, Yfu, Swagadmin...)
 
+
 class ClientError(commands.Cog):
     """
     Cog qui écoute les erreurs envoyées par les slash commands et envoie le bon message d'erreur associé
     """
 
     @commands.Cog.listener()
-    async def on_slash_command_error(self, interaction: disnake.ApplicationCommandInteraction, error : commands.CommandInvokeError):
+    async def on_slash_command_error(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        error: commands.CommandInvokeError,
+    ):
 
         if type(error.original) == AccountAlreadyExist:
             await interaction.response.send_message(
                 f"⚠️ {interaction.author.mention}, tu possèdes déjà un compte sur la $wagChain™ !",
-                ephemeral=True
+                ephemeral=True,
             )
-        
-        elif type(error.original) ==  NotEnoughSwagInBalance:
+
+        elif type(error.original) == NotEnoughSwagInBalance:
             await interaction.response.send_message(
                 f"{interaction.author.mention} ! Tu ne possèdes pas assez de $wag pour faire cette transaction, "
                 "vérifie ton solde avec `!$wag solde`",
-                ephemeral=True
+                ephemeral=True,
             )
 
         elif type(error.original) == InvalidSwagValue:
@@ -219,34 +224,34 @@ class ClientError(commands.Cog):
                 f"{interaction.author.mention}, la valeur que tu as écrite est "
                 "incorrecte, elle doit être supérieur à 0 et entière, car le "
                 "$wag est **indivisible** !",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == AlreadyMineToday:
             await interaction.response.send_message(
                 f"Désolé {interaction.author.mention}, mais tu as déjà miné du $wag "
                 "aujourd'hui 😮 ! Reviens donc demain !",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == StyleStillBlocked:
             await interaction.response.send_message(
                 f"{interaction.author.mention}, du $wag est déjà bloqué à ton compte "
                 "chez $tyle Generator Inc. ! Attends leurs déblocage pour pouvoir "
                 "en bloquer de nouveau !",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == NotEnoughStyleInBalance:
             await interaction.response.send_message(
                 f"{interaction.author.mention} ! Tu ne possèdes pas assez de $tyle "
                 "pour faire cette transaction, vérifie ton solde avec "
                 "`!$tyle solde`",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == InvalidStyleValue:
             await interaction.response.send_message(
                 f"{interaction.author.mention}, la valeur que tu as écrite est "
                 "incorrecte, elle doit être supérieur à 0, car le $tyle est "
                 "**toujours positif** !",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == NoSwagAccountRegistered:
             await interaction.response.send_message(
@@ -254,12 +259,12 @@ class ClientError(commands.Cog):
                 "<:rip:817165391846703114> !\n\n"
                 "Remédie à ce problème en lançant la commande `!$wag créer` "
                 "et devient véritablement $wag 😎!",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == AccountAlreadyExist:
             await interaction.response.send_message(
                 f"{interaction.author.mention}, tu possèdes déjà un compte sur la $wagChain™ !",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == InvalidTimeZone:
             await interaction.response.send_message(
@@ -267,7 +272,7 @@ class ClientError(commands.Cog):
                 "Vérifie le nom correct sur "
                 "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones, "
                 "à la colone `TZ database name`.",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == TimeZoneFieldLocked:
             await interaction.response.send_message(
@@ -277,58 +282,71 @@ class ClientError(commands.Cog):
                 "*L'abus de minage est dangereux pour la santé. À Miner avec "
                 "modération. Ceci était un message de la Fédération Bobbyique du "
                 "Minage*",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == NoCagnotteAccountRegistered:
             await interaction.response.send_message(
                 f"Aucune €agnotte n°€{error.original.name} est active sur la $wagChain ! "
                 f"{interaction.author.mention}, tu t'es sans doute trompé de numéro 🤨",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == CagnotteNameAlreadyExist:
             await interaction.response.send_message(
                 f"{interaction.author.mention}, une €agnotte porte déjà ce nom ! "
                 "Je te conseille de choisir un autre nom avant que tout le monde "
                 "soit complètement duper 🤦‍♂️",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == NotEnoughMoneyInCagnotte:
             await interaction.response.send_message(
                 f"{interaction.author.mention}, tu es en train de demander à la €agnotte {error.original.id} "
                 "une somme d'argent qu'elle n'a pas. Non mais tu n'as pas honte ? 😐",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == NotCagnotteManager:
             await interaction.response.send_message(
-                f"{interaction.author.mention}, tu ne fais pas partie des gestionnaires "
-                "de cette €agnotte, tu ne peux donc pas manipuler son contenu 🤷‍♀️",
-                ephemeral=True
+                f"{error.original.name} ne fais pas partie des gestionnaires "
+                "de cette €agnotte. Impossible de faire cette action.",
+                ephemeral=True,
+            )
+        elif type(error.original) == AlreadyCagnotteManager:
+            await interaction.response.send_message(
+                f"{error.original.name} fait déjà partie des gestionnaires de cette €agnotte.",
+                ephemeral=True,
+            )
+        elif type(error.original) == OrphanCagnotte:
+            await interaction.response.send_message(
+                f"Une €agnotte doit avoir **au moins un** gestionnaire.",
+                ephemeral=True,
             )
         elif type(error.original) == CagnotteDestructionForbidden:
             await interaction.response.send_message(
                 f"**Ligne 340 des conditions générales d'utilisations des €agnottes :**\n\n"
                 "*Il est formellement interdit de détruire une cagnotte qui n'est pas vidée "
                 "de son contenu. C'est comme ça.*",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == CagnotteUnspecifiedException:
             await interaction.response.send_message(
                 f"{interaction.author.mention}, il manque l'identifiant de la €agnotte"
                 " dans la commande (€3 par exemple) afin de pouvoir faire l'action que tu demandes.",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == NoReceiver:
             await interaction.response.send_message(
                 f"{interaction.author.mention}, merci de mentionner un destinataire"
                 "(@Bobby Machin) !",
-                ephemeral=True
+                ephemeral=True,
             )
         elif type(error.original) == AttributeError:
             if error.original.name == "swagchain":
                 await interaction.response.send_message(
                     f"{interaction.author.mention}, la $wagChain n'est pas encore disponible. "
                     "Veuillez réessayer d'ici quelques secondes !",
-                    ephemeral=True
+                    ephemeral=True,
                 )
             else:
-                raise
+                print(f"{error.original}")
+
+        else:
+            print(f"{error.original}")

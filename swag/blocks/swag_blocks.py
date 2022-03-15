@@ -21,6 +21,7 @@ from ..block import Block
 from ..errors import (
     AccountAlreadyExist,
     AlreadyMineToday,
+    NotCagnotteManager,
     StyleStillBlocked,
 )
 
@@ -78,6 +79,11 @@ class Transaction(Block):
     amount = attrib(type=Union[Swag, Style])
 
     def execute(self, db: SwagChain):
+
+        if type(self.giver_id) == CagnotteId:
+            if self.issuer_id not in db._accounts[self.giver_id].managers:
+                raise NotCagnotteManager
+
         db._accounts[self.giver_id] -= self.amount
         db._accounts[self.recipient_id] += self.amount
         db._accounts[self.recipient_id].register(self.giver_id)

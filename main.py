@@ -12,6 +12,7 @@ from swag import SwagClient
 from maintenance.maintenance_client import MaintenanceClient
 
 from swag.blockchain.blockchain import SwagChain
+from swag.client.cagnotte import CagnotteCommand
 from swag.client.client import ClientError
 from swag.client.swag import SwagCommand
 
@@ -39,6 +40,7 @@ modules = [
 
 
 client.add_cog(SwagCommand(swag_module))
+client.add_cog(CagnotteCommand(swag_module))
 client.add_cog(ClientError())
 
 
