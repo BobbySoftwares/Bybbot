@@ -90,9 +90,8 @@ class YfuNavigation(disnake.ui.View):
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
 
-        # TODO gérer les anciens boutons
         # TODO choisir quand on peut renommer une Yfu (gratuit 1iere fois puis payant ?)
-        await interaction.response.send_modal(YfuRename(self))
+        await interaction.response.send_modal(YfuRename(self, interaction))
 
     @disnake.ui.button(
         label="Échanger", emoji="🤝", style=disnake.ButtonStyle.secondary, row=3
@@ -213,8 +212,13 @@ class YfuExchange(disnake.ui.View):
 
 
 class YfuRename(disnake.ui.Modal):
-    def __init__(self, navigation_view: YfuNavigation) -> None:
+    def __init__(
+        self,
+        navigation_view: YfuNavigation,
+        navigation_interaction: disnake.MessageInteraction,
+    ) -> None:
         self.nav_view = navigation_view
+        self.nav_interaction = navigation_interaction
         components = [
             disnake.ui.TextInput(
                 label="Nouveau prénom",
@@ -226,7 +230,7 @@ class YfuRename(disnake.ui.Modal):
         ]
 
         super().__init__(
-            title="Renommer ¥fu", custom_id="rename_yfu", components=components
+            title="Renommer une ¥fu", custom_id="rename_yfu", components=components
         )
 
     async def callback(self, inter: disnake.ModalInteraction) -> None:
@@ -247,6 +251,12 @@ class YfuRename(disnake.ui.Modal):
         await self.nav_view.swag_client.swagchain.append(renaming_block)
 
         self.nav_view.update_view()
+
+        # edit the navigation view to hide buttons
+        await self.nav_interaction.edit_original_message(
+            embed=YfuEmbed.from_yfu(self.nav_view.selected_yfu), view=disnake.ui.View()
+        )
+
         await inter.send(
             f"**{old_first_name} {self.nav_view.selected_yfu.last_name}** s'appelle maintenant **"
             f"{renaming_block.new_first_name} {self.nav_view.selected_yfu.last_name}**.",
