@@ -38,6 +38,8 @@ class Yfu:
     power: YfuPower
     hash: str
 
+    is_baptized: bool = attrib(default=False)
+
     def activate(self, kw_arg):
         self.power.activate(kw_arg)
         self.increase_activation_cost()
@@ -55,6 +57,7 @@ class Yfu:
     def on_loss(self):
         # Function called when this Yfu is no longer on a player account, can be usefull for passive power
         pass
+
 
 class YfuRarity(Enum):
     COMMON = int("0xffffff", base=16)
@@ -77,6 +80,7 @@ class YfuRarity(Enum):
 
     def get_color(self):
         return self.value
+
 
 class YfuNotFound(Exception):
     pass

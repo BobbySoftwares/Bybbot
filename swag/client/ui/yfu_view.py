@@ -84,9 +84,9 @@ class YfuNavigation(disnake.ui.View):
         )
 
     @disnake.ui.button(
-        label="Renommer", emoji="✏", style=disnake.ButtonStyle.gray, row=3
+        label="Baptiser", emoji="✏", style=disnake.ButtonStyle.gray, row=3
     )
-    async def rename_button(
+    async def baptize_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
 
@@ -137,6 +137,10 @@ class YfuNavigation(disnake.ui.View):
         else:
             self.activate_button.style = disnake.ButtonStyle.green
             self.activate_button.disabled = False
+
+        # Baptize button
+        # Is disabled if it's already baptized
+        self.baptize_button.disabled = self.selected_yfu.is_baptized
 
     async def send_yfu_view(self, interaction: disnake.MessageInteraction):
 
