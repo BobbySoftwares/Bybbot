@@ -4,6 +4,7 @@ from arrow.arrow import Arrow
 from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
 from swag.blocks import UserTimezoneUpdate
 from swag.blocks import YfuGenerationBlock
+from swag.client.ui.swag_view import SwagAccountEmbed
 from swag.currencies import Currency, Style, Swag
 from swag.id import UserId
 from .ui.yfu_view import YfuEmbed
@@ -97,17 +98,7 @@ class SwagCommand(commands.Cog):
             else ""
         )
         await interaction.response.send_message(
-            "```diff\n"
-            f"Relevé de compte de {utilisateur.display_name}\n"
-            f"-Balance : {user_infos.swag_balance}\n"
-            f"           {user_infos.style_balance}\n"
-            f"-Taux de bloquage : {format_number(user_infos.style_rate)} %\n"
-            "-$wag actuellement bloqué : "
-            f"{user_infos.blocked_swag}\n"
-            f"-$tyle généré : {user_infos.pending_style}\n"
-            f"{release_info}"
-            f"-Timezone du compte : {user_infos.timezone}"
-            "```",
+            embed=SwagAccountEmbed.from_swag_account(user_infos,utilisateur),
             ephemeral=True
             )
 
