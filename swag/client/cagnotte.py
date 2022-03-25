@@ -10,6 +10,7 @@ from swag.blocks.cagnotte_blocks import (
 )
 from swag.blocks.swag_blocks import Transaction
 from swag.client.ui.cagnotte_view import CagnotteAccountEmbed
+from swag.client.ui.swag_view import TransactionEmbed
 from swag.currencies import Currency
 from swag.id import CagnotteId, UserId
 
@@ -171,11 +172,8 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
-            "Transaction effectuée avec succès ! \n"
-            "```ini\n"
-            f"[{cagnotte_id}[{cagnotte_info.name}]\t{block.amount}\t"
-            f"-->\t{destinataire.display_name}]\n"
-            "```"
+            "Transaction effectuée avec succès !",
+            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
         )
 
         await update_forbes_classement(
@@ -421,11 +419,8 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
-            "Transaction effectuée avec succès ! \n"
-            "```ini\n"
-            f"[{interaction.author.display_name}\t{block.amount}\t"
-            f"-->\t{cagnotte_id}[{cagnotte_info.name}]]\n"
-            "```"
+            "Transaction effectuée avec succès !",
+            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
         )
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client

@@ -3,7 +3,7 @@ import disnake
 from arrow.arrow import Arrow
 from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
 from swag.blocks import UserTimezoneUpdate
-from swag.client.ui.swag_view import SwagAccountEmbed
+from swag.client.ui.swag_view import SwagAccountEmbed, TransactionEmbed
 from swag.currencies import Currency, Style, Swag
 from swag.id import UserId
 
@@ -158,11 +158,8 @@ class SwagCommand(commands.Cog):
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
-            "Transaction effectué avec succès ! \n"
-            "```ini\n"
-            f"[{interaction.author.display_name}\t{block.amount}\t"
-            f"-->\t{destinataire.display_name}]\n"
-            "```"
+            "Transaction effectué avec succès !",
+            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
         )
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
