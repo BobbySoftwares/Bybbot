@@ -39,11 +39,10 @@ modules = [
     MaintenanceClient(client, client_config.get("admins"), swag_module),
 ]
 
-client.add_cog(SwagCommand(swag_module))
-client.add_cog(CagnotteCommand(swag_module))
-client.add_cog(YfuCommand(swag_module))
-client.add_cog(ClientError())
-
+#Registration of commands (like slash_commands) MUST be before the bot launch
+#That's why register_commands is used outside "on_ready" event
+for module in modules:
+    module.register_commands()
 
 @client.event
 async def on_ready():
