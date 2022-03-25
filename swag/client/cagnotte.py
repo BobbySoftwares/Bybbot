@@ -9,6 +9,7 @@ from swag.blocks.cagnotte_blocks import (
     CagnotteRevokeManagerBlock,
 )
 from swag.blocks.swag_blocks import Transaction
+from swag.client.ui.cagnotte_view import CagnotteAccountEmbed
 from swag.currencies import Currency
 from swag.id import CagnotteId, UserId
 
@@ -114,7 +115,8 @@ class CagnotteCommand(commands.Cog):
         identifiant : Identifiant de la €agnotte sous la forme €X.
         """
 
-        cagnotte_info = self.swag_client.swagchain.cagnotte(CagnotteId(identifiant))
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
 
         managers = [
             await get_guild_member_name(
@@ -129,14 +131,7 @@ class CagnotteCommand(commands.Cog):
             for participant in cagnotte_info.participants
         ]
         await interaction.response.send_message(
-            f"Voici les informations de la €agnotte {identifiant}\n"
-            "```\n"
-            f"Nom de €agnotte : {cagnotte_info.name}\n"
-            f"Montant de la €agnotte : {cagnotte_info.swag_balance} "
-            f"{cagnotte_info.style_balance}\n"
-            f"Gestionnaire de la €agnotte : {managers}\n"
-            f"Participants : {participants}\n"
-            "```",
+            embed=CagnotteAccountEmbed.from_cagnotte_account(cagnotte_id,cagnotte_info,self.swag_client.discord_client),
             ephemeral=True,
         )
 
