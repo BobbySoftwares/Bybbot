@@ -11,12 +11,6 @@ from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
 from maintenance.maintenance_client import MaintenanceClient
 
-from swag.blockchain.blockchain import SwagChain
-from swag.client.cagnotte import CagnotteCommand
-from swag.client.client import ClientError
-from swag.client.swag import SwagCommand
-
-
 with open("config.json", "r") as json_file:
     client_config = json.load(json_file)
 
