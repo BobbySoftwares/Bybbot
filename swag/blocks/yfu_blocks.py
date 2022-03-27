@@ -110,6 +110,7 @@ class YfuGenerationBlock(Block):
             self.hash,
         )
 
+
 @attrs(frozen=True, kw_only=True)
 class TokenTransactionBlock(Block):
     giver_id = attrib(type=Union[UserId, CagnotteId])
