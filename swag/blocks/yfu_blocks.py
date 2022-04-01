@@ -137,3 +137,4 @@ class RenameYfuBlock(Block):
 
     def execute(self, db: SwagChain):
         db._yfus[self.yfu_id].first_name = self.new_first_name
+        db._yfus[self.yfu_id].is_baptized = True
