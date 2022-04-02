@@ -63,11 +63,12 @@ async def on_ready():
 
     print("Bybbot opérationnel !")
 
-    #Si un channel est spécifié dans le fichier de conf
-    if LOG_CHANNEL_ID:
+    try:
         await client.get_channel(LOG_CHANNEL_ID).send(
             "Démarrage terminé, prêt à bybbotter des clous !"
         )
+    except:
+        pass
 
 
 @client.event
@@ -125,13 +126,13 @@ async def on_message(message):
         return
 
     for module in modules:
-
-        if LOG_CHANNEL_ID:
+        try:
+            await module.process(message)
+        except Exception as e:
             try:
-                await module.process(message)
-            except Exception as e:
                 await client.get_channel(LOG_CHANNEL_ID).send(
-                    "<@354685615402385419>, <@178947222103130123> ! Une erreur inattendue est "
+                    "<@354685615402385419>, <@178947222103130123> ! "
+                    "Une erreur inattendue est "
                     f"survenue suite à ce message de {message.author.mention} : "
                     f"{message.jump_url}\n"
                     "Le contenu du message est le suivant :\n"
@@ -151,9 +152,8 @@ async def on_message(message):
                     "sympa envers les développeurs.\n\n\n"
                     "Merci par avance pour votre coopération."
                 )
-        else:
-            # Pour voir le traceback en local
-            await module.process(message)
+            except:
+                raise e
 
 
 # Lancement du client
