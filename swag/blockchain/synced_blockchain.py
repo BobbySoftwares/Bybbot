@@ -1,5 +1,6 @@
 import json
 from typing import Dict
+import cbor2
 from attr import attrs, attrib
 from arrow import Arrow
 
@@ -54,3 +55,11 @@ class SyncedSwagChain(SwagChain):
         print(f"Delation of {block}")
         await self._channel.get_partial_message(self._messages.pop(block)).delete()
         
+    async def save_backup(self):
+        unstructured_blocks = []
+
+        async for message in self._channel.history(limit=None, oldest_first=True):
+            unstructured_blocks.append(json.loads(message.content))
+        
+        with open('swagchain.backup', 'wb') as backup_file:
+            cbor2.dump(unstructured_blocks, backup_file)
