@@ -1,3 +1,4 @@
+from sys import last_traceback
 from swag.client.cagnotte import execute_cagnotte_command
 from swag.client.style import execute_style_command
 from swag.client.swag import execute_swag_command
@@ -46,6 +47,7 @@ class SwagClient(Module):
         self.guilds = {}
         self.the_swaggest = None
         self.last_update = None
+        self.last_backup = None
 
     async def setup(self):
         self.swagchain = await SyncedSwagChain.from_channel(
@@ -69,7 +71,10 @@ class SwagClient(Module):
                 await update_the_style(self.discord_client, self)
 
         async def backup_job():
-            self.swagchain.save_backup()
+            now = utcnow().replace(microsecond=0, second=0, minute=0)
+            if self.last_backup is None or self.last_backup < now:
+                self.last_backup = now
+                await self.swagchain.save_backup()
 
         #Génération du style toute les heures
         scheduler.add_job(style_job, CronTrigger(hour="*"))
