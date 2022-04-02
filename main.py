@@ -11,6 +11,8 @@ from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
 from maintenance.maintenance_client import MaintenanceClient
 
+from utils import LOG_CHANNEL_ID
+
 with open("config.json", "r") as json_file:
     client_config = json.load(json_file)
 
@@ -61,9 +63,11 @@ async def on_ready():
 
     print("Bybbot opérationnel !")
 
-    await client.get_channel(930777218496479302).send(
-        "Démarrage terminé, prêt à bybbotter des clous !"
-    )
+    #Si un channel est spécifié dans le fichier de conf
+    if LOG_CHANNEL_ID:
+        await client.get_channel(LOG_CHANNEL_ID).send(
+            "Démarrage terminé, prêt à bybbotter des clous !"
+        )
 
 
 @client.event
@@ -121,30 +125,35 @@ async def on_message(message):
         return
 
     for module in modules:
-        try:
+
+        if LOG_CHANNEL_ID:
+            try:
+                await module.process(message)
+            except Exception as e:
+                await client.get_channel(LOG_CHANNEL_ID).send(
+                    "<@354685615402385419>, <@178947222103130123> ! Une erreur inattendue est "
+                    f"survenue suite à ce message de {message.author.mention} : "
+                    f"{message.jump_url}\n"
+                    "Le contenu du message est le suivant :\n"
+                    f"> {message.content}\n"
+                    "L'erreur est la suivante :\n"
+                    "```\n"
+                    f"{traceback.format_exc()}\n"
+                    f"{e}\n"
+                    "```"
+                )
+                await message.channel.send(
+                    f"{message.author.mention} ! **Une erreur inattendue est survenue**. "
+                    "Elle est manifestement la preuve d'un **bug** dans le logiciel.\n"
+                    "Les développeurs viennent d'en être informés. **Merci de bien vouloir "
+                    "patienter** le temps qu'on répare **et de ne pas continuer à provoquer le "
+                    "bug**, ce qui constituerait un déni de service et ne serait vraiment pas "
+                    "sympa envers les développeurs.\n\n\n"
+                    "Merci par avance pour votre coopération."
+                )
+        else:
+            # Pour voir le traceback en local
             await module.process(message)
-        except Exception as e:
-            await client.get_channel(930777218496479302).send(
-                "<@354685615402385419>, <@178947222103130123> ! Une erreur inattendue est "
-                f"survenue suite à ce message de {message.author.mention} : "
-                f"{message.jump_url}\n"
-                "Le contenu du message est le suivant :\n"
-                f"> {message.content}\n"
-                "L'erreur est la suivante :\n"
-                "```\n"
-                f"{traceback.format_exc()}\n"
-                f"{e}\n"
-                "```"
-            )
-            await message.channel.send(
-                f"{message.author.mention} ! **Une erreur inattendue est survenue**. "
-                "Elle est manifestement la preuve d'un **bug** dans le logiciel.\n"
-                "Les développeurs viennent d'en être informés. **Merci de bien vouloir "
-                "patienter** le temps qu'on répare **et de ne pas continuer à provoquer le "
-                "bug**, ce qui constituerait un déni de service et ne serait vraiment pas "
-                "sympa envers les développeurs.\n\n\n"
-                "Merci par avance pour votre coopération."
-            )
 
 
 # Lancement du client
