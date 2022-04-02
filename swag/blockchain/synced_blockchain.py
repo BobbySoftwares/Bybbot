@@ -1,4 +1,5 @@
 import json
+import cbor2
 from attr import attrs, attrib
 from arrow import Arrow
 from disnake import TextChannel
@@ -60,3 +61,12 @@ class SyncedSwagChain(SwagChain):
         #         "bound to a TextChannel. Please use SyncedSwagChain.from_channel "
         #         "to create a bounded instance."
         #     )
+
+    async def save_backup(self):
+        unstructured_blocks = []
+
+        async for message in self._channel.history(limit=None, oldest_first=True):
+            unstructured_blocks.append(json.loads(message.content))
+        
+        with open('swagchain.backup', 'wb') as backup_file:
+            cbor2.dump(unstructured_blocks, backup_file)

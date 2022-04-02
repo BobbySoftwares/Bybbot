@@ -68,7 +68,13 @@ class SwagClient(Module):
                 self.last_update = now
                 await update_the_style(self.discord_client, self)
 
+        async def backup_job():
+            self.swagchain.save_backup()
+
+        #Génération du style toute les heures
         scheduler.add_job(style_job, CronTrigger(hour="*"))
+        #Sauvegarde de la swagchain en local tout les jours à 4h du matin 
+        scheduler.add_job(backup_job, CronTrigger(day="*", hour="4"))
 
     async def process(self, message):
         try:
