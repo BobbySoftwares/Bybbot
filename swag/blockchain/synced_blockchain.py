@@ -61,5 +61,5 @@ class SyncedSwagChain(SwagChain):
         async for message in self._channel.history(limit=None, oldest_first=True):
             unstructured_blocks.append(json.loads(message.content))
         
-        with open('swagchain.backup', 'wb') as backup_file:
+        with open('swagchain.bk', 'wb') as backup_file:
             cbor2.dump(unstructured_blocks, backup_file)
