@@ -22,5 +22,6 @@ from .yfu_blocks import (
 from .system_blocks import ( 
     UserTimezoneUpdate, 
     GuildTimezoneUpdate, 
-    EventGiveaway 
+    EventGiveaway,
+    AssetUploadBlock
     )

@@ -1,7 +1,6 @@
 from arrow.arrow import Arrow
 from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
 from swag.blocks import UserTimezoneUpdate
-from swag.blocks import YfuGenerationBlock
 from swag.currencies import Swag
 from swag.id import UserId
 from .ui.yfu_view import YfuEmbed
@@ -51,16 +50,13 @@ async def execute_swag_command(swag_client, message):
 
         # Yfu Generation
         if block.amount >= YFU_GENERATION_MINING_THRESHOLD:
-            yfu_block = YfuGenerationBlock(
-                issuer_id=message.author.id,
-                user_id=message.author.id,
-                yfu_id=swag_client.swagchain.next_yfu_id,
-            )
-            await swag_client.swagchain.append(yfu_block)
+
+            new_yfu_id = await swag_client.swagchain.generate_yfu(UserId(message.author.id))
+            new_yfu = swag_client.swagchain.yfu(new_yfu_id)
 
             await message.channel.send(
-                f"{message.author.mention}, **{yfu_block.first_name} {yfu_block.last_name}** a rejoint vos rangs !",
-                embed=YfuEmbed.from_yfu(swag_client.swagchain._yfus[yfu_block.yfu_id]),
+                f"{message.author.mention}, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
+                embed=YfuEmbed.from_yfu(new_yfu),
             )
 
         # Update classement

@@ -1,11 +1,10 @@
 from disnake.ext import commands
 import disnake
 from swag.id import UserId
-from swag.blocks.yfu_blocks import YfuGenerationBlock
 from utils import GUILD_ID
 
 from .ui.ihs_toolkit import sort_yfu_ids
-from .ui.yfu_view import YfuEmbed, YfuNavigation, YfuExchange
+from .ui.yfu_view import YfuEmbed, YfuNavigation
 
 
 class YfuCommand(commands.Cog):
@@ -40,15 +39,10 @@ class YfuCommand(commands.Cog):
     async def generate(self, interaction: disnake.ApplicationCommandInteraction):
         """Génère une ¥fu"""
 
-        yfu_block = YfuGenerationBlock(
-            issuer_id=UserId(interaction.author.id),
-            user_id=UserId(interaction.author.id),
-            yfu_id=self.swag_client.swagchain.next_yfu_id,
-        )
-
-        await self.swag_client.swagchain.append(yfu_block)
+        new_yfu_id = await self.swag_client.swagchain.generate_yfu(UserId(interaction.author.id))
+        new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
 
         await interaction.send(
-            f"{interaction.author.mention}, **{yfu_block.first_name} {yfu_block.last_name}** a rejoint vos rangs à des fins de test !",
-            embed=YfuEmbed.from_yfu(self.swag_client.swagchain._yfus[yfu_block.yfu_id]),
+            f"{interaction.author.mention}, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs à des fins de test !",
+            embed=YfuEmbed.from_yfu(new_yfu),
         )
