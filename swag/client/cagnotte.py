@@ -29,7 +29,7 @@ async def execute_cagnotte_command(swag_client, message):
             cagnotte_idx = [
                 identifiant
                 for identifiant in splited_command
-                if identifiant.startswith("€") and identifiant[1:].isnumeric()
+                if identifiant.startswith("€")
             ][0]
             return CagnotteId(cagnotte_idx)
         except (IndexError):
