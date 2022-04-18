@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import ROUND_DOWN, ROUND_UP, Decimal
 from random import choice
 from typing import Dict, List
@@ -39,6 +40,9 @@ class SwagChain:
     def extend(self, blocks):
         for block in blocks:
             self.append(block)
+
+    def remove(self,block):
+        self._chain.remove(block)
 
     def account(self, user_id):
         return Info(self._accounts[UserId(user_id)])
@@ -102,6 +106,21 @@ class SwagChain:
         for rank, user_account in enumerate(forbes):
             user_account.style_rate = rate(rank)
 
+    async def clean_old_style_gen_block(self):
+        ##Get the oldest blocking date of all accounts :
+        try:
+            oldest_blocking_date = min([user_account.blocking_date for user_account in self._accounts.users.values() if user_account.blocking_date != None])
+        except ValueError as e:
+            return #Si personne ne bloque, pas besoin de nettoyer la swagchain
+        
+        print(f"Nettoyage de la blockchain avant la date du {oldest_blocking_date}\n")
+        ##Get all the StyleGenerationBlock which was added before this date
+        old_style_gen_block = [block for block in self._chain if isinstance(block,StyleGeneration) and block.timestamp.datetime < oldest_blocking_date]
+
+        ##Remove all those useless block from the chain
+        for block in old_style_gen_block:
+            await self.remove(block)
+            
     @property
     def forbes(self):
         return sorted(
