@@ -133,9 +133,12 @@ async def on_message(message):
                 "```"
             )
             await message.channel.send(
-                f"{message.author.mention} ! Une erreur inattendue est survenue. "
-                "Les développeurs viennent d'en être informés. Merci de bien vouloir "
-                "patienter."
+                f"{message.author.mention} ! **Une erreur inattendue est survenue**. "
+                "Elle est manifestement la preuve d'un **bug** dans le logiciel.\n"
+                "Les développeurs viennent d'en être informés. **Merci de bien vouloir "
+                "patienter et de ne pas continuer à provoquer le bug**, ce qui constituerait "
+                "un déni de service et ne serait vraiment pas sympa envers les développeurs. "
+                "Merci pour votre coopération."
             )
 
 
