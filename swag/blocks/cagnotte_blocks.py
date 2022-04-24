@@ -107,7 +107,7 @@ class CagnotteAddManagerBlock(Block):
 @attrs(frozen=True, kw_only=True)
 class CagnotteRevokeManagerBlock(Block):
     cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
-    manager_to_revoke = attrib(type=UserId, converter=UserId)
+    manager_id = attrib(type=UserId, converter=UserId)
 
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
@@ -115,10 +115,10 @@ class CagnotteRevokeManagerBlock(Block):
         if self.issuer_id not in cagnotte.managers:
             raise NotCagnotteManager(self.issuer_id)
 
-        if self.manager_to_revoke not in cagnotte.managers:
-            raise NotCagnotteManager(self.manager_to_revoke)
+        if self.manager_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.manager_id)
 
         if len(cagnotte.managers) <= 1:
             raise OrphanCagnotte
 
-        db._accounts[self.cagnotte_id].managers.remove(self.manager_to_revoke)
+        db._accounts[self.cagnotte_id].managers.remove(self.manager_id)
