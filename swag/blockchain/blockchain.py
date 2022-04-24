@@ -169,10 +169,8 @@ class SwagChain:
         if not account_list:
             account_list = [account_id for account_id in self._accounts.users]
 
-        swag_gain = int(cagnotte.swag_balance / len(account_list))
-        style_gain = (cagnotte.style_balance / len(account_list)).quantize(
-            Decimal(".0001"), rounding=ROUND_DOWN
-        )
+        swag_gain = Swag(cagnotte.swag_balance.value / len(account_list))
+        style_gain = Style(cagnotte.style_balance.value / len(account_list))
 
         for account_id in account_list:
             if swag_gain != Swag(0):
