@@ -8,9 +8,7 @@ from utils import format_number
 
 @attrs(frozen=True)
 class Money:
-    @property
-    def currency(self):
-        raise NotImplementedError
+    currency = None
 
     @classmethod
     def from_str(cls, text : str):
@@ -23,6 +21,7 @@ class Money:
 @attrs(frozen=True)
 class Swag(Money):
     value: int = attrib(converter=int)
+    currency : str = "$wag"
 
     @classmethod
     def from_command(cls, text : str):
@@ -35,10 +34,6 @@ class Swag(Money):
     def _check_amount(self, attribute, value):
         if value < 0:
             raise InvalidSwagValue
-
-    @property
-    def currency(self):
-        return "$wag"
 
     def __add__(self, other: "Swag"):
         return Swag(self.value + other.value)
@@ -69,6 +64,7 @@ def style_decimal(amount):
 @attrs(frozen=True)
 class Style(Money):
     value: Decimal = attrib(converter=style_decimal)
+    currency : str = "$tyle"
 
     @classmethod
     def from_command(cls, text : str):
@@ -81,10 +77,6 @@ class Style(Money):
     def _check_amount(self, attribute, value):
         if value < 0:
             raise InvalidStyleValue
-
-    @property
-    def currency(self):
-        return "$tyle"
 
     def __add__(self, other: "Style"):
         return Style(self.value + other.value)
@@ -113,14 +105,14 @@ class Currency(str, Enum):
     Could be automaticly built thanks to Money children I guess ?
     """
 
-    Swag = Swag(0).currency
-    Style = Style(0).currency
+    SWAG = Swag.currency
+    STYLE = Style.currency
 
     @classmethod
     def get_class(cls,currency_str):
-        if currency_str == cls.Swag:
+        if currency_str == Swag.currency:
             return Swag
-        elif currency_str == cls.Style:
+        elif currency_str == Style.currency:
             return Style
         else:
             return ValueError
