@@ -26,17 +26,15 @@ class Yfu:
     first_name: str
     last_name: str
     clan: str
+    avatar_url: str
     generation_date: Arrow
     timezone: str = attrib(validator=assert_timezone)
+
     power_point: int
     activation_cost: Style
     greed: float  # multiplier of the activation_cost after one activation, should be >= 1
     zenitude: float  # multiplier of the activation_cost after one activation, should be <= 1
-    avatar_local_path: str
-    avatar_url: str = attrib(init=False)
-
     power: YfuPower
-    hash: str
 
     is_baptized: bool = attrib(default=False)
 

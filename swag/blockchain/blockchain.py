@@ -1,12 +1,17 @@
 from datetime import datetime
 from decimal import ROUND_DOWN, ROUND_UP, Decimal
+import os
+import random
 from typing import Dict, List
 from attr import attrs, attrib
 from numpy import array
 
 from swag.artefacts.accounts import Accounts, Info
+from swag.artefacts.assets import AssetDict
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
+from swag.blocks.system_blocks import AssetUploadBlock
+from swag.blocks.yfu_blocks import YfuGenerationBlock
 
 from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId, YfuId
@@ -30,6 +35,7 @@ class SwagChain:
     _accounts: Accounts = attrib(init=False, factory=Accounts)
     _guilds: Dict[int, Guild] = attrib(init=False, factory=GuildDict)
     _yfus: Dict[YfuId, Yfu] = attrib(init=False, factory=YfuDict)
+    _assets:Dict[str, str] = attrib(init=False, factory=AssetDict)
 
     def __attrs_post_init__(self):
         for block in self._chain:
@@ -238,3 +244,41 @@ class SwagChain:
             )
 
         return account_list, swag_gain, style_gain, winner_rest, swag_rest, style_rest
+
+
+    async def generate_yfu(self,author : UserId):
+
+        #TODO : powerpoint rolling ?
+
+        #Recherche du fichier de l'avatar
+        avatar_local_folder = "ressources/Yfu/avatar/psi-1.0/"  # TODO à renseigner ailleurs ? psi different en fonction des powerpoint
+        avatar_file = random.choice(
+            [
+                os.path.join(avatar_local_folder, file)
+                for file in os.listdir(avatar_local_folder)
+            ]
+        )
+
+        new_yfu_id = YfuId(self.next_yfu_id)
+
+        #Upload de l'avatar par un AssetUploadBlock
+        avatar_asset_block = AssetUploadBlock(
+            issuer_id = author,
+            asset_key = f"{new_yfu_id}_avatar",
+            local_path = avatar_file
+        )
+
+        await self.append(avatar_asset_block)
+        
+        #Generation de la Yfu
+        yfu_block = YfuGenerationBlock(
+            issuer_id=author,
+            user_id=author,
+            yfu_id=new_yfu_id,
+            avatar_asset_key=avatar_asset_block.asset_key
+        )
+
+        await self.append(yfu_block)
+
+        return yfu_block.yfu_id
+

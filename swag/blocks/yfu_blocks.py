@@ -32,9 +32,8 @@ class YfuGenerationBlock(Block):
     activation_cost = attrib(type=Style)
     greed = attrib(type=float)
     zenitude = attrib(type=float)
-    avatar_local_path = attrib(type=str)
+    avatar_asset_key = attrib(type=str)
     power = attrib(type=YfuPower)
-    hash = attrib(type=str)
 
     @first_name.default
     def _generate_letter(self):
@@ -68,25 +67,10 @@ class YfuGenerationBlock(Block):
     def _roll_zenitude(self):
         return round(random.random(), 1)  # TODO
 
-    @avatar_local_path.default
-    def _generate_avatar(self):
-        avatar_local_folder = "ressources/Yfu/avatar/psi-1.0/"  # TODO à renseigner ailleurs ? psi different en fonction des powerpoint
-        return random.choice(
-            [
-                os.path.join(avatar_local_folder, file)
-                for file in os.listdir(avatar_local_folder)
-            ]
-        )
-
     @power.default
     def _generate_power(self):
         # Pouvoir temporaire, en attendant gggto #TODO
         return YfuPower("POUVOIR X", "EFFET DU POUVOIR X")
-
-    @hash.default
-    def _calculate_hash(self):
-        with open(self.avatar_local_path, "rb") as f:
-            return hashlib.md5(f.read()).hexdigest()
 
     def validate(self, db: SwagChain):
         pass  ##TODO
@@ -94,20 +78,19 @@ class YfuGenerationBlock(Block):
     def execute(self, db: SwagChain):
         db._accounts[self.user_id].yfu_wallet.add(self.yfu_id)
         db._yfus[self.yfu_id] = Yfu(
-            self.user_id,
-            self.yfu_id,
-            self.first_name,
-            self.last_name,
-            self.clan,
-            self.timestamp,
-            db._accounts[self.user_id].timezone,
-            self.power_point,
-            self.activation_cost,
-            self.greed,
-            self.zenitude,
-            self.avatar_local_path,
-            self.power,
-            self.hash,
+            owner_id = self.user_id,
+            id = self.yfu_id,
+            first_name = self.first_name,
+            last_name = self.last_name,
+            clan = self.clan,
+            avatar_url = db._assets[self.avatar_asset_key],
+            generation_date = self.timestamp,
+            timezone = db._accounts[self.user_id].timezone,
+            power_point = self.power_point,
+            activation_cost = self.activation_cost,
+            greed = self.greed,
+            zenitude = self.zenitude,
+            power = self.power,
         )
 
 

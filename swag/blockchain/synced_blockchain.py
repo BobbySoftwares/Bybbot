@@ -1,12 +1,12 @@
 import json
 from typing import Dict
+import cbor2
 from attr import attrs, attrib
 from arrow import Arrow
 from disnake import TextChannel
 import disnake
 from swag.block import Block
-
-from swag.blocks.yfu_blocks import YfuGenerationBlock
+from swag.blocks.system_blocks import AssetUploadBlock
 
 from .blockchain_parser import structure_block, unstructure_block
 from .blockchain import SwagChain
@@ -32,26 +32,27 @@ class SyncedSwagChain(SwagChain):
             unstructured_block = json.loads(message.content)
             block = structure_block(unstructured_block)
             SwagChain.append(synced_chain, block)
-            synced_chain._messages[block] = message.id
-            if isinstance(block, YfuGenerationBlock):
-                # Mise à jour de l'url de l'avatar dans la Yfu
-                avatar_url = message.attachments[0].url
-                synced_chain._yfus[block.yfu_id].avatar_url = avatar_url
+
+            if isinstance(block, AssetUploadBlock):
+                # Mise à jour de la bibliothèque des assets
+                asset_url = message.attachments[0].url
+                synced_chain._assets[block.asset_key] = asset_url
+
 
         return synced_chain
 
     async def append(self, block):
         SwagChain.append(self, block)
 
-        # Envoie de l'avatar si generation de Yfu
-        if isinstance(block, YfuGenerationBlock):
-            message = await self._channel.send(
+        # Envoie de l'asset si le block est une demande d'upload d'asset
+        if isinstance(block, AssetUploadBlock):
+            asset_message = await self._channel.send(
                 json.dumps(unstructure_block(block), default=json_converter),
-                file=disnake.File(block.avatar_local_path),
+                file=disnake.File(block.local_path),
             )
-            # Mise à jour de l'url de l'avatar dans la Yfu
-            avatar_url = message.attachments[0].url
-            self._yfus[block.yfu_id].avatar_url = avatar_url
+            # Mise à jour de la bibliothèque des assets
+            asset_url = asset_message.attachments[0].url
+            self._assets[block.asset_key] = asset_url
         else:
             message = await self._channel.send(
                 json.dumps(unstructure_block(block), default=json_converter)
@@ -73,3 +74,11 @@ class SyncedSwagChain(SwagChain):
         print(f"Delation of {block}")
         await self._channel.get_partial_message(self._messages.pop(block)).delete()
         
+    async def save_backup(self):
+        unstructured_blocks = []
+
+        async for message in self._channel.history(limit=None, oldest_first=True):
+            unstructured_blocks.append(json.loads(message.content))
+        
+        with open('swagchain.bk', 'wb') as backup_file:
+            cbor2.dump(unstructured_blocks, backup_file)
