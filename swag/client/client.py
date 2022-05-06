@@ -17,6 +17,8 @@ from swag.errors import (
 from apscheduler.triggers.cron import CronTrigger
 from arrow import utcnow
 
+import traceback
+
 from ..errors import (
     AlreadyCagnotteManager,
     AlreadyMineToday,
@@ -273,7 +275,7 @@ class ClientError(commands.Cog):
 
             ##TODO print du traceback
             else:
-                print(f"{error.original}")
+                print(f"{error.original} {traceback.print_tb(error.original.__traceback__)}")
 
         else:
-            print(f"{error.original}")
+            print(f"{error.original} {traceback.print_tb(error.original.__traceback__)}")
