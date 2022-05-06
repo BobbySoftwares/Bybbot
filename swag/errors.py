@@ -87,7 +87,10 @@ class NoReceiver(Exception):
 
 
 class InvalidCagnotteId(Exception):
-    pass
+    def __init__(self, value):
+        self.value = value
+        message = f"L'id de €agnotte {value} est invalide"
+        super().__init__(message)
 
 
 class CagnotteNameAlreadyExist(Exception):

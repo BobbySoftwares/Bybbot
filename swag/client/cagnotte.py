@@ -31,10 +31,6 @@ from utils import (
 def cagnotte_id_converter(
     interaction: disnake.ApplicationCommandInteraction, user_input: str
 ):
-    # €agnotte id should be one word. If there is multiple words in the input, we take the first
-    if " " in user_input:
-        user_input = user_input.split()[0]
-
     # We check if "€" is missing at the beggining. In this case, we add it.
     if not user_input.startswith("€"):
         user_input = "€" + user_input

@@ -20,6 +20,7 @@ import traceback
 from ..errors import (
     AlreadyCagnotteManager,
     AlreadyMineToday,
+    InvalidCagnotteId,
     InvalidSwagValue,
     InvalidStyleValue,
     InvalidTimeZone,
@@ -206,6 +207,12 @@ class ClientError(commands.Cog):
                 "*L'abus de minage est dangereux pour la santé. À Miner avec "
                 "modération. Ceci était un message de la Fédération Bobbyique du "
                 "Minage*",
+                ephemeral=True,
+            )
+        elif type(error.original) is InvalidCagnotteId:
+            await interaction.response.send_message(
+                f"L'id **{error.original.value}** que tu as donné est invalide ! "
+                f"Un id correct commence par **'€'** et ne contenir que des caractères du type **[a-zA-Z0-9_]**.",
                 ephemeral=True,
             )
         elif type(error.original) is NoCagnotteAccountRegistered:
