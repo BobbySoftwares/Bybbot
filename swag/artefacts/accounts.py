@@ -109,6 +109,7 @@ class SwagAccount(Account):
     last_mining_date: Optional[Arrow] = None
     style_rate: Decimal = Decimal(100)
     blocked_swag: Swag = Swag(0)
+    blocking_date : Optional[Arrow] = None
     unblocking_date: Optional[Arrow] = None
     pending_style: Style = Style(0)
     timezone_lock_date: Optional[Arrow] = None

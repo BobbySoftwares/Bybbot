@@ -310,8 +310,10 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
     bloqué leurs $wag, et débloque les comptes déblocables
     """
 
-    bobbycratie_guild = client.get_guild(id=GUILD_ID)
-    command_channel = client.get_channel(id=COMMAND_CHANNEL_ID)
+    bobbycratie_guild = client.get_guild(GUILD_ID)
+    command_channel = client.get_channel(COMMAND_CHANNEL_ID)
+
+    unblock_happen = False
 
     # Faire gagner du style à ceux qui ont du swag bloqué :
     await swag_client.swagchain.generate_style()
@@ -322,10 +324,15 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
             f"à nouveau disponible. Vous avez gagné `{style}` suite à ce "
             "blocage. Continuez de bloquer du $wag pour gagner plus de $tyle !"
         )
+        unblock_happen = True
 
     await update_forbes_classement(
         bobbycratie_guild, swag_client, client
     )  # Mise à jour du classement après les gains de $tyle
+
+    #Si il y a eut un déblocage de swag, on supprime les block stylegeneration de la swagchain inutiles
+    if unblock_happen:
+        await swag_client.swagchain.clean_old_style_gen_block()
 
 
 async def update_the_swaggest(guild, swag_client):

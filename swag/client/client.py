@@ -1,3 +1,4 @@
+
 import disnake
 from disnake.ext import commands
 from swag.client.cagnotte import CagnotteCommand
@@ -50,6 +51,7 @@ class SwagClient(Module):
         self.guilds = {}
         self.the_swaggest = None
         self.last_update = None
+        self.last_backup = None
 
     def register_commands(self):
         
@@ -79,7 +81,16 @@ class SwagClient(Module):
                 self.last_update = now
                 await update_the_style(self.discord_client, self)
 
+        async def backup_job():
+            now = utcnow().replace(microsecond=0, second=0, minute=0)
+            if self.last_backup is None or self.last_backup < now:
+                self.last_backup = now
+                await self.swagchain.save_backup()
+
+        #Génération du style toute les heures
         scheduler.add_job(style_job, CronTrigger(hour="*"))
+        #Sauvegarde de la swagchain en local tout les jours à 4h du matin 
+        scheduler.add_job(backup_job, CronTrigger(day="*", hour="4"))
 
     async def process(self, message):
         try:
@@ -259,6 +270,8 @@ class ClientError(commands.Cog):
                     "Veuillez réessayer d'ici quelques secondes !",
                     ephemeral=True,
                 )
+
+            ##TODO print du traceback
             else:
                 print(f"{error.original}")
 

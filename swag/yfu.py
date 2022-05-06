@@ -26,17 +26,17 @@ class Yfu:
     first_name: str
     last_name: str
     clan: str
+    avatar_url: str
     generation_date: Arrow
     timezone: str = attrib(validator=assert_timezone)
+
     power_point: int
     activation_cost: Style
     greed: float  # multiplier of the activation_cost after one activation, should be >= 1
     zenitude: float  # multiplier of the activation_cost after one activation, should be <= 1
-    avatar_local_path: str
-    avatar_url: str = attrib(init=False)
-
     power: YfuPower
-    hash: str
+
+    is_baptized: bool = attrib(default=False)
 
     def activate(self, kw_arg):
         self.power.activate(kw_arg)
@@ -55,6 +55,7 @@ class Yfu:
     def on_loss(self):
         # Function called when this Yfu is no longer on a player account, can be usefull for passive power
         pass
+
 
 class YfuRarity(Enum):
     COMMON = int("0xffffff", base=16)
@@ -77,6 +78,7 @@ class YfuRarity(Enum):
 
     def get_color(self):
         return self.value
+
 
 class YfuNotFound(Exception):
     pass

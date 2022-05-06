@@ -17,4 +17,9 @@ from .swag_blocks import (
 
 from .yfu_blocks import YfuGenerationBlock, RenameYfuBlock, TokenTransactionBlock
 
-from .system_blocks import UserTimezoneUpdate, GuildTimezoneUpdate, EventGiveaway
+from .system_blocks import ( 
+    UserTimezoneUpdate, 
+    GuildTimezoneUpdate, 
+    EventGiveaway,
+    AssetUploadBlock
+    )

@@ -144,3 +144,9 @@ class CagnotteUnspecifiedException(Exception):
 
 class InvalidYfuId(Exception):
     pass
+
+class IncorrectYfuName(Exception):
+    def __init__(self, name):
+        self.name = name
+        message = f"Le renommage de la ¥fu avec le prénom {name} est incorrect"
+        super().__init__(message)

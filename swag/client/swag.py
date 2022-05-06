@@ -1,11 +1,12 @@
+from arrow import Arrow
 from disnake.ext import commands
 import disnake
-from arrow.arrow import Arrow
-from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
-from swag.blocks import UserTimezoneUpdate
+from swag.blocks import AccountCreation, Mining
 from swag.blocks import YfuGenerationBlock
+from swag.blocks.swag_blocks import SwagBlocking, Transaction
+from swag.blocks.system_blocks import UserTimezoneUpdate
 from swag.client.ui.swag_view import SwagAccountEmbed, TransactionEmbed
-from swag.currencies import Currency, Style, Swag
+from swag.currencies import Currency, Swag
 from swag.id import UserId
 from .ui.yfu_view import YfuEmbed
 
@@ -59,18 +60,14 @@ class SwagCommand(commands.Cog):
 
         # Yfu Generation
         if block.amount >= YFU_GENERATION_MINING_THRESHOLD:
-            yfu_block = YfuGenerationBlock(
-                issuer_id=interaction.author.id,
-                user_id=interaction.author.id,
-                yfu_id=self.swag_client.swagchain.next_yfu_id,
-            )
-            await self.swag_client.swagchain.append(yfu_block)
+            new_yfu_id = await self.swag_client.swagchain.generate_yfu(UserId(interaction.author.id))
+            new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
 
             await interaction.followup.send(
-                f"{interaction.author.mention}, **{yfu_block.first_name} {yfu_block.last_name}** a rejoint vos rangs !",
-                embed=YfuEmbed.from_yfu(self.swag_client.swagchain.yfu(yfu_block.yfu_id)),
+                f"{interaction.author.mention}, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
+                embed=YfuEmbed.from_yfu(new_yfu),
             )
-
+            
         # Update classement
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client

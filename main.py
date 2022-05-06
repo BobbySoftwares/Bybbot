@@ -11,6 +11,8 @@ from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
 from maintenance.maintenance_client import MaintenanceClient
 
+from utils import LOG_CHANNEL_ID
+
 with open("config.json", "r") as json_file:
     client_config = json.load(json_file)
 
@@ -61,9 +63,12 @@ async def on_ready():
 
     print("Bybbot opérationnel !")
 
-    await client.get_channel(930777218496479302).send(
-        "Démarrage terminé, prêt à bybbotter des clous !"
-    )
+    try:
+        await client.get_channel(LOG_CHANNEL_ID).send(
+            "Démarrage terminé, prêt à bybbotter des clous !"
+        )
+    except:
+        pass
 
 
 @client.event
@@ -124,23 +129,27 @@ async def on_message(message):
         try:
             await module.process(message)
         except Exception as e:
-            await client.get_channel(930777218496479302).send(
-                "<@354685615402385419>, <@178947222103130123> ! Une erreur inattendue est "
-                f"survenue suite à ce message de {message.author.mention} : "
-                f"{message.jump_url}\n"
-                "Le contenu du message est le suivant :\n"
-                f"> {message.content}\n"
-                "L'erreur est la suivante :\n"
-                "```\n"
-                f"{traceback.format_exc()}\n"
-                f"{e}\n"
-                "```"
-            )
-            await message.channel.send(
-                f"{message.author.mention} ! Une erreur inattendue est survenue. "
-                "Les développeurs viennent d'en être informés. Merci de bien vouloir "
-                "patienter."
-            )
+            try:
+                await client.get_channel(LOG_CHANNEL_ID).send(
+                    "<@354685615402385419>, <@178947222103130123> ! "
+                    "Une erreur inattendue est "
+                    f"survenue suite à ce message de {message.author.mention} : "
+                    f"{message.jump_url}\n"
+                    "Le contenu du message est le suivant :\n"
+                    f"> {message.content}\n"
+                    "L'erreur est la suivante :\n"
+                    "```\n"
+                    f"{traceback.format_exc()}\n"
+                    f"{e}\n"
+                    "```"
+                )
+                await message.channel.send(
+                    f"{message.author.mention} ! Une erreur inattendue est survenue. "
+                    "Les développeurs viennent d'en être informés. Merci de bien vouloir "
+                    "patienter."
+                )
+            except:
+                raise e
 
 
 # Lancement du client

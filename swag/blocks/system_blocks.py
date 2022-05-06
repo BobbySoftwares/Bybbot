@@ -80,3 +80,11 @@ class EventGiveaway(Block):
         user_account = db._accounts[self.user_id]
 
         user_account += self.amount
+
+@attrs(frozen=True, kw_only=True)
+class AssetUploadBlock(Block):
+    asset_key = attrib(type=str)
+    local_path = attrib(type=str)
+
+    def execute(self, db: SwagChain):
+        pass
