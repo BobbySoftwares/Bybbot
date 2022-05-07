@@ -294,6 +294,7 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteRenaming(
                 issuer_id=UserId(interaction.author.id),
+                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
                 new_name=nom,
             )
@@ -332,6 +333,7 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteParticipantsReset(
                 issuer_id=UserId(interaction.author.id),
+                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
             )
         )
@@ -368,6 +370,7 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteDeletion(
                 issuer_id=UserId(interaction.author.id),
+                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
             )
         )
@@ -449,7 +452,8 @@ class CagnotteCommand(commands.Cog):
         cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
 
         block = CagnotteAddManagerBlock(
-            issuer_id=interaction.author.id,
+            issuer_id=UserId(interaction.author.id),
+            user_id=UserId(interaction.author.id),
             cagnotte_id=cagnotte_id,
             new_manager=UserId(utilisateur.id),
         )
@@ -485,15 +489,16 @@ class CagnotteCommand(commands.Cog):
         cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
 
         block = CagnotteRevokeManagerBlock(
-            issuer_id=interaction.author.id,
+            issuer_id=UserId(interaction.author.id),
+            user_id=UserId(interaction.author.id),
             cagnotte_id=cagnotte_id,
-            manager_to_revoke=UserId(utilisateur.id),
+            manager_id=UserId(utilisateur.id),
         )
 
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
-            f"{block.manager_to_revoke} **a été révoqué** des gestionnaires de la €agnotte "
+            f"{block.manager_id} **a été révoqué** des gestionnaires de la €agnotte "
             f"**{cagnotte_id}[{cagnotte_info.name}]**."
         )
         await update_forbes_classement(
