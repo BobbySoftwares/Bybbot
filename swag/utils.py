@@ -14,7 +14,6 @@ from utils import (
     GUILD_ID,
     ROLE_ID_SWAGGEST,
     chunks,
-    format_number,
     get_guild_member_name,
 )
 
@@ -267,16 +266,23 @@ async def mini_forbes_cagnottes(cagnottes_chunk, guild, client):
     Returns:
         String: message à envoyer pour visualiser une partie des €agnottes
     """
-    cagnottes = [
-        (
-            f"{cagnotte_id}",
-            f'"{cagnotte.name}"',
-            f"{cagnotte.swag_balance}",
-            f"{cagnotte.style_balance}",
-            f"👑 {await get_guild_member_name(cagnotte.managers[0],guild,client)}",
+    cagnottes = []
+    for (cagnotte_id, cagnotte) in cagnottes_chunk:
+
+        managers = [
+            await get_guild_member_name(manager, guild, client)
+            for manager in cagnotte.managers
+        ]
+
+        cagnottes.append(
+            (
+                f"{cagnotte_id}",
+                f'"{cagnotte.name}"',
+                f"{cagnotte.swag_balance}",
+                f"{cagnotte.style_balance}",
+                f"👑 {', '.join(managers)}",
+            )
         )
-        for (cagnotte_id, cagnotte) in cagnottes_chunk
-    ]
     # Besoin de connaître l'id, le nom, le montant et la monnaie utilisé dans la €agnotte
     # le plus long pour l'aligement de chaque colonne
     col1 = max(len(id) for id, _, _, _, _ in cagnottes)

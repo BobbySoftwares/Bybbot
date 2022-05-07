@@ -46,12 +46,12 @@ class SyncedSwagChain(SwagChain):
 
         # Envoie de l'asset si le block est une demande d'upload d'asset
         if isinstance(block, AssetUploadBlock):
-            asset_message = await self._channel.send(
+            message = await self._channel.send(
                 json.dumps(unstructure_block(block), default=json_converter),
                 file=disnake.File(block.local_path),
             )
             # Mise à jour de la bibliothèque des assets
-            asset_url = asset_message.attachments[0].url
+            asset_url = message.attachments[0].url
             self._assets[block.asset_key] = asset_url
         else:
             message = await self._channel.send(

@@ -1,13 +1,17 @@
+from disnake.ext import commands
+import disnake
 from swag.blocks.cagnotte_blocks import (
+    CagnotteAddManagerBlock,
     CagnotteCreation,
     CagnotteDeletion,
     CagnotteParticipantsReset,
     CagnotteRenaming,
+    CagnotteRevokeManagerBlock,
 )
 from swag.blocks.swag_blocks import Transaction
-from swag.client.style import style_from_command
-from swag.client.swag import swag_from_command
-from swag.errors import CagnotteUnspecifiedException, NoReceiver
+from swag.client.ui.cagnotte_view import CagnotteAccountEmbed
+from swag.client.ui.swag_view import TransactionEmbed
+from swag.currencies import Currency
 from swag.id import CagnotteId, UserId
 
 from ..utils import (
@@ -17,94 +21,491 @@ from ..utils import (
 )
 
 from utils import (
+    GUILD_ID,
     format_number,
     get_guild_member_name,
     reaction_message_building,
 )
 
 
-async def execute_cagnotte_command(swag_client, message):
-    def get_cagnotte_id_from_command(splited_command):
-        try:
-            cagnotte_idx = [
-                identifiant
-                for identifiant in splited_command
-                if identifiant.startswith("€") and identifiant[1:].isnumeric()
-            ][0]
-            return CagnotteId(cagnotte_idx)
-        except (IndexError):
-            raise CagnotteUnspecifiedException
+def cagnotte_id_converter(
+    interaction: disnake.ApplicationCommandInteraction, user_input: str
+):
+    # We check if "€" is missing at the beggining. In this case, we add it.
+    if not user_input.startswith("€"):
+        user_input = "€" + user_input
 
-    splited_command = message.content.split()
+    return user_input
 
-    if "créer" in splited_command:
-        try:
-            cagnotte_id = splited_command[2]
-            cagnotte_name = " ".join(splited_command[3:])
-        except ValueError:
-            await message.channel.send(
-                f"{message.author.mention}, merci de spécifier un index "
-                "pour ta €agnotte."
-            )
-            return
-            cagnotte_id = self.swagchain.next_cagnotte_id
-            cagnotte_name = " ".join(splited_command[2:])
 
-        if len(cagnotte_name) == 0:
-            await message.channel.send(
-                f"{message.author.mention}, merci de mentionner un nom "
-                "pour ta €agnotte."
-            )
-            return
+class CagnotteCommand(commands.Cog):
+    def __init__(self, swag_client):
+        self.swag_client = swag_client
 
-        await swag_client.swagchain.append(
+    async def cagnotte_id_autocomplete(
+        self, interaction: disnake.ApplicationCommandInteraction, user_input: str
+    ):
+        return [
+            cagnotte_id[0].id
+            for cagnotte_id in self.swag_client.swagchain.cagnottes
+            if user_input in cagnotte_id[0].id
+        ]
+
+    async def cagnotte_id_autocomplete_manager(
+        self, interaction: disnake.ApplicationCommandInteraction, user_input: str
+    ):
+        return [
+            cagnotte_id[0].id
+            for cagnotte_id in self.swag_client.swagchain.cagnottes
+            if user_input in cagnotte_id[0].id
+            and UserId(interaction.author.id) in cagnotte_id[1].managers
+        ]
+
+    @commands.slash_command(name="cagnotte", guild_ids=[GUILD_ID])
+    async def cagnotte(self, interaction: disnake.ApplicationCommandInteraction):
+        pass
+
+    @cagnotte.sub_command(name="créer")
+    async def create(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        nom: str,
+        identifiant: str = commands.Param(converter=cagnotte_id_converter),
+    ):
+        """
+        Crée une €agnotte dans la $wagChain™.
+
+        Parameters
+        ----------
+        nom : Nom de la €agnotte.
+        identifiant : Identifiant de la €agnotte : le X dans €X. Ne peut être qu'un seul mot.
+        """
+
+        await self.swag_client.swagchain.append(
             CagnotteCreation(
-                issuer_id=UserId(message.author.id),
-                cagnotte_id=cagnotte_id,
-                name=cagnotte_name,
-                creator=UserId(message.author.id),
+                issuer_id=UserId(interaction.author.id),
+                cagnotte_id=CagnotteId(identifiant),
+                name=nom,
+                creator=UserId(interaction.author.id),
             )
         )
 
-        await message.channel.send(
-            f"{message.author.mention} vient de créer une €agnotte nommée **« "
-            f"{cagnotte_name} »**. "
-            f"Son identifiant est le {cagnotte_id}"
+        await interaction.response.send_message(
+            f"{interaction.author.mention} vient de créer une €agnotte nommée **["
+            f"{nom}]**. "
+            f"Son identifiant est **{identifiant}**"
         )
 
         await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
+            interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    # À partir d'ici, toutes les commandes doivent impérativement passer l'identifiant
-    # de €agnotte (sous forme de €n)
+    @cagnotte.sub_command(name="info")
+    async def info(
+        self, interaction: disnake.ApplicationCommandInteraction, identifiant: str
+    ):
+        """
+        Affiche les informations d'une €agnotte.
 
-    elif "info" in splited_command:
-        cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X.
+        """
+
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
 
         managers = [
             await get_guild_member_name(
-                manager, message.guild, swag_client.discord_client
+                manager, interaction.guild, self.swag_client.discord_client
             )
             for manager in cagnotte_info.managers
         ]
         participants = [
             await get_guild_member_name(
-                participant, message.guild, swag_client.discord_client
+                participant, interaction.guild, self.swag_client.discord_client
             )
             for participant in cagnotte_info.participants
         ]
-        await message.channel.send(
-            f"Voici les informations de la €agnotte {cagnotte_id}\n"
-            "```\n"
-            f"Nom de €agnotte : {cagnotte_info.name}\n"
-            f"Montant de la €agnotte : {cagnotte_info.swag_balance} "
-            f"{cagnotte_info.style_balance}\n"
-            f"Gestionnaire de la €agnotte : {managers}\n"
-            f"Participants : {participants}\n"
-            "```"
+        await interaction.response.send_message(
+            embed=CagnotteAccountEmbed.from_cagnotte_account(cagnotte_id,cagnotte_info,self.swag_client.discord_client),
+            ephemeral=True,
         )
+
+    # Add autocompletion for the argument identifiant for the "info" command
+    info.autocomplete("identifiant")(cagnotte_id_autocomplete)
+
+    @cagnotte.sub_command(name="donner")
+    async def give(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        identifiant: str,
+        destinataire: disnake.Member,
+        montant: int,
+        monnaie: Currency,
+    ):
+        """
+        👑 Donne au destinataire mentionné un montant venant de la €agnotte.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X.
+        destinataire : Destinataire du don.
+        montant : Montant à envoyer.
+        monnaie : Type de monnaie.
+        """
+
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        block = Transaction(
+            issuer_id=UserId(interaction.author.id),
+            giver_id=cagnotte_id,
+            recipient_id=UserId(destinataire.id),
+            amount=Currency.get_class(monnaie)(montant),
+        )
+
+        await self.swag_client.swagchain.append(block)
+
+        await interaction.response.send_message(
+            "Transaction effectuée avec succès !",
+            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
+        )
+
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    # Add autocompletion for the argument identifiant for the "give" command
+    give.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+
+    @cagnotte.sub_command(name="partager")
+    async def share(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        identifiant: str,
+    ):
+        """
+        👑 Partage l'intégralité de la €agnotte entre les utilisateurs.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X
+        """
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        # TODO disnake ne gère pas encore les parametres sous forme de liste
+        participant_ids = []
+
+        (
+            participant_ids,
+            swag_gain,
+            style_gain,
+            winner_rest,
+            swag_rest,
+            style_rest,
+        ) = await self.swag_client.swagchain.share_cagnotte(
+            cagnotte_id, UserId(interaction.author.id), participant_ids
+        )
+
+        participants_mentions = ", ".join(
+            f"{participant_id}" for participant_id in participant_ids
+        )
+
+        await interaction.response.send_message(
+            f"{participants_mentions} vous avez chacun récupéré `{swag_gain}` "
+            f"et `{style_gain}` de la cagnotte **{cagnotte_id}[{cagnotte_info.name}]** 💸"
+        )
+
+        if winner_rest is not None:
+            await interaction.followup.send(
+                f"{winner_rest} récupère les `{swag_rest}` et `{style_rest}` "
+                "restants ! 🤑"
+            )
+
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    # Add autocompletion for the argument identifiant for the "share" command
+    share.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+
+    @cagnotte.sub_command(name="loto")
+    async def loto(
+        self, interaction: disnake.ApplicationCommandInteraction, identifiant: str
+    ):
+        """
+        👑 Tire au sort un participant et lui partage l'intégralité de la €agnotte.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X
+        """
+
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        # TODO idem share
+        participant_ids = []
+
+        (
+            gagnant,
+            swag_gain,
+            style_gain,
+        ) = await self.swag_client.swagchain.cagnotte_lottery(
+            cagnotte_id, UserId(interaction.author.id), participant_ids
+        )
+
+        await interaction.response.send_message(
+            f"{gagnant} vient de gagner l'intégralité de la €agnotte "
+            f"**{cagnotte_id}[{cagnotte_info.name}]**, à savoir "
+            f"`{swag_gain}` et `{style_gain}` ! 🎰"
+        )
+
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    # Add autocompletion for the argument identifiant for the "loto" command
+    loto.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+
+    @cagnotte.sub_command(name="renommer")
+    async def rename(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        identifiant: str,
+        nom: str,
+    ):
+        """
+        👑 Renomme une €agnotte.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X.
+        nom : Nouveau nom de la €agnotte.
+        """
+
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        old_name = cagnotte_info.name
+
+        await self.swag_client.swagchain.append(
+            CagnotteRenaming(
+                issuer_id=UserId(interaction.author.id),
+                user_id=UserId(interaction.author.id),
+                cagnotte_id=cagnotte_id,
+                new_name=nom,
+            )
+        )
+
+        await interaction.response.send_message(
+            f"La €agnotte {cagnotte_id} anciennement nommé **[{old_name}]"
+            f"** s'appelle maintenant **[{nom}]**"
+        )
+
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    # Add autocompletion for the argument identifiant for the "loto" command
+    rename.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+
+    @cagnotte.sub_command(name="reset")
+    async def reset(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        identifiant: str,
+    ):
+
+        """
+        👑 Enlève tout les participants de la €agnotte de sa liste des participants.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X.
+        """
+
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        await self.swag_client.swagchain.append(
+            CagnotteParticipantsReset(
+                issuer_id=UserId(interaction.author.id),
+                user_id=UserId(interaction.author.id),
+                cagnotte_id=cagnotte_id,
+            )
+        )
+
+        await interaction.response.send_message(
+            f"La liste des participants de la €agnotte **{cagnotte_id}"
+            f"[{cagnotte_info.name}]** a été remis à zéro 🔄"
+        )
+
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    # Add autocompletion for the argument identifiant for the "loto" command
+    reset.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+
+    @cagnotte.sub_command(name="détruire")
+    async def destroy(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        identifiant: str,
+    ):
+        """
+        👑 Détruit la €agnotte si elle est vide.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X.
+        """
+
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        await self.swag_client.swagchain.append(
+            CagnotteDeletion(
+                issuer_id=UserId(interaction.author.id),
+                user_id=UserId(interaction.author.id),
+                cagnotte_id=cagnotte_id,
+            )
+        )
+
+        await interaction.response.send_message(
+            f"La €agnotte **{cagnotte_id}[{cagnotte_info.name}]** est maintenant "
+            "détruite de ce plan de l'existence ❌"
+        )
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    # Add autocompletion for the argument identifiant for the "loto" command
+    destroy.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+
+    @cagnotte.sub_command(name="payer")
+    async def pay(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        identifiant: str,
+        montant: str,
+        monnaie: Currency,
+    ):
+
+        """
+        Envoie un montant d'une monnaie à la €agnotte.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X.
+        montant : montant à envoyer à la €agnotte.
+        monnaie : type de monnaie à envoyer à la €agnotte.
+        """
+
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        block = Transaction(
+            issuer_id=UserId(interaction.author.id),
+            giver_id=UserId(interaction.author.id),
+            recipient_id=cagnotte_id,
+            amount=Currency.get_class(monnaie)(montant),
+        )
+
+        await self.swag_client.swagchain.append(block)
+
+        await interaction.response.send_message(
+            "Transaction effectuée avec succès !",
+            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
+        )
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    # Add autocompletion for the argument identifiant for the "loto" command
+    pay.autocomplete("identifiant")(cagnotte_id_autocomplete)
+
+    @cagnotte.sub_command_group(name="gestionnaire")
+    async def manager(self, interaction: disnake.ApplicationCommandInteraction):
+        pass
+
+    @manager.sub_command(name="ajouter")
+    async def add_manager(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        identifiant: str,
+        utilisateur: disnake.Member,
+    ):
+        """
+        👑 Ajoute un gestionnaire à la €agnotte.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X.
+        utilisateur : Utilisateur à ajouter à la liste des gestionnaires.
+        """
+
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        block = CagnotteAddManagerBlock(
+            issuer_id=UserId(interaction.author.id),
+            user_id=UserId(interaction.author.id),
+            cagnotte_id=cagnotte_id,
+            new_manager=UserId(utilisateur.id),
+        )
+
+        await self.swag_client.swagchain.append(block)
+
+        await interaction.response.send_message(
+            f"{block.new_manager} fait maintenant partie des gestionnaires de la €agnotte "
+            f"**{cagnotte_id}[{cagnotte_info.name}]**."
+        )
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    add_manager.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+
+    @manager.sub_command(name="révoquer")
+    async def revoke_manager(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        identifiant: str,
+        utilisateur: disnake.Member,
+    ):
+        """
+        👑 Enlève à un utilisateur son titre de gestionnaire d'une €agnotte.
+
+        Parameters
+        ----------
+        identifiant : Identifiant de la €agnotte sous la forme €X.
+        utilisateur : Utilisateur à révoquer dela liste des gestionnaires.
+        """
+        cagnotte_id = CagnotteId(identifiant)
+        cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
+
+        block = CagnotteRevokeManagerBlock(
+            issuer_id=UserId(interaction.author.id),
+            user_id=UserId(interaction.author.id),
+            cagnotte_id=cagnotte_id,
+            manager_id=UserId(utilisateur.id),
+        )
+
+        await self.swag_client.swagchain.append(block)
+
+        await interaction.response.send_message(
+            f"{block.manager_id} **a été révoqué** des gestionnaires de la €agnotte "
+            f"**{cagnotte_id}[{cagnotte_info.name}]**."
+        )
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    revoke_manager.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
 
     # elif "historique" in splited_command:
     #     user = message.author
@@ -126,237 +527,3 @@ async def execute_cagnotte_command(swag_client, message):
     #         self.swag_bank,
     #         user_account.timezone,
     #     )
-
-    elif "payer" in splited_command:
-        cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
-
-        if "$wag" in splited_command:
-            amount = swag_from_command(splited_command)
-        elif "$tyle" in splited_command:
-            amount = style_from_command(splited_command)
-        else:
-            await message.channel.send(
-                f"{message.author.mention}, avec le nom de la monnaie c'est mieux !"
-            )
-            return
-
-        await swag_client.swagchain.append(
-            Transaction(
-                issuer_id=UserId(message.author.id),
-                giver_id=UserId(message.author.id),
-                recipient_id=cagnotte_id,
-                amount=amount,
-            )
-        )
-
-        await message.channel.send(
-            "Transaction effectuée avec succès ! \n"
-            "```ini\n"
-            f"[{message.author.display_name}\t{amount}\t"
-            f"-->\t€{cagnotte_id} {cagnotte_info.name}]\n"
-            "```"
-        )
-        await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
-        )
-
-    elif "donner" in splited_command:
-        cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
-        receiver = message.mentions
-        if len(receiver) != 1:
-            raise NoReceiver
-        receiver = receiver[0]
-
-        if "$wag" in splited_command:
-            amount = swag_from_command(splited_command)
-        elif "$tyle" in splited_command:
-            amount = style_from_command(splited_command)
-        else:
-            await message.channel.send(
-                f"{message.author.mention}, avec le nom de la monnaie c'est mieux !"
-            )
-            return
-
-        await swag_client.swagchain.append(
-            Transaction(
-                issuer_id=UserId(message.author.id),
-                giver_id=cagnotte_id,
-                recipient_id=UserId(message.author.id),
-                amount=amount,
-            )
-        )
-
-        await message.channel.send(
-            "Transaction effectuée avec succès ! \n"
-            "```ini\n"
-            f"[{cagnotte_id} {cagnotte_info.name}\t{amount}\t"
-            f"-->\t{receiver.display_name}]\n"
-            "```"
-        )
-
-        await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
-        )
-
-    elif "partager" in splited_command:
-        cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
-
-        participant_ids = [UserId(participant.id) for participant in message.mentions]
-
-        (
-            participant_ids,
-            swag_gain,
-            style_gain,
-            winner_rest,
-            swag_rest,
-            style_rest,
-        ) = await swag_client.swagchain.share_cagnotte(
-            cagnotte_id, UserId(message.author.id), participant_ids
-        )
-
-        participants_mentions = ", ".join(
-            f"{participant_id}" for participant_id in participant_ids
-        )
-
-        await message.channel.send(
-            f"{participants_mentions} vous avez chacun récupéré `{swag_gain}` "
-            f"et `{style_gain}` de la cagnotte **{cagnotte_info.name}** 💸"
-        )
-
-        if winner_rest is not None:
-            await message.channel.send(
-                f"{winner_rest} récupère les `{swag_rest}` et `{style_rest}` "
-                "restants ! 🤑"
-            )
-
-        await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
-        )
-
-    elif "loto" in splited_command:
-        cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
-
-        participant_ids = [UserId(participant.id) for participant in message.mentions]
-
-        gagnant, swag_gain, style_gain = await swag_client.swagchain.cagnotte_lottery(
-            cagnotte_id, UserId(message.author.id), participant_ids
-        )
-
-        await message.channel.send(
-            f"{gagnant} vient de gagner l'intégralité de la €agnotte "
-            f"{cagnotte_id} *{cagnotte_info.name}*, à savoir "
-            f"`{swag_gain}` et `{style_gain}` ! 🎰"
-        )
-
-        await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
-        )
-
-    elif "renommer" in splited_command:
-        cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
-
-        new_name = [
-            word
-            for word in splited_command[1:]
-            if word not in {f"{cagnotte_id}", "renommer"}
-        ]
-
-        new_name = " ".join(new_name)
-
-        await swag_client.swagchain.append(
-            CagnotteRenaming(
-                issuer_id=UserId(message.author.id),
-                cagnotte_id=cagnotte_id,
-                new_name=new_name,
-            )
-        )
-
-        await message.channel.send(
-            f'La €agnotte {cagnotte_id} anciennement nommé **"{cagnotte_info.name}"'
-            f'** s\'appelle maintenant **"{new_name}"**'
-        )
-
-        await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
-        )
-
-    elif "reset" in splited_command:
-        cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
-
-        await swag_client.swagchain.append(
-            CagnotteParticipantsReset(
-                issuer_id=UserId(message.author.id),
-                cagnotte_id=cagnotte_id,
-            )
-        )
-
-        await message.channel.send(
-            f"La liste des participants de la €agnotte {cagnotte_id} **"
-            f'"{cagnotte_info.name}"** a été remis à zéro 🔄'
-        )
-
-        await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
-        )
-
-    elif "détruire" in splited_command:
-        cagnotte_id = get_cagnotte_id_from_command(splited_command)
-        cagnotte_info = swag_client.swagchain.cagnotte(cagnotte_id)
-
-        await swag_client.swagchain.append(
-            CagnotteDeletion(
-                issuer_id=UserId(message.author.id),
-                cagnotte_id=cagnotte_id,
-            )
-        )
-
-        await message.channel.send(
-            f"La €agnotte {cagnotte_id} *{cagnotte_info.name}* est maintenant "
-            "détruite de ce plan de l'existence ❌"
-        )
-        await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
-        )
-
-    else:
-        await message.channel.send(
-            f"{message.author.mention}, tu as l'air perdu "
-            "(c'est un peu normal, avec ces commandes pétées du cul...) 🙄\nVoici "
-            "les commandes "
-            "que tu peux utiliser avec les €agnottes :\n"
-            "```HTTP\n"
-            "!€agnotte créer [$wag/$tyle] [Nom_de_la_€agnotte] ~~ "
-            "Permet de créer une nouvelle €agnotte, de $wag ou de $tyle "
-            "avec le nom de son choix\n"
-            "!€agnotte info €[n] ~~ Affiche des informations détaillés sur la "
-            "€agnotte n\n"
-            "!€agnotte historique €[n] ~~ Affiche les transactions en lien avec la "
-            "€agnotte n\n"
-            "!€agnotte payer €[n] [montant] ~~ fait don "
-            "de la somme choisi à la €agnotte numéro €n\n"
-            "⭐!€agnotte donner €[n] [montant] [@mention] ~~ donne à l'utilisateur "
-            "mentionné "
-            "un montant venant de la cagnotte\n"
-            "⭐!€agnotte partager €[n] [@mention1 @mention2 ...] ~~ "
-            "Partage l'intégralité de la €agnotte entre les utilisateurs mentionné. "
-            "Si personne n'est mentionné, la €agnotte sera redistribué parmis les "
-            "personnes ayant un compte à la $wagBank\n"
-            "⭐!€agnotte loto €[n] [@mention1 @mention2 ...] ~~ "
-            "Tire au sort parmis les utilisateurs mentionnés celui qui remportera "
-            "l'intégralité "
-            "de la €agnotte. Si personne n'est mentionné, le tirage au sort parmis "
-            "les participants à la €agnotte\n"
-            "⭐!€agnotte renommer €[n] [Nouveau nom] ~~ Change le nom de la €agnotte\n"
-            "⭐!€agnotte reset €[n] ~~ Enlève tout les participants de la €agnotte de "
-            "la liste des participants\n"
-            "⭐!€agnotte détruire €[n] ~~ Détruit la €agnotte si elle est vide\n"
-            "```\n"
-            "*Seul le gestionnaire de la €agnotte peut faire les commandes précédées "
-            "d'une  ⭐*"
-        )

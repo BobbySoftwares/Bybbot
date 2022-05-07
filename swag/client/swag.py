@@ -1,72 +1,92 @@
-from arrow.arrow import Arrow
-from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
-from swag.blocks import UserTimezoneUpdate
-from swag.currencies import Swag
+from arrow import Arrow
+from disnake.ext import commands
+import disnake
+from swag.blocks import AccountCreation, Mining
+from swag.blocks import YfuGenerationBlock
+from swag.blocks.swag_blocks import SwagBlocking, Transaction
+from swag.blocks.system_blocks import UserTimezoneUpdate
+from swag.client.ui.swag_view import SwagAccountEmbed, TransactionEmbed
+from swag.currencies import Currency, Swag
 from swag.id import UserId
 from .ui.yfu_view import YfuEmbed
 
-from ..errors import InvalidSwagValue, NoReceiver
+from ..errors import InvalidSwagValue
 from ..stylog import BLOCKING_TIME
 from ..utils import update_forbes_classement
 
-from utils import format_number
+from utils import GUILD_ID, format_number
 
-
-def swag_from_command(command):
-    try:
-        return Swag("".join(argent for argent in command if argent.isnumeric()))
-    except ValueError:
-        raise InvalidSwagValue
 
 
 YFU_GENERATION_MINING_THRESHOLD = Swag(1000000)
 
 
-async def execute_swag_command(swag_client, message):
-    command_swag = message.content.split()
+class SwagCommand(commands.Cog):
+    def __init__(self, swag_client):
+        self.swag_client = swag_client
 
-    if "créer" in command_swag:
-        await swag_client.swagchain.append(
+    @commands.slash_command(name="swag", guild_ids=[GUILD_ID])
+    async def swag(self, interaction: disnake.ApplicationCommandInteraction):
+        pass
+
+    @swag.sub_command(name="créer")
+    async def create(self, interaction: disnake.ApplicationCommandInteraction):
+        """Ouvre un porte-monnaie sur la $wagChain™."""
+
+        await self.swag_client.swagchain.append(
             AccountCreation(
-                issuer_id=message.author.id,
-                user_id=message.author.id,
-                timezone=swag_client.swagchain._guild(message.guild.id).timezone,
+                issuer_id=interaction.author.id,
+                user_id=interaction.author.id,
+                timezone=self.swag_client.swagchain._guild(interaction.guild.id).timezone,
             )
         )
 
-        await message.channel.send(
-            f"Bienvenue sur la $wagChain™ {message.author.mention} !\n\n"
+        await interaction.response.send_message(
+            f"Bienvenue sur la $wagChain™ {interaction.author.mention} !\n\n"
             "Tu peux maintenant miner du $wag avec la commande `!$wag miner` 💰"
         )
 
-    elif "miner" in command_swag:
-        # Mining Swag
-        block = Mining(issuer_id=message.author.id, user_id=message.author.id)
-        await swag_client.swagchain.append(block)
+    @swag.sub_command(name="miner")
+    async def mine(self, interaction: disnake.ApplicationCommandInteraction):
+        """Mine du $wag et deviens riche!"""
 
-        await message.channel.send(
-            f"⛏ {message.author.mention} a miné `{block.amount}` !"
+        # Mining Swag
+        block = Mining(issuer_id=interaction.author.id, user_id=interaction.author.id)
+        await self.swag_client.swagchain.append(block)
+
+        await interaction.response.send_message(
+            f"⛏ {interaction.author.mention} a miné `{block.amount}` !"
         )
 
         # Yfu Generation
         if block.amount >= YFU_GENERATION_MINING_THRESHOLD:
+            new_yfu_id = await self.swag_client.swagchain.generate_yfu(UserId(interaction.author.id))
+            new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
 
-            new_yfu_id = await swag_client.swagchain.generate_yfu(UserId(message.author.id))
-            new_yfu = swag_client.swagchain.yfu(new_yfu_id)
-
-            await message.channel.send(
-                f"{message.author.mention}, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
+            await interaction.followup.send(
+                f"{interaction.author.mention}, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
                 embed=YfuEmbed.from_yfu(new_yfu),
             )
-
+            
         # Update classement
         await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
+            interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    elif "info" in command_swag:
-        user = message.author
-        user_infos = swag_client.swagchain.account(user.id)
+    @swag.sub_command(name="info")
+    async def info(self, interaction: disnake.ApplicationCommandInteraction, utilisateur : disnake.Member = None):
+        """
+        Affiche les informations du porte-monnaie d'un utilisateur.
+        
+        Parameters
+        ----------
+        utilisateur : Par défaut, l'utilisateur ayant fait la commande.
+        """
+
+        if utilisateur == None:
+            utilisateur = interaction.author
+
+        user_infos = self.swag_client.swagchain.account(utilisateur.id)
 
         # TODO : Changer l'affichage pour avoir une affichage en français
         release_info = (
@@ -74,125 +94,128 @@ async def execute_swag_command(swag_client, message):
             if user_infos.blocked_swag != Swag(0)
             else ""
         )
-        await message.channel.send(
-            "```diff\n"
-            f"Relevé de compte de {message.author.display_name}\n"
-            f"-Balance : {user_infos.swag_balance}\n"
-            f"           {user_infos.style_balance}\n"
-            f"-Taux de bloquage : {format_number(user_infos.style_rate)} %\n"
-            "-$wag actuellement bloqué : "
-            f"{user_infos.blocked_swag}\n"
-            f"-$tyle généré : {user_infos.pending_style}\n"
-            f"{release_info}"
-            f"-Timezone du compte : {user_infos.timezone}"
-            "```"
-        )
+        await interaction.response.send_message(
+            embed=SwagAccountEmbed.from_swag_account(user_infos,utilisateur),
+            ephemeral=True
+            )
 
-    # elif "historique" in command_swag:
-    #     user = message.author
-    #     user_account = self.swag_bank.get_account_info(user.id)
-    #     history = list(reversed(self.swag_bank.get_history(user.id)))
-    #     await message.channel.send(
-    #         f"{user.mention}, voici l'historique de tes transactions de $wag :\n"
-    #     )
-    #     await reaction_message_building(
-    #         self.client,
-    #         history,
-    #         message,
-    #         mini_history_swag_message,
-    #         self.swag_bank,
-    #         user_account.timezone,
-    #     )
+    @swag.sub_command(name="bloquer")
+    async def block(self, interaction: disnake.ApplicationCommandInteraction, montant : str):
+        """
+        Bloque un montant de $wag pour générer du $tyle.
+        
+        Parameters
+        ----------
+        montant : nombre de $wag à bloquer.
+        """
 
-    elif "bloquer" in command_swag:
         block = SwagBlocking(
-            issuer_id=message.author.id,
-            user_id=message.author.id,
-            amount=swag_from_command(command_swag),
+            issuer_id=interaction.author.id,
+            user_id=interaction.author.id,
+            amount=Swag.from_command(montant),
         )
-        await swag_client.swagchain.append(block)
+        await self.swag_client.swagchain.append(block)
 
-        await message.channel.send(
-            f"{message.author.mention}, vous venez de bloquer `{block.amount}`, "
+        await interaction.response.send_message(
+            f"{interaction.author.mention}, vous venez de bloquer `{block.amount}`, "
             f"vous les récupérerez dans **{BLOCKING_TIME} jours** à la même heure\n"
         )
         await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
+            interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    elif "garder" in command_swag:
-        account_info = swag_client.swagchain.account(message.author.id)
+    @swag.sub_command(name="garder")
+    async def keep(self, interaction: disnake.ApplicationCommandInteraction, montant : str):
+        """
+        Garde un montant de $wag et utilise le reste pour générer du $tyle.
+        
+        Parameters
+        ----------
+        montant : nombre de $wag à garder avant blocage.
+        """
+        account_info = self.swag_client.swagchain.account(interaction.author.id)
         block = SwagBlocking(
-            issuer_id=message.author.id,
-            user_id=message.author.id,
+            issuer_id=interaction.author.id,
+            user_id=interaction.author.id,
             amount=(account_info.swag_balance + account_info.blocked_swag)
-            - swag_from_command(command_swag),
+            - Swag.from_command(montant),
         )
-        await swag_client.swagchain.append(block)
+        await self.swag_client.swagchain.append(block)
 
-        await message.channel.send(
-            f"{message.author.mention}, vous venez de bloquer `{block.amount}`, "
+        await interaction.response.send_message(
+            f"{interaction.author.mention}, vous venez de bloquer `{block.amount}`, "
             f"vous les récupérerez dans **{BLOCKING_TIME} jours** à la même heure\n"
         )
         await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
+            interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    elif "payer" in command_swag:
-        if len(message.mentions) != 1:
-            raise NoReceiver
+    @swag.sub_command(name="payer")
+    async def pay(self, interaction: disnake.ApplicationCommandInteraction, montant : str, monnaie : Currency ,destinataire : disnake.Member):
+        """
+        Envoie un montant de $wag au destinataire spécifié
+
+        Parameters
+        ----------
+        montant : montant à envoyer.
+        monnaie : monnaie à envoyer.
+        destinataire : utilisateur à qui donner la monnaie.
+        """
+
+        amount_to_send = Currency.get_class(monnaie)(montant)
 
         block = Transaction(
-            issuer_id=message.author.id,
-            giver_id=UserId(message.author.id),
-            recipient_id=UserId(message.mentions[0].id),
-            amount=swag_from_command(command_swag),
+            issuer_id=interaction.author.id,
+            giver_id=UserId(interaction.author.id),
+            recipient_id=UserId(destinataire.id),
+            amount=amount_to_send
         )
-        await swag_client.swagchain.append(block)
+        await self.swag_client.swagchain.append(block)
 
-        await message.channel.send(
-            "Transaction effectué avec succès ! \n"
-            "```ini\n"
-            f"[{message.author.display_name}\t{block.amount}\t"
-            f"-->\t{message.mentions[0].display_name}]\n"
-            "```"
+        await interaction.response.send_message(
+            "Transaction effectué avec succès !",
+            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
         )
         await update_forbes_classement(
-            message.guild, swag_client, swag_client.discord_client
+            interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    elif "timezone" in command_swag:
-        timezone = command_swag[2]
-        user = message.author
+    @swag.sub_command(name="timezone")
+    async def change_timezone(self, interaction: disnake.ApplicationCommandInteraction, timezone : str):
+        """
+        Change la timezone du porte-monnaie.
+
+        Parameters
+        ----------
+        timezone : nouvelle timezone du porte-monnaie.
+        """
+
+        user = interaction.author
 
         block = UserTimezoneUpdate(
-            issuer_id=message.author.id, user_id=user.id, timezone=timezone
+            issuer_id=interaction.author.id, user_id=user.id, timezone=timezone
         )
-        await swag_client.swagchain.append(block)
+        await self.swag_client.swagchain.append(block)
 
-        await message.channel.send(
+        await interaction.response.send_message(
             f"Ta timezone est désormais {timezone} !\n"
             "Pour des raisons de sécurité, tu ne pourras plus changer celle-ci "
-            f"avant {block.lock_date}. Merci de ta compréhension."
+            f"avant {block.lock_date}. Merci de ta compréhension.",
+            ephemeral=True
         )
 
-    else:
-        # Si l'utilisateur se trompe de commande, ce message s'envoie par défaut
-        await message.channel.send(
-            f"{message.author.mention}, tu sembles perdu, "
-            "voici les commandes que tu peux utiliser avec ton $wag :\n"
-            "```HTTP\n"
-            "!$wag créer ~~ Crée un compte sur la $wagChain™\n"
-            "!$wag info ~~ Voir ton solde et toutes les infos de ton compte \n"
-            "!$wag miner ~~ Gagner du $wag gratuitement tout les jours\n"
-            "!$wag payer [montant] [@destinataire] ~~ Envoie un *montant* "
-            "de $wag au *destinataire* spécifié\n"
-            "!$wag bloquer [montant] ~~ Bloque un *montant* de $wag pour "
-            "générer du $tyle pendant quelques jours\n"
-            "!$wag historique ~~ Visualiser l'ensemble des transactions "
-            "effectuées sur ton compte\n"
-            "```"
-        )
-    await update_forbes_classement(
-        message.guild, swag_client, swag_client.discord_client
-    )
+# elif "historique" in command_swag:
+#     user = message.author
+#     user_account = self.swag_bank.get_account_info(user.id)
+#     history = list(reversed(self.swag_bank.get_history(user.id)))
+#     await message.channel.send(
+#         f"{user.mention}, voici l'historique de tes transactions de $wag :\n"
+#     )
+#     await reaction_message_building(
+#         self.client,
+#         history,
+#         message,
+#         mini_history_swag_message,
+#         self.swag_bank,
+#         user_account.timezone,
+#     )
