@@ -1,4 +1,3 @@
-
 import disnake
 from disnake.ext import commands
 from swag.client.cagnotte import CagnotteCommand
@@ -42,6 +41,7 @@ from ..utils import (
 
 from utils import (
     GUILD_ID,
+    LOG_CHANNEL_ID,
     SWAGCHAIN_CHANNEL_ID,
 )
 from module import Module
@@ -272,17 +272,30 @@ class ClientError(commands.Cog):
                 "(@Bobby Machin) !",
                 ephemeral=True,
             )
-        elif type(error.original) is AttributeError:
-            if error.original.name == "swagchain":
+        elif type(error.original) is AttributeError and hasattr(error.original,"name") and error.original.name == "swagchain":
                 await interaction.response.send_message(
                     f"{interaction.author.mention}, la $wagChain n'est pas encore disponible. "
                     "Veuillez réessayer d'ici quelques secondes !",
                     ephemeral=True,
                 )
-
-            ##TODO print du traceback
-            else:
-                print(f"{error.original} {traceback.print_tb(error.original.__traceback__)}")
-
         else:
-            print(f"{error.original} {traceback.print_tb(error.original.__traceback__)}")
+            try:
+                await interaction.client.get_channel(LOG_CHANNEL_ID).send(
+                    "<@354685615402385419>, <@178947222103130123> ! "
+                    "Une erreur inattendue est "
+                    f"survenue suite à la commande de {interaction.author.mention} :\n\n"
+                    f"`/{interaction.data.name} {interaction.options}`\n\n"
+                    "L'erreur est la suivante :\n"
+                    "```\n"
+                    f"{''.join(traceback.format_tb(error.original.__traceback__))}\n"
+                    f"{error.original}\n"
+                    "```"
+                )
+                await interaction.response.send_message(
+                    f"{interaction.author.mention} ! ***Une erreur inattendue est survenue.*** "
+                    "Les développeurs viennent d'en être informés. Merci de bien vouloir "
+                    "patienter... ⌛"
+                )
+            except:
+                traceback.print_tb(error.original.__traceback__)
+                print(f"{error.original}")
