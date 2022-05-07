@@ -73,6 +73,8 @@ class SwagClient(Module):
             self.discord_client,
         )
 
+        await self.swagchain.clean_old_style_gen_block()
+
     async def add_jobs(self, scheduler):
         # Programme la fonction update_the_style pour être lancée
         # toutes les heures.

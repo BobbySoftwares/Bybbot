@@ -33,6 +33,7 @@ class SyncedSwagChain(SwagChain):
             unstructured_block = json.loads(message.content)
             block = structure_block(unstructured_block)
             SwagChain.append(synced_chain, block)
+            synced_chain._messages[block] = message.id
         return synced_chain
 
     async def append(self, block):
