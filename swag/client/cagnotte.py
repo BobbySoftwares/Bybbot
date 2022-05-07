@@ -391,7 +391,7 @@ class CagnotteCommand(commands.Cog):
         self,
         interaction: disnake.ApplicationCommandInteraction,
         identifiant: str,
-        montant: int,
+        montant: str,
         monnaie: Currency,
     ):
 
