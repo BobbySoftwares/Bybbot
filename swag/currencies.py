@@ -8,7 +8,11 @@ from utils import format_number
 
 @attrs(frozen=True)
 class Money:
-    currency = None
+    _CURRENCY = None
+
+    @property
+    def currency(self):
+        return self._CURRENCY
 
     @classmethod
     def from_str(cls, text : str):
@@ -21,7 +25,7 @@ class Money:
 @attrs(frozen=True)
 class Swag(Money):
     value: int = attrib(converter=int)
-    currency : str = "$wag"
+    _CURRENCY : str = "$wag"
 
     @classmethod
     def from_command(cls, text : str):
@@ -64,7 +68,7 @@ def style_decimal(amount):
 @attrs(frozen=True)
 class Style(Money):
     value: Decimal = attrib(converter=style_decimal)
-    currency : str = "$tyle"
+    _CURRENCY : str = "$tyle"
 
     @classmethod
     def from_command(cls, text : str):
@@ -105,14 +109,14 @@ class Currency(str, Enum):
     Could be automaticly built thanks to Money children I guess ?
     """
 
-    SWAG = Swag.currency
-    STYLE = Style.currency
+    SWAG = Swag._CURRENCY
+    STYLE = Style._CURRENCY
 
     @classmethod
     def get_class(cls,currency_str):
-        if currency_str == Swag.currency:
+        if currency_str == Swag._CURRENCY:
             return Swag
-        elif currency_str == Style.currency:
+        elif currency_str == Style._CURRENCY:
             return Style
         else:
             return ValueError
