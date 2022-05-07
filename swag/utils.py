@@ -14,7 +14,6 @@ from utils import (
     GUILD_ID,
     ROLE_ID_SWAGGEST,
     chunks,
-    format_number,
     get_guild_member_name,
 )
 

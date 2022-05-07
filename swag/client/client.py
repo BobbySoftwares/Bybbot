@@ -18,6 +18,8 @@ from arrow import utcnow
 
 import traceback
 
+from swag.id import UserId
+
 from ..errors import (
     AlreadyCagnotteManager,
     AlreadyMineToday,
@@ -40,6 +42,7 @@ from ..utils import (
 )
 
 from utils import (
+    ADMINS_ID,
     GUILD_ID,
     LOG_CHANNEL_ID,
     SWAGCHAIN_CHANNEL_ID,
@@ -280,8 +283,10 @@ class ClientError(commands.Cog):
                 )
         else:
             try:
+                admins_id = [str(UserId(admin_id)) for admin_id in ADMINS_ID]
+
                 await interaction.client.get_channel(LOG_CHANNEL_ID).send(
-                    "<@354685615402385419>, <@178947222103130123> ! "
+                    f"{', '.join(admins_id)} ! "
                     "Une erreur inattendue est "
                     f"survenue suite à la commande de {interaction.author.mention} :\n\n"
                     f"`/{interaction.data.name} {interaction.options}`\n\n"
