@@ -32,7 +32,7 @@ class SyncedSwagChain(SwagChain):
             unstructured_block = json.loads(message.content)
             block = structure_block(unstructured_block)
             SwagChain.append(synced_chain, block)
-
+            synced_chain._messages[block] = message.id
             if isinstance(block, AssetUploadBlock):
                 # Mise à jour de la bibliothèque des assets
                 asset_url = message.attachments[0].url

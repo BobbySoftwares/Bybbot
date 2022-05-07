@@ -3,6 +3,7 @@ from decimal import ROUND_DOWN, ROUND_UP, Decimal
 import os
 import random
 from typing import Dict, List
+from arrow import utcnow
 from attr import attrs, attrib
 from numpy import array
 
@@ -124,7 +125,8 @@ class SwagChain:
         try:
             oldest_blocking_date = min([user_account.blocking_date for user_account in self._accounts.users.values() if user_account.blocking_date != None])
         except ValueError as e:
-            return #Si personne ne bloque, pas besoin de nettoyer la swagchain
+            #If no blocking date is found, then we can clean all the StyleGeneration
+            oldest_blocking_date = utcnow()
         
         print(f"Nettoyage de la blockchain avant la date du {oldest_blocking_date}\n")
         ##Get all the StyleGenerationBlock which was added before this date
