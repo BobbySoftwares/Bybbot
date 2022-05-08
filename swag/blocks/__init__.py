@@ -3,6 +3,8 @@ from .cagnotte_blocks import (
     CagnotteRenaming,
     CagnotteParticipantsReset,
     CagnotteDeletion,
+    CagnotteAddManagerBlock,
+    CagnotteRevokeManagerBlock,
 )
 from .swag_blocks import (
     AccountCreation,
@@ -12,6 +14,12 @@ from .swag_blocks import (
     ReturnOnInvestment,
     StyleGeneration,
 )
-from .system_blocks import UserTimezoneUpdate, GuildTimezoneUpdate, EventGiveaway
 
-from .yfu_blocks import YfuGenerationBlock
+from .yfu_blocks import YfuGenerationBlock, RenameYfuBlock, TokenTransactionBlock
+
+from .system_blocks import ( 
+    UserTimezoneUpdate, 
+    GuildTimezoneUpdate, 
+    EventGiveaway,
+    AssetUploadBlock
+    )

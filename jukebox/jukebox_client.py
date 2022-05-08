@@ -1,4 +1,4 @@
-import discord
+import disnake
 
 from .jukebox import CodeRecherche, Jukebox
 from .utils import well_aligned_jukebox_tab, mini_help_message_string
@@ -97,5 +97,5 @@ class JukeboxClient(Module):
         # Lorsque aucun son n'est joué dans le canal vocal actuel, on
         # lance le son !
         if not vc.is_playing():
-            sound_to_play = discord.FFmpegPCMAudio(file_to_play)
+            sound_to_play = disnake.FFmpegPCMAudio(file_to_play)
             vc.play(sound_to_play, after=None)

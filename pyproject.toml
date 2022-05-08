@@ -5,7 +5,7 @@ description = "A french discord bot to do useless stuff."
 authors = ["gggto <47183108+gggto@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 numpy = "^1.21.0"
 "discord.py" = "^1.7.3"
 discord-py-slash-command = "^2.3.2"
@@ -16,7 +16,7 @@ GitPython = "^3.1.18"
 attrs = "^21.2.0"
 babel = "^2.9.1"
 cattrs = "^1.8.0"
-cattrs_extras = "^0.1.1"
+disnake = {extras = ["voice"], version = "^2.3.0"}
 
 [tool.poetry.dev-dependencies]
 black = "^21.6b0"

@@ -1,4 +1,5 @@
-import discord
+import disnake
+from disnake.ext.commands import Bot
 
 import traceback
 
@@ -9,7 +10,9 @@ import json
 from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
 from maintenance.maintenance_client import MaintenanceClient
+from swag.id import UserId
 
+from utils import ADMINS_ID, LOG_CHANNEL_ID
 
 with open("config.json", "r") as json_file:
     client_config = json.load(json_file)
@@ -18,11 +21,11 @@ print("Lancement du bot...")
 
 # Mise à jour des droit du bot, qui lui permet d'avoir la liste entière
 # des membres d'un serveur
-intents = discord.Intents.default()
+intents = disnake.Intents.default()
 intents.members = True
 
 # Création du client
-client = discord.Client(intents=intents)
+client = Bot(intents=intents)
 
 swag_module = SwagClient(client)
 
@@ -32,6 +35,10 @@ modules = [
     MaintenanceClient(client, client_config.get("admins"), swag_module),
 ]
 
+#Registration of commands (like slash_commands) MUST be before the bot launch
+#That's why register_commands is used outside "on_ready" event
+for module in modules:
+    module.register_commands()
 
 @client.event
 async def on_ready():
@@ -57,11 +64,18 @@ async def on_ready():
 
     print("Bybbot opérationnel !")
 
+    try:
+        await client.get_channel(LOG_CHANNEL_ID).send(
+            "Démarrage terminé, prêt à bybbotter des clous !"
+        )
+    except:
+        pass
+
 
 @client.event
 async def on_disconnect():
     """Fonction lancé lorsque le bot se déconnecte"""
-    await client.change_presence(status=discord.Status.offline)
+    await client.change_presence(status=disnake.Status.offline)
 
 
 @client.event
@@ -116,23 +130,29 @@ async def on_message(message):
         try:
             await module.process(message)
         except Exception as e:
-            await client.get_channel(930777218496479302).send(
-                "<@354685615402385419>, <@178947222103130123> ! Une erreur inattendue est "
-                f"survenue suite à ce message de {message.author.mention} : "
-                f"{message.jump_url}\n"
-                "Le contenu du message est le suivant :\n"
-                f"> {message.content}\n"
-                "L'erreur est la suivante :\n"
-                "```\n"
-                f"{traceback.format_exc()}\n"
-                f"{e}\n"
-                "```"
-            )
-            await message.channel.send(
-                f"{message.author.mention} ! Une erreur inattendue est survenue. "
-                "Les développeurs viennent d'en être informés. Merci de bien vouloir "
-                "patienter."
-            )
+            try:
+                admins_id = [str(UserId(admin_id)) for admin_id in ADMINS_ID]
+                
+                await client.get_channel(LOG_CHANNEL_ID).send(
+                    f"{', '.join(admins_id)} ! "
+                    "Une erreur inattendue est "
+                    f"survenue suite à ce message de {message.author.mention} : "
+                    f"{message.jump_url}\n"
+                    "Le contenu du message est le suivant :\n"
+                    f"> {message.content}\n"
+                    "L'erreur est la suivante :\n"
+                    "```\n"
+                    f"{traceback.format_exc()}\n"
+                    f"{e}\n"
+                    "```"
+                )
+                await message.channel.send(
+                    f"{message.author.mention} ! Une erreur inattendue est survenue. "
+                    "Les développeurs viennent d'en être informés. Merci de bien vouloir "
+                    "patienter."
+                )
+            except:
+                raise e
 
 
 # Lancement du client

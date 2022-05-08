@@ -2,7 +2,7 @@ from __future__ import annotations
 import hashlib
 
 from attr import attrib, attrs
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from ..yfu import Yfu, YfuPower
 
 if TYPE_CHECKING:
@@ -10,7 +10,8 @@ if TYPE_CHECKING:
 
 from ..currencies import Style
 
-from ..id import AccountId, UserId, YfuId
+from ..id import AccountId,CagnotteId, UserId, YfuId
+
 from ..utils import EMOJI_CLAN_YFU
 from ..cauchy import roll
 
@@ -24,6 +25,7 @@ import random
 @attrs(frozen=True, kw_only=True)
 class YfuGenerationBlock(Block):
     user_id = attrib(type=UserId, converter=UserId)
+    yfu_id = attrib(type=YfuId, converter=YfuId)
     first_name = attrib(type=str)
     last_name = attrib(type=str)
     clan = attrib(type=str)
@@ -31,9 +33,8 @@ class YfuGenerationBlock(Block):
     activation_cost = attrib(type=Style)
     greed = attrib(type=float)
     zenitude = attrib(type=float)
-    avatar_local_path = attrib(type=str)
+    avatar_asset_key = attrib(type=str)
     power = attrib(type=YfuPower)
-    hash = attrib(type=str)
 
     @first_name.default
     def _generate_letter(self):
@@ -67,47 +68,30 @@ class YfuGenerationBlock(Block):
     def _roll_zenitude(self):
         return round(random.random(), 1)  # TODO
 
-    @avatar_local_path.default
-    def _generate_avatar(self):
-        avatar_local_folder = "ressources/Yfu/avatar/psi-1.0/"  # TODO à renseigner ailleurs ? psi different en fonction des powerpoint
-        return random.choice(
-            [
-                os.path.join(avatar_local_folder, file)
-                for file in os.listdir(avatar_local_folder)
-            ]
-        )
-
     @power.default
     def _generate_power(self):
         # Pouvoir temporaire, en attendant gggto #TODO
         return YfuPower("POUVOIR X", "EFFET DU POUVOIR X")
 
-    @hash.default
-    def _calculate_hash(self):
-        with open(self.avatar_local_path, "rb") as f:
-            return hashlib.md5(f.read()).hexdigest()
-
     def validate(self, db: SwagChain):
         pass  ##TODO
 
     def execute(self, db: SwagChain):
-        user_account = db._accounts[self.user_id]
-        user_account.yfu_wallet.append(
-            Yfu(
-                self.user_id,
-                self.first_name,
-                self.last_name,
-                self.clan,
-                self.timestamp,
-                user_account.timezone,
-                self.power_point,
-                self.activation_cost,
-                self.greed,
-                self.zenitude,
-                self.avatar_local_path,
-                self.power,
-                self.hash,
-            )
+        db._accounts[self.user_id].yfu_wallet.add(self.yfu_id)
+        db._yfus[self.yfu_id] = Yfu(
+            owner_id = self.user_id,
+            id = self.yfu_id,
+            first_name = self.first_name,
+            last_name = self.last_name,
+            clan = self.clan,
+            avatar_url = db._assets[self.avatar_asset_key],
+            generation_date = self.timestamp,
+            timezone = db._accounts[self.user_id].timezone,
+            power_point = self.power_point,
+            activation_cost = self.activation_cost,
+            greed = self.greed,
+            zenitude = self.zenitude,
+            power = self.power,
         )
 
 
@@ -119,3 +103,31 @@ class YfuPowerActivation(Block):
         yfu = db._yfus[self.yfu_id]
 
         yfu.power._activation(db, yfu.owner_id, self.target)
+        
+@attrs(frozen=True, kw_only=True)
+class TokenTransactionBlock(Block):
+    giver_id = attrib(type=Union[UserId, CagnotteId])
+    recipient_id = attrib(type=Union[UserId, CagnotteId])
+    token_id = attrib(type=YfuId)
+
+    def execute(self, db: SwagChain):
+        # moving token through account
+        db._accounts[self.giver_id].yfu_wallet.remove(self.token_id)
+        # write the owner into the token
+        db._yfus[self.token_id].owner_id = self.recipient_id
+        db._accounts[self.recipient_id].yfu_wallet.add(self.token_id)
+        db._accounts[self.recipient_id].register(self.giver_id)
+
+
+@attrs(frozen=True, kw_only=True)
+class RenameYfuBlock(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+    yfu_id = attrib(type=YfuId, converter=YfuId)
+    new_first_name = attrib(type=str)
+
+    def validate(self, db: SwagChain):
+        pass  ##TODO
+
+    def execute(self, db: SwagChain):
+        db._yfus[self.yfu_id].first_name = self.new_first_name
+        db._yfus[self.yfu_id].is_baptized = True

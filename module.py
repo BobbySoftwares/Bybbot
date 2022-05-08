@@ -1,4 +1,8 @@
 class Module:
+
+    def register_commands(self):
+        pass
+
     async def setup(self):
         pass
 

@@ -7,10 +7,9 @@ from itertools import chain
 from swag.artefacts.bonuses import Bonuses
 from swag.cauchy import roll
 
-from swag.yfu import Yfu
-
-from swag.id import CagnotteId, UserId
+from swag.id import CagnotteId, UserId, YfuId
 from swag.utils import assert_timezone
+from swag.yfu import Yfu
 
 from ..errors import (
     AlreadyMineToday,
@@ -43,7 +42,7 @@ class Info:
 class Account:
     swag_balance: Swag = attrib(init=False, default=Swag(0))
     style_balance: Style = attrib(init=False, default=Style(0))
-    yfu_wallet: List[Yfu] = attrib(init=False, default=list())
+    yfu_wallet: Set[YfuId] = attrib(init=False, factory=set)
 
     def __iadd__(self, value: Union[Swag, Style]):
         if type(value) is Swag:
@@ -52,7 +51,7 @@ class Account:
             self.style_balance += value
         else:
             raise TypeError(
-                "Amounts added to SwagAccount should be either Swag or Style."
+                "Amounts added to SwagAccount should be either Swag, Style."
             )
         return self
 
@@ -64,7 +63,7 @@ class Account:
                 self.style_balance -= value
             else:
                 raise TypeError(
-                    "Amounts subtracted to SwagAccount should be either Swag or Style."
+                    "Amounts subtracted to SwagAccount should be either Swag, Style."
                 )
         except InvalidSwagValue:
             raise NotEnoughSwagInBalance(self.swag_balance)
@@ -110,6 +109,7 @@ class SwagAccount(Account):
     last_mining_date: Optional[Arrow] = None
     style_rate: Decimal = Decimal(100)
     blocked_swag: Swag = Swag(0)
+    blocking_date : Optional[Arrow] = None
     unblocking_date: Optional[Arrow] = None
     pending_style: Style = Style(0)
     timezone_lock_date: Optional[Arrow] = None

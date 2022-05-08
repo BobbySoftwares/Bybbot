@@ -14,7 +14,6 @@ from utils import (
     GUILD_ID,
     ROLE_ID_SWAGGEST,
     chunks,
-    format_number,
     get_guild_member_name,
 )
 
@@ -267,16 +266,23 @@ async def mini_forbes_cagnottes(cagnottes_chunk, guild, client):
     Returns:
         String: message à envoyer pour visualiser une partie des €agnottes
     """
-    cagnottes = [
-        (
-            f"{cagnotte_id}",
-            f'"{cagnotte.name}"',
-            f"{cagnotte.swag_balance}",
-            f"{cagnotte.style_balance}",
-            f"👑 {await get_guild_member_name(cagnotte.managers[0],guild,client)}",
+    cagnottes = []
+    for (cagnotte_id, cagnotte) in cagnottes_chunk:
+
+        managers = [
+            await get_guild_member_name(manager, guild, client)
+            for manager in cagnotte.managers
+        ]
+
+        cagnottes.append(
+            (
+                f"{cagnotte_id}",
+                f'"{cagnotte.name}"',
+                f"{cagnotte.swag_balance}",
+                f"{cagnotte.style_balance}",
+                f"👑 {', '.join(managers)}",
+            )
         )
-        for (cagnotte_id, cagnotte) in cagnottes_chunk
-    ]
     # Besoin de connaître l'id, le nom, le montant et la monnaie utilisé dans la €agnotte
     # le plus long pour l'aligement de chaque colonne
     col1 = max(len(id) for id, _, _, _, _ in cagnottes)
@@ -303,8 +309,10 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
     bloqué leurs $wag, et débloque les comptes déblocables
     """
 
-    bobbycratie_guild = client.get_guild(id=GUILD_ID)
-    command_channel = client.get_channel(id=COMMAND_CHANNEL_ID)
+    bobbycratie_guild = client.get_guild(GUILD_ID)
+    command_channel = client.get_channel(COMMAND_CHANNEL_ID)
+
+    unblock_happen = False
 
     # Faire gagner du style à ceux qui ont du swag bloqué :
     await swag_client.swagchain.generate_style()
@@ -315,10 +323,15 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
             f"à nouveau disponible. Vous avez gagné `{style}` suite à ce "
             "blocage. Continuez de bloquer du $wag pour gagner plus de $tyle !"
         )
+        unblock_happen = True
 
     await update_forbes_classement(
         bobbycratie_guild, swag_client, client
     )  # Mise à jour du classement après les gains de $tyle
+
+    #Si il y a eut un déblocage de swag, on supprime les block stylegeneration de la swagchain inutiles
+    if unblock_happen:
+        await swag_client.swagchain.clean_old_style_gen_block()
 
 
 async def update_the_swaggest(guild, swag_client):

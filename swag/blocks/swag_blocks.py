@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from swag.id import CagnotteId, UserId
+from swag.id import CagnotteId, UserId, YfuId
 from swag.utils import assert_timezone
+from swag.yfu import Yfu
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -21,6 +22,7 @@ from ..block import Block
 from ..errors import (
     AccountAlreadyExist,
     AlreadyMineToday,
+    NotCagnotteManager,
     StyleStillBlocked,
 )
 
@@ -85,6 +87,11 @@ class Transaction(Block):
     amount = attrib(type=Union[Swag, Style])
 
     def execute(self, db: SwagChain):
+
+        if type(self.giver_id) == CagnotteId:
+            if self.issuer_id not in db._accounts[self.giver_id].managers:
+                raise NotCagnotteManager
+
         db._accounts[self.giver_id] -= self.amount
         db._accounts[self.recipient_id] += self.amount
         db._accounts[self.recipient_id].register(self.giver_id)
@@ -120,23 +127,26 @@ class SwagBlocking(Block):
     def execute(self, db: SwagChain):
         user_account = db._accounts[self.user_id]
 
-        unblocking_date = (
+        blocking_date = (
             self.timestamp.to(user_account.timezone)
-            .shift(days=BLOCKING_TIME)
             .replace(microsecond=0, second=0, minute=0)
             .to("UTC")
-            .datetime
         )
+
+        unblocking_date = blocking_date.shift(days=BLOCKING_TIME).to("UTC").datetime
+        blocking_date = blocking_date.datetime
 
         # If no $tyle was generated yet, reset blockage
         if user_account.unblocking_date == unblocking_date:
             user_account += user_account.blocked_swag
             user_account.blocked_swag = Swag(0)
             user_account.unblocking_date = None
+            user_account.blocking_date = None
 
         user_account -= self.amount
         user_account.blocked_swag = self.amount
         user_account.unblocking_date = unblocking_date
+        user_account.blocking_date = blocking_date
 
 
 @attrs(frozen=True, kw_only=True)
@@ -163,7 +173,7 @@ class ReturnOnInvestment(Block):
         user_account.pending_style = Style(0)
 
 
-@attrs(frozen=True, kw_only=True)
+@attrs(frozen=True, kw_only=True, eq=False)
 class StyleGeneration(Block):
     amounts = attrib(type=Dict[UserId, Style])
 
