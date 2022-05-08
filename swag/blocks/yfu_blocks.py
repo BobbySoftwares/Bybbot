@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 from ..currencies import Style
 
-from ..id import UserId
+from ..id import AccountId, UserId, YfuId
 from ..utils import EMOJI_CLAN_YFU
 from ..cauchy import roll
 
@@ -109,3 +109,13 @@ class YfuGenerationBlock(Block):
                 self.hash,
             )
         )
+
+
+class YfuPowerActivation(Block):
+    yfu_id = attrib(type=YfuId, converter=YfuId)
+    target = attrib(type=YfuId | AccountId)
+
+    def execute(self, db: SwagChain):
+        yfu = db._yfus[self.yfu_id]
+
+        yfu.power._activation(db, yfu.owner_id, self.target)
