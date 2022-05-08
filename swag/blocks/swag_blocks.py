@@ -56,8 +56,16 @@ class Uncomputed:
 @attrs(frozen=True, kw_only=True, eq=False)
 class Mining(Block):
     user_id = attrib(type=UserId, converter=UserId)
-    amounts = attrib(type=List[Swag], default=Uncomputed)
+    amount = attrib(type=Swag, default=None) # for retrocompatibility
+    amounts = attrib(type=List[Swag])
     harvest = attrib(type=None, default=None)
+
+    @amounts.default
+    def amounts_default(self):
+        if self.amount is None:
+            return Uncomputed
+        else:
+            return [self.amount]
 
     def execute(self, db: SwagChain):
         user_account = db._accounts[self.user_id]
