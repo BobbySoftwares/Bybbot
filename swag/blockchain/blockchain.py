@@ -5,7 +5,7 @@ import random
 from typing import Dict, List
 from arrow import utcnow
 from attr import attrs, attrib
-from numpy import array
+import numpy
 
 from swag.artefacts.accounts import Accounts, Info
 from swag.artefacts.assets import AssetDict
@@ -176,11 +176,11 @@ class SwagChain:
 
         swag_reward = cagnotte.swag_balance
         style_reward = cagnotte.style_balance
-        weights = array(
-            self._accounts[participant].bonuses(self).lottery_luck
-            for participant in participants
+        weights = numpy.array(
+            [self._accounts[participant].bonuses(self).lottery_luck
+            for participant in participants]
         )
-        weights /= sum(weights)
+        weights = weights / numpy.sum(weights)
         winner = choice(tuple(participants), p=weights)
 
         if swag_reward != Swag(0):
