@@ -1,9 +1,11 @@
 from abc import abstractmethod, abstractproperty
-from swag.artefacts.bonuses import Bonuses
-from swag.blockchain.blockchain import SwagChain
+from typing import TYPE_CHECKING
 
-from swag.currencies import Style
-from swag.id import AccountId, GenericId, YfuId
+if TYPE_CHECKING:
+    from swag.artefacts.bonuses import Bonuses
+    from swag.blockchain.blockchain import SwagChain
+    from swag.currencies import Style
+    from swag.id import AccountId, GenericId
 
 
 class Power:
@@ -18,7 +20,7 @@ class Power:
     def protection_cost(self, power):
         return Style("inf")
 
-    def add_bonus(self, bonuses: Bonuses):
+    def add_bonus(self, bonuses: 'Bonuses'):
         pass
 
 
@@ -32,5 +34,5 @@ class Active(Power):
         pass
 
     @abstractmethod
-    def _activation(self, chain: SwagChain, owner_id: AccountId, target_id: GenericId):
+    def _activation(self, chain: 'SwagChain', owner_id: 'AccountId', target_id: 'GenericId'):
         pass

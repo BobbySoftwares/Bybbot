@@ -1,15 +1,12 @@
 from decimal import Decimal
 from typing import Any, Dict, Optional, Union, List, Set
 from attr import Factory, attrs, attrib
-import arrow
 from arrow import Arrow
 from itertools import chain
 from swag.artefacts.bonuses import Bonuses
-from swag.cauchy import roll
 
 from swag.id import CagnotteId, UserId, YfuId
 from swag.utils import assert_timezone
-from swag.yfu import Yfu
 
 from ..errors import (
     AlreadyMineToday,
@@ -96,6 +93,7 @@ class Account:
         for yfu_id in self.yfu_wallet:
             chain._yfus[yfu_id].power.add_bonus(bonuses)
 
+        return bonuses
 
 # ------------------------------------#
 # Classes pour les comptes Cagnottes #

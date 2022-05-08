@@ -7,6 +7,8 @@ from enum import Enum
 from swag.currencies import Style
 from swag.id import CagnotteId, UserId, YfuId
 
+from swag.powers.power import Power
+
 from swag.utils import assert_timezone
 
 # Temporary class, waiting for gggto
@@ -34,7 +36,7 @@ class Yfu:
     activation_cost: Style
     greed: float  # multiplier of the activation_cost after one activation, should be >= 1
     zenitude: float  # multiplier of the activation_cost after one activation, should be <= 1
-    power: YfuPower
+    power: Power
 
     is_baptized: bool = attrib(default=False)
 

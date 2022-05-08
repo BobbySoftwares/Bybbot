@@ -54,12 +54,14 @@ class SwagCommand(commands.Cog):
         block = Mining(issuer_id=interaction.author.id, user_id=interaction.author.id)
         await self.swag_client.swagchain.append(block)
 
+        total_amount = sum(block.amounts)
+
         await interaction.response.send_message(
-            f"⛏ {interaction.author.mention} a miné `{block.amount}` !"
+            f"⛏ {interaction.author.mention} a miné `{total_amount}` !"
         )
 
         # Yfu Generation
-        if block.amount >= YFU_GENERATION_MINING_THRESHOLD:
+        if total_amount >= YFU_GENERATION_MINING_THRESHOLD:
             new_yfu_id = await self.swag_client.swagchain.generate_yfu(UserId(interaction.author.id))
             new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
 

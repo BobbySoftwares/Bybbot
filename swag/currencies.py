@@ -42,6 +42,9 @@ class Swag(Money):
     def __add__(self, other: "Swag"):
         return Swag(self.value + other.value)
 
+    def __radd__(self, other: "int"):
+        return Swag(other) + Swag(self.value)
+
     def __sub__(self, other: "Swag"):
         return Swag(self.value - other.value)
 

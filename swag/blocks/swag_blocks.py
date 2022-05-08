@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from swag.id import CagnotteId, UserId, YfuId
+from swag.id import CagnotteId, UserId
 from swag.utils import assert_timezone
-from swag.yfu import Yfu
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -54,7 +53,7 @@ class Uncomputed:
         return cv
 
 
-@attrs(frozen=True, kw_only=True)
+@attrs(frozen=True, kw_only=True, eq=False)
 class Mining(Block):
     user_id = attrib(type=UserId, converter=UserId)
     amounts = attrib(type=List[Swag], default=Uncomputed)
@@ -71,7 +70,7 @@ class Mining(Block):
         ):
             raise AlreadyMineToday
 
-        if self.amount is Uncomputed:
+        if self.amounts is Uncomputed:
             self.__dict__["amounts"] = [
                 Swag(bonuses.roll()) for _ in range(bonuses.minings)
             ]
