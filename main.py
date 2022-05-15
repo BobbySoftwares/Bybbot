@@ -22,6 +22,7 @@ print("Lancement du bot...")
 # des membres d'un serveur
 intents = disnake.Intents.default()
 intents.members = True
+intents.message_content = True
 
 # Création du client
 client = Bot(intents=intents)
