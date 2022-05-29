@@ -42,7 +42,7 @@ class CagnotteCommand(commands.Cog):
     def __init__(self, swag_client):
         self.swag_client = swag_client
 
-    async def cagnotte_id_autocomplete(
+    async def autocomplete_cagnotte_id(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
     ):
         return [
@@ -51,7 +51,7 @@ class CagnotteCommand(commands.Cog):
             if user_input in cagnotte_id[0].id
         ]
 
-    async def cagnotte_id_autocomplete_manager(
+    async def autocomplete_managed_cagnotte_id(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
     ):
         return [
@@ -133,7 +133,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "info" command
-    info.autocomplete("identifiant")(cagnotte_id_autocomplete)
+    info.autocomplete("identifiant")(autocomplete_cagnotte_id)
 
     @cagnotte.sub_command(name="donner")
     async def give(
@@ -177,7 +177,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "give" command
-    give.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    give.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="partager")
     async def share(
@@ -229,7 +229,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "share" command
-    share.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    share.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="loto")
     async def loto(
@@ -268,7 +268,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    loto.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    loto.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="renommer")
     async def rename(
@@ -310,7 +310,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    rename.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    rename.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="reset")
     async def reset(
@@ -348,7 +348,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    reset.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    reset.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="détruire")
     async def destroy(
@@ -384,7 +384,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    destroy.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    destroy.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="payer")
     async def pay(
@@ -426,7 +426,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    pay.autocomplete("identifiant")(cagnotte_id_autocomplete)
+    pay.autocomplete("identifiant")(autocomplete_cagnotte_id)
 
     @cagnotte.sub_command_group(name="gestionnaire")
     async def manager(self, interaction: disnake.ApplicationCommandInteraction):
@@ -468,7 +468,7 @@ class CagnotteCommand(commands.Cog):
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    add_manager.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    add_manager.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @manager.sub_command(name="révoquer")
     async def revoke_manager(
@@ -505,7 +505,7 @@ class CagnotteCommand(commands.Cog):
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    revoke_manager.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    revoke_manager.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     # elif "historique" in splited_command:
     #     user = message.author

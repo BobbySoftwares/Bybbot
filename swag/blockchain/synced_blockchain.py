@@ -53,7 +53,7 @@ class SyncedSwagChain(SwagChain):
 
     async def remove(self, block):
         SwagChain.remove(self,block)
-        print(f"Delation of {block}")
+        print(f"Deletion of {block}")
         await self._channel.get_partial_message(self._messages.pop(block)).delete()
         
     async def save_backup(self):
