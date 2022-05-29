@@ -110,10 +110,6 @@ class CagnotteAddManagerBlock(Block):
     new_manager = attrib(type=UserId, converter=UserId)
     user_id = attrib(type=UserId, converter=UserId)
 
-    @user_id.default
-    def _user_id_default(self):
-        return self.issuer_id
-
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
 
@@ -131,10 +127,6 @@ class CagnotteRevokeManagerBlock(Block):
     cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
     manager_id = attrib(type=UserId, converter=UserId)
     user_id = attrib(type=UserId, converter=UserId)
-
-    @user_id.default
-    def _user_id_default(self):
-        return self.issuer_id
 
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
