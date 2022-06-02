@@ -1,9 +1,2 @@
-**/*.mp3
-**/*.ogg
-*.swag
-*.swagdb
-*.bk
-.vscode
-.DS_STORE
-__pycache__/
-config.json
+main
+*.o
