@@ -123,7 +123,7 @@ class SwagChain:
             user_account.style_rate = rate(rank)
 
     async def clean_old_style_gen_block(self):
-        ##Get the oldest blocking date of all accounts :
+        # Get the oldest blocking date of all accounts :
         try:
             oldest_blocking_date = min(user_account.blocking_date for user_account in self._accounts.users.values() if user_account.blocking_date is not None)
         except ValueError as e:
@@ -131,12 +131,11 @@ class SwagChain:
             oldest_blocking_date = utcnow()
         
         print(f"Nettoyage de la blockchain avant la date du {oldest_blocking_date}\n")
-        ##Get all the StyleGenerationBlock which was added before this date
-        old_style_gen_block = [block for block in self._chain if isinstance(block,StyleGeneration) and block.timestamp.datetime < oldest_blocking_date]
 
-        ##Remove all those useless block from the chain
-        for block in old_style_gen_block:
-            await self.remove(block)
+        # Remove all the StyleGenerationBlock which was added before the oldest date
+        for block in self._chain:
+            if isinstance(block,StyleGeneration) and block.timestamp.datetime < oldest_blocking_date:
+                await self.remove(block)
             
     @property
     def forbes(self):
