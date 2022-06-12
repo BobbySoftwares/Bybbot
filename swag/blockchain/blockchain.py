@@ -125,7 +125,7 @@ class SwagChain:
     async def clean_old_style_gen_block(self):
         ##Get the oldest blocking date of all accounts :
         try:
-            oldest_blocking_date = min([user_account.blocking_date for user_account in self._accounts.users.values() if user_account.blocking_date != None])
+            oldest_blocking_date = min(user_account.blocking_date for user_account in self._accounts.users.values() if user_account.blocking_date is not None)
         except ValueError as e:
             #If no blocking date is found, then we can clean all the StyleGeneration
             oldest_blocking_date = utcnow()

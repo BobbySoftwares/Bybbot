@@ -80,7 +80,7 @@ class Transaction(Block):
 
     def execute(self, db: SwagChain):
 
-        if type(self.giver_id) == CagnotteId:
+        if type(self.giver_id) is CagnotteId:
             if self.issuer_id not in db._accounts[self.giver_id].managers:
                 raise NotCagnotteManager
 
