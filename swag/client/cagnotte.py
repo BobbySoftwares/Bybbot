@@ -294,7 +294,6 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteRenaming(
                 issuer_id=UserId(interaction.author.id),
-                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
                 new_name=nom,
             )
@@ -333,7 +332,6 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteParticipantsReset(
                 issuer_id=UserId(interaction.author.id),
-                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
             )
         )
@@ -370,7 +368,6 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteDeletion(
                 issuer_id=UserId(interaction.author.id),
-                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
             )
         )
@@ -452,8 +449,7 @@ class CagnotteCommand(commands.Cog):
         cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
 
         block = CagnotteAddManagerBlock(
-            issuer_id=UserId(interaction.author.id),
-            user_id=UserId(interaction.author.id),
+            issuer_id=interaction.author.id,
             cagnotte_id=cagnotte_id,
             new_manager=UserId(utilisateur.id),
         )
@@ -489,8 +485,7 @@ class CagnotteCommand(commands.Cog):
         cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
 
         block = CagnotteRevokeManagerBlock(
-            issuer_id=UserId(interaction.author.id),
-            user_id=UserId(interaction.author.id),
+            issuer_id=interaction.author.id,
             cagnotte_id=cagnotte_id,
             manager_id=UserId(utilisateur.id),
         )
