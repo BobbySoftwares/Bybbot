@@ -4,7 +4,7 @@ from arrow.arrow import Arrow
 from swag.blocks import AccountCreation, Mining, SwagBlocking, Transaction
 from swag.blocks import UserTimezoneUpdate
 from swag.client.ui.swag_view import SwagAccountEmbed, TransactionEmbed
-from swag.currencies import Currency, Style, Swag
+from swag.currencies import Currency, Swag, get_money_class
 from swag.id import UserId
 
 from ..errors import InvalidSwagValue
@@ -12,11 +12,6 @@ from ..stylog import BLOCKING_TIME
 from ..utils import update_forbes_classement
 
 from utils import GUILD_ID, format_number
-
-
-
-YFU_GENERATION_MINING_THRESHOLD = Swag(1000000)
-
 
 class SwagCommand(commands.Cog):
     def __init__(self, swag_client):
@@ -146,8 +141,7 @@ class SwagCommand(commands.Cog):
         monnaie : monnaie à envoyer.
         destinataire : utilisateur à qui donner la monnaie.
         """
-
-        amount_to_send = Currency.get_class(monnaie)(montant)
+        amount_to_send = get_money_class(monnaie)(montant)
 
         block = Transaction(
             issuer_id=interaction.author.id,

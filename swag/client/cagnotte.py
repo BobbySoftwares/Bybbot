@@ -11,7 +11,7 @@ from swag.blocks.cagnotte_blocks import (
 from swag.blocks.swag_blocks import Transaction
 from swag.client.ui.cagnotte_view import CagnotteAccountEmbed
 from swag.client.ui.swag_view import TransactionEmbed
-from swag.currencies import Currency
+from swag.currencies import Currency, get_money_class
 from swag.id import CagnotteId, UserId
 
 from ..utils import (
@@ -162,7 +162,7 @@ class CagnotteCommand(commands.Cog):
             issuer_id=UserId(interaction.author.id),
             giver_id=cagnotte_id,
             recipient_id=UserId(destinataire.id),
-            amount=Currency.get_class(monnaie)(montant),
+            amount=get_money_class(monnaie)(montant),
         )
 
         await self.swag_client.swagchain.append(block)
@@ -412,7 +412,7 @@ class CagnotteCommand(commands.Cog):
             issuer_id=UserId(interaction.author.id),
             giver_id=UserId(interaction.author.id),
             recipient_id=cagnotte_id,
-            amount=Currency.get_class(monnaie)(montant),
+            amount=get_money_class(monnaie)(montant)
         )
 
         await self.swag_client.swagchain.append(block)
