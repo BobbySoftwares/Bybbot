@@ -84,11 +84,11 @@ class SwagClient(Module):
                 self.last_update = now
                 await update_the_style(self.discord_client, self)
 
-        async def backup_job():
+        def backup_job():
             now = utcnow().replace(microsecond=0, second=0, minute=0)
             if self.last_backup is None or self.last_backup < now:
                 self.last_backup = now
-                await self.swagchain.save_backup()
+                self.swagchain.save_backup()
 
         #Génération du style toute les heures
         scheduler.add_job(style_job, CronTrigger(hour="*"))

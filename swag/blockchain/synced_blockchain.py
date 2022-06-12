@@ -1,6 +1,5 @@
 import json
 from typing import Dict
-import cbor2
 from attr import attrs, attrib
 from arrow import Arrow
 
@@ -10,14 +9,7 @@ from swag.block import Block
 
 
 from .blockchain_parser import structure_block, unstructure_block
-from .blockchain import SwagChain
-
-
-def json_converter(o):
-    if isinstance(o, Arrow):
-        return o.__str__()
-
-
+from .blockchain import SwagChain, json_converter
 @attrs
 class SyncedSwagChain(SwagChain):
     _id: int = attrib()
@@ -55,12 +47,3 @@ class SyncedSwagChain(SwagChain):
         SwagChain.remove(self,block)
         print(f"Deletion of {block}")
         await self._channel.get_partial_message(self._messages.pop(block)).delete()
-        
-    async def save_backup(self):
-        unstructured_blocks = []
-
-        async for message in self._channel.history(limit=None, oldest_first=True):
-            unstructured_blocks.append(json.loads(message.content))
-        
-        with open('swagchain.bk', 'wb') as backup_file:
-            cbor2.dump(unstructured_blocks, backup_file)
