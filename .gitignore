@@ -1,4 +1,5 @@
 **/*.mp3
+**/*.wav
 **/*.ogg
 *.swag
 *.swagdb
