@@ -1,6 +1,10 @@
 import json
 import math
 import asyncio
+from typing import List
+
+from thefuzz import fuzz
+from thefuzz import process
 
 
 with open("config.json", "r") as json_file:
@@ -215,3 +219,16 @@ async def connect_to_chan(client, chan_to_go):
 
     # If no VoiceClient is already set, create a new one
     return await chan_to_go.connect()
+
+
+def fuzzysearch(input : str, choices : List[str]) -> List[str]:
+      
+    result = process.extractBests(input,choices, scorer = fuzz.ratio, limit = len(choices))
+    total_score = sum(score[1] for score in result) # score of all result
+
+    # If all the result have a score of 0
+    # return initial choices
+    if total_score == 0:
+        return choices
+    else:
+        return [score[0] for score in result if score[1] != 0]
