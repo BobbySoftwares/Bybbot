@@ -162,7 +162,7 @@ class CagnotteCommand(commands.Cog):
             issuer_id=UserId(interaction.author.id),
             giver_id=cagnotte_id,
             recipient_id=UserId(destinataire.id),
-            amount=get_money_class(monnaie)(montant),
+            amount=get_money_class(monnaie).from_human_readable(montant),
         )
 
         await self.swag_client.swagchain.append(block)
@@ -409,7 +409,7 @@ class CagnotteCommand(commands.Cog):
             issuer_id=UserId(interaction.author.id),
             giver_id=UserId(interaction.author.id),
             recipient_id=cagnotte_id,
-            amount=get_money_class(monnaie)(montant)
+            amount=get_money_class(monnaie).from_human_readable(montant)
         )
 
         await self.swag_client.swagchain.append(block)

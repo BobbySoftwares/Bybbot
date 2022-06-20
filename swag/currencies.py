@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 from decimal import ROUND_DOWN, Decimal
 from enum import Enum
 from attr import attrs, attrib
@@ -7,19 +8,20 @@ from utils import format_number
 
 
 @attrs(frozen=True)
-class Money:
-    _CURRENCY = None
+class Money(metaclass = ABCMeta):
 
     @property
-    def currency(self):
-        return self._CURRENCY
+    @abstractmethod
+    def _CURRENCY(self) -> str:
+        raise NotImplementedError
 
     @classmethod
-    def from_str(cls, text : str):
+    @abstractmethod
+    def from_human_readable(cls, text : str):
         raise NotImplementedError
 
     def __str__(self) -> str:
-        return f"{format_number(self.value)} {self.currency}"
+        return f"{format_number(self.value)} {self._CURRENCY}"
 
 
 @attrs(frozen=True)
@@ -28,7 +30,7 @@ class Swag(Money):
     _CURRENCY : str = "$wag"
 
     @classmethod
-    def from_command(cls, text : str):
+    def from_human_readable(cls, text : str):
         try:
             return cls(text.replace(" ",""))
         except ValueError:
@@ -71,7 +73,7 @@ class Style(Money):
     _CURRENCY : str = "$tyle"
 
     @classmethod
-    def from_command(cls, text : str):
+    def from_human_readable(cls, text : str):
         try:
             return cls(value=text.replace(" ","").replace(",","."))
         except ValueError:

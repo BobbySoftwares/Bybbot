@@ -92,7 +92,7 @@ class SwagCommand(commands.Cog):
         block = SwagBlocking(
             issuer_id=interaction.author.id,
             user_id=interaction.author.id,
-            amount=Swag.from_command(montant),
+            amount=Swag.from_human_readable(montant),
         )
         await self.swag_client.swagchain.append(block)
 
@@ -118,7 +118,7 @@ class SwagCommand(commands.Cog):
             issuer_id=interaction.author.id,
             user_id=interaction.author.id,
             amount=(account_info.swag_balance + account_info.blocked_swag)
-            - Swag.from_command(montant),
+            - Swag.from_human_readable(montant),
         )
         await self.swag_client.swagchain.append(block)
 
@@ -141,7 +141,7 @@ class SwagCommand(commands.Cog):
         monnaie : monnaie à envoyer.
         destinataire : utilisateur à qui donner la monnaie.
         """
-        amount_to_send = get_money_class(monnaie)(montant)
+        amount_to_send = get_money_class(monnaie).from_human_readable(montant)
 
         block = Transaction(
             issuer_id=interaction.author.id,
