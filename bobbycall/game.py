@@ -4,6 +4,8 @@ from typing import List
 import disnake
 
 
+URL_REGEX = "[ \t\n]*(?P<url>https?:\/\/[^\s]+)[ \t\n]*"
+
 class Game:
     def __init__(self, message : disnake.Message) -> None:
         self.message = message
@@ -13,11 +15,24 @@ class Game:
 
     @property
     def name(self) -> str:
-        return self.message.content
+
+        name = self.message.content
+        matcher = re.search(URL_REGEX,self.message.content)
+
+        if matcher is not None:
+            name = name.replace(matcher.group(),'')
+
+        return name
 
     @property
-    def picture(self) -> disnake.Attachment:
-        return self.message.attachments[0]
+    def picture_url(self) -> str:
+
+        if len(self.message.attachments) > 0:
+            url = self.message.attachments[0].url
+        else:
+            url = re.search(URL_REGEX,self.message.content).group("url")
+
+        return url 
 
     async def getPlayers(self)  -> List[disnake.Member]:
         #find the ✅
@@ -47,7 +62,7 @@ class Gamelist:
         return gamelist
 
     def add_game(self,message : disnake.Message) -> None:
-        if message.content is not None and len(message.attachments) == 1:
+        if message.content is not None and (len(message.attachments) == 1 or re.search(URL_REGEX,message.content) is not None):
             self.games.append(Game(message))
 
     def get_game_names(self) -> List[str]:
@@ -67,7 +82,7 @@ class GameEmbed(disnake.Embed):
             "thumbnail" : {"url": caller.avatar.url},
             "description" : f"{caller.name} veut faire une partie de {game.name}, vous êtes partant ? \n\nPour être prévenu des prochaines parties, cocher ✅ dans [#{game.message.channel}]({game.message.jump_url}).",
             "image" : {
-                "url" : f"{game.picture.url}",
+                "url" : f"{game.picture_url}",
             },
         }
 
