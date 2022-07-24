@@ -23,6 +23,7 @@ from ..utils import (
 from utils import (
     GUILD_ID,
     format_number,
+    fuzzysearch,
     get_guild_member_name,
     reaction_message_building,
 )
@@ -45,21 +46,19 @@ class CagnotteCommand(commands.Cog):
     async def autocomplete_cagnotte_id(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
     ):
-        return [
-            cagnotte_id[0].id
-            for cagnotte_id in self.swag_client.swagchain.cagnottes
-            if user_input in cagnotte_id[0].id
-        ]
+        cagnotte_ids = [cagnotte[0].id for cagnotte in self.swag_client.swagchain.cagnottes]
+        return fuzzysearch(user_input,cagnotte_ids)
 
     async def autocomplete_managed_cagnotte_id(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
     ):
-        return [
-            cagnotte_id[0].id
-            for cagnotte_id in self.swag_client.swagchain.cagnottes
-            if user_input in cagnotte_id[0].id
-            and UserId(interaction.author.id) in cagnotte_id[1].managers
-        ]
+        managed_cagnotte_ids = [
+            cagnotte[0].id for cagnotte in self.swag_client.swagchain.cagnottes 
+            if UserId(interaction.author.id) in cagnotte[1].managers
+            ]
+
+        return fuzzysearch(user_input,managed_cagnotte_ids)
+
 
     @commands.slash_command(name="cagnotte", guild_ids=[GUILD_ID])
     async def cagnotte(self, interaction: disnake.ApplicationCommandInteraction):
