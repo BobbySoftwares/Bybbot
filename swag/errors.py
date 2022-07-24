@@ -87,7 +87,10 @@ class NoReceiver(Exception):
 
 
 class InvalidCagnotteId(Exception):
-    pass
+    def __init__(self, value):
+        self.value = value
+        message = f"L'id de €agnotte {value} est invalide"
+        super().__init__(message)
 
 
 class CagnotteNameAlreadyExist(Exception):
@@ -108,7 +111,23 @@ class NotEnoughMoneyInCagnotte(Exception):
 class NotCagnotteManager(Exception):
     """Raised when someone who is not a gestionnaire of a Cagnotte try to use a gestionnaire-action only"""
 
+    def __init__(self, name):
+        self.name = name
+        message = f"{name} n'est pas gestionnaire de cette €agnotte"
+        super().__init__(message)
+
     pass
+
+
+class AlreadyCagnotteManager(Exception):
+    def __init__(self, name):
+        self.name = name
+        message = f"{name} est déjà gestionnaire de cette €agnotte"
+        super().__init__(message)
+
+
+class OrphanCagnotte(Exception):
+    """Raised when an action result to remove all the manager of a €agnotte"""
 
 
 class CagnotteDestructionForbidden(Exception):

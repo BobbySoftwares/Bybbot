@@ -30,6 +30,9 @@ async def execute_swagdmin_command(swag_client, message):
     elif "jobs" in command:
         await update_the_style(swag_client.discord_client, swag_client)
 
+    elif "backup" in command:
+        swag_client.swagchain.save_backup()
+
     else:
         await message.channel.send(
             f"{message.author.mention}, tu sembles perdu, voici les "

@@ -1,10 +1,15 @@
+from datetime import datetime
 from decimal import ROUND_DOWN, ROUND_UP, Decimal
+import json
 from random import choice
 from typing import Dict, List
+from arrow import Arrow, utcnow
 from attr import attrs, attrib
+import cbor2
 
 from swag.artefacts.accounts import Accounts, Info
 from swag.artefacts.guild import GuildDict
+from swag.blockchain.blockchain_parser import unstructure_block
 from swag.blocks.swag_blocks import Transaction
 from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId
@@ -19,6 +24,9 @@ from ..block import Block
 
 from ..errors import StyleStillBlocked
 
+def json_converter(o):
+    if isinstance(o, Arrow):
+        return o.__str__()
 
 @attrs
 class SwagChain:
@@ -39,6 +47,18 @@ class SwagChain:
     def extend(self, blocks):
         for block in blocks:
             self.append(block)
+
+    def remove(self,block):
+        self._chain.remove(block)
+
+    def save_backup(self):
+        saved_blocks = []
+
+        for block in self._chain:
+            saved_blocks.append(json.dumps(unstructure_block(block), default=json_converter))
+        
+        with open('swagchain.bk', 'wb') as backup_file:
+            cbor2.dump(saved_blocks, backup_file)
 
     def account(self, user_id):
         return Info(self._accounts[UserId(user_id)])
@@ -102,6 +122,21 @@ class SwagChain:
         for rank, user_account in enumerate(forbes):
             user_account.style_rate = rate(rank)
 
+    async def clean_old_style_gen_block(self):
+        # Get the oldest blocking date of all accounts :
+        try:
+            oldest_blocking_date = min(user_account.blocking_date for user_account in self._accounts.users.values() if user_account.blocking_date is not None)
+        except ValueError as e:
+            #If no blocking date is found, then we can clean all the StyleGeneration
+            oldest_blocking_date = utcnow()
+        
+        print(f"Nettoyage de la blockchain avant la date du {oldest_blocking_date}\n")
+
+        # Remove all the StyleGenerationBlock which was added before the oldest date
+        for block in self._chain:
+            if isinstance(block,StyleGeneration) and block.timestamp.datetime < oldest_blocking_date:
+                await self.remove(block)
+            
     @property
     def forbes(self):
         return sorted(

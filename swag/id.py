@@ -36,7 +36,7 @@ class CagnotteId:
     @id.validator
     def _validate(self, attribute, value):
         if not re.match(cagnotte_id_regex, value):
-            raise InvalidCagnotteId
+            raise InvalidCagnotteId(value)
 
     def __str__(self) -> str:
         return self.id

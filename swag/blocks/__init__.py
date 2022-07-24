@@ -1,3 +1,18 @@
-from .cagnotte_blocks import *
-from .swag_blocks import *
-from .system_blocks import *
+from .cagnotte_blocks import (
+    CagnotteCreation,
+    CagnotteRenaming,
+    CagnotteParticipantsReset,
+    CagnotteDeletion,
+    CagnotteAddManagerBlock,
+    CagnotteRevokeManagerBlock,
+)
+from .swag_blocks import (
+    AccountCreation,
+    Mining,
+    Transaction,
+    SwagBlocking,
+    ReturnOnInvestment,
+    StyleGeneration,
+)
+
+from .system_blocks import UserTimezoneUpdate, GuildTimezoneUpdate, EventGiveaway

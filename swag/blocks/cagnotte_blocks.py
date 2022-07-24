@@ -14,9 +14,11 @@ from ..artefacts import CagnotteAccount
 from ..block import Block
 
 from ..errors import (
+    AlreadyCagnotteManager,
     CagnotteDestructionForbidden,
     CagnotteNameAlreadyExist,
     NotCagnotteManager,
+    OrphanCagnotte,
 )
 
 from ..currencies import Swag, Style
@@ -51,7 +53,7 @@ class CagnotteRenaming(Block):
         cagnotte = db._accounts[self.cagnotte_id]
 
         if self.issuer_id not in cagnotte.managers:
-            raise NotCagnotteManager
+            raise NotCagnotteManager(self.issuer_id)
 
         cagnotte.name = self.new_name
 
@@ -64,7 +66,7 @@ class CagnotteParticipantsReset(Block):
         cagnotte = db._accounts[self.cagnotte_id]
 
         if self.issuer_id not in cagnotte.managers:
-            raise NotCagnotteManager
+            raise NotCagnotteManager(self.issuer_id)
 
         cagnotte.participants.clear()
 
@@ -75,12 +77,48 @@ class CagnotteDeletion(Block):
 
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
-        print(cagnotte)
 
         if self.issuer_id not in cagnotte.managers:
-            raise NotCagnotteManager
+            raise NotCagnotteManager(self.issuer_id)
 
         if not cagnotte.is_empty:
             raise CagnotteDestructionForbidden
 
         del db._accounts[self.cagnotte_id]
+
+
+@attrs(frozen=True, kw_only=True)
+class CagnotteAddManagerBlock(Block):
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    new_manager = attrib(type=UserId, converter=UserId)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+
+        if self.issuer_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.issuer_id)
+
+        if self.new_manager in cagnotte.managers:
+            raise AlreadyCagnotteManager(self.new_manager)
+
+        db._accounts[self.cagnotte_id].managers.append(self.new_manager)
+
+
+@attrs(frozen=True, kw_only=True)
+class CagnotteRevokeManagerBlock(Block):
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    manager_id = attrib(type=UserId, converter=UserId)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+
+        if self.issuer_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.issuer_id)
+
+        if self.manager_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.manager_id)
+
+        if len(cagnotte.managers) <= 1:
+            raise OrphanCagnotte
+
+        db._accounts[self.cagnotte_id].managers.remove(self.manager_id)
