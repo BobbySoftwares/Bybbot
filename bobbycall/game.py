@@ -3,6 +3,7 @@ import re
 from typing import List
 import disnake
 
+import textwrap
 
 URL_REGEX = "[ \t\n]*(?P<url>https?:\/\/[^\s]+)[ \t\n]*"
 
@@ -22,7 +23,7 @@ class Game:
         if matcher is not None:
             name = name.replace(matcher.group(),'')
 
-        return name
+        return textwrap.shorten(name, width=24, placeholder="…")
 
     @property
     def picture_url(self) -> str:
