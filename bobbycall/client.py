@@ -34,7 +34,10 @@ class BobbyCallCommand(commands.Cog):
     def autocomplete_game_name(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
     ):
-        return fuzzysearch(user_input,self.client.gamelist.get_game_names())
+        games = fuzzysearch(user_input,self.client.gamelist.get_game_names())
+        if len(games) > 25:
+            games = games[:25]
+        return games
 
     @commands.slash_command(name="call", guild_ids=[GUILD_ID])
     async def bobbycall(self, interaction: disnake.ApplicationCommandInteraction, jeu : str):
