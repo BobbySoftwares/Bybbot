@@ -5,7 +5,7 @@ from disnake.ext import commands
 
 from bobbycall.game import GameEmbed, Gamelist
 
-from utils import GUILD_ID, fuzzysearch
+from utils import GAME_CHANNEL_ID, GUILD_ID, fuzzysearch
 
 if TYPE_CHECKING:
     from bobbycall.bobbycall import Bobbycall
@@ -15,6 +15,21 @@ if TYPE_CHECKING:
 class BobbyCallCommand(commands.Cog):
     def __init__(self, client : 'Bobbycall'):
         self.client = client
+
+    @commands.Cog.listener()
+    async def on_message(self,message : disnake.Message):
+        if message.channel.id == GAME_CHANNEL_ID:
+            await self.client.setup()
+
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload : disnake.RawMessageUpdateEvent):
+        if payload.channel_id == GAME_CHANNEL_ID:
+            await self.client.setup()
+
+    @commands.Cog.listener()
+    async def on_raw_message_edit(self, payload : disnake.RawMessageUpdateEvent):
+        if payload.channel_id == GAME_CHANNEL_ID:
+            await self.client.setup()
 
     def autocomplete_game_name(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
