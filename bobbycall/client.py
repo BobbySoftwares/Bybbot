@@ -38,6 +38,13 @@ class BobbyCallCommand(commands.Cog):
 
     @commands.slash_command(name="call", guild_ids=[GUILD_ID])
     async def bobbycall(self, interaction: disnake.ApplicationCommandInteraction, jeu : str):
+        """
+        Annonce aux autres utilisateurs que tu souhaites jouer à un jeu avec eux !
+        
+        Parameters
+        ----------
+        jeu : Nom du jeu auquel tu veux jouer.
+        """
         
         game = self.client.gamelist.get_game_by_name(jeu)
 
