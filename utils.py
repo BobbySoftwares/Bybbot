@@ -28,6 +28,9 @@ SWAGCHAIN_CHANNEL_ID = client_config.get("swagchain_channel", 913946510616567848
 # ID unique du canal de log, si il n'est pas défini, sa valeur sera None
 LOG_CHANNEL_ID = client_config.get("log_channel", None)
 
+#ID unique du canal des jeux
+
+GAME_CHANNEL_ID = client_config.get("game_channel", None)
 
 def format_number(n):
     """Fonction qui permet de rajouter des espaces fin entre chaque

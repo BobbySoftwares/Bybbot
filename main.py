@@ -6,6 +6,7 @@ import traceback
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import json
+from bobbycall.bobbycall import Bobbycall
 
 from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
@@ -33,6 +34,7 @@ modules = [
     swag_module,
     JukeboxClient(client),
     MaintenanceClient(client, client_config.get("admins"), swag_module),
+    Bobbycall(client)
 ]
 
 #Registration of commands (like slash_commands) MUST be before the bot launch
