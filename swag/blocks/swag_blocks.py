@@ -164,6 +164,8 @@ class ReturnOnInvestment(Block):
         user_account += self.amount
         user_account.pending_style = Style(0)
 
+        user_account.unblocking_date = None
+        user_account.blocking_date = None
 
 @attrs(frozen=True, kw_only=True, eq=False)
 class StyleGeneration(Block):
