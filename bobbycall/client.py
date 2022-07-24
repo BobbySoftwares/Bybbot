@@ -29,7 +29,18 @@ class BobbyCallCommand(commands.Cog):
         users_to_notify = ", ".join([user.mention for user in await game.getPlayers()])
 
         await interaction.send(users_to_notify, embed= await GameEmbed.from_game(game,interaction.author))
+        
+        #Get the message object for create the associated thread
+        message = await interaction.original_message()
 
+        thread = await message.create_thread(
+                                name=f"Partie de {game.name.capitalize()}",
+                                auto_archive_duration=1440,
+                                reason=f"Bobbycall {game.name} by {interaction.author.display_name}"
+                            )
+        
+        await thread.send("Utilisez ce fil pour organiser votre partie !")
+        
     bobbycall.autocomplete("jeu")(autocomplete_game_name)
 
     #event msg
