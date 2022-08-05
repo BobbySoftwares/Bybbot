@@ -14,7 +14,7 @@ class MaintenanceClient(Module):
             command = message.content.split()
 
             if "reboot" in command:
-                await self.client.logout()
+                await self.client.close()
 
             await update_forbes_classement(
                 self.client.get_guild(GUILD_ID),
