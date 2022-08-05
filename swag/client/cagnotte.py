@@ -140,7 +140,7 @@ class CagnotteCommand(commands.Cog):
         interaction: disnake.ApplicationCommandInteraction,
         identifiant: str,
         destinataire: disnake.Member,
-        montant: int,
+        montant: str,
         monnaie: Currency,
     ):
         """
