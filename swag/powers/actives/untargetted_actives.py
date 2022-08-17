@@ -157,6 +157,7 @@ class TaxEvasion:
         owner += sum(amounts)
 
 
+# TODO
 class Harvest:
     title = "Moisson"
     effect = "Permet de tenter de récolter une waifu"

@@ -69,6 +69,7 @@ class Cloning:
         chain._yfus[yfu.id] = yfu
 
 
+# Problematic
 class Copy:
     title = "Copie"
     effect = "Permet de copier ponctuellement l'actif d'une waifu"

@@ -149,7 +149,7 @@ class DryLoss(Active):
 
 class TaxAudit(Active):
     title = "Contrôle fiscal"
-    effect = "Permet d'envoyer du swag d'un autre joueur vers la cagnotte 0"
+    effect = "Permet d'envoyer du swag d'un autre joueur vers la cagnotte €"
     target = Targetting.USER
     has_value = True
 
