@@ -29,7 +29,7 @@ class YfuGenerationBlock(Block):
     first_name = attrib(type=str)
     last_name = attrib(type=str)
     clan = attrib(type=str)
-    power_point = attrib(type=float)
+    power_point = attrib(type=int)
     activation_cost = attrib(type=Style)
     greed = attrib(type=float)
     zenitude = attrib(type=float)
@@ -51,27 +51,6 @@ class YfuGenerationBlock(Block):
     def _generate_clan(self):
         return random.choice(EMOJI_CLAN_YFU)
 
-    @power_point.default
-    def _roll_powerpoint(self):
-        return roll(0, 30)  # TODO
-
-    ##TODO à modifier, car vont dépendre des powerpoint
-    @activation_cost.default
-    def _roll_cost(self):
-        return Style(random.randint(1, 100))
-
-    @greed.default
-    def _roll_greed(self):
-        return round((random.random() + 1) * 2, 1)  # TODO
-
-    @zenitude.default
-    def _roll_zenitude(self):
-        return round(random.random(), 1)  # TODO
-
-    @power.default
-    def _generate_power(self):
-        # Pouvoir temporaire, en attendant gggto #TODO
-        return YfuPower("POUVOIR X", "EFFET DU POUVOIR X")
 
     def validate(self, db: SwagChain):
         pass  ##TODO

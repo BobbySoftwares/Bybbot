@@ -66,13 +66,13 @@ class YfuRarity(Enum):
 
     @classmethod
     def from_power_point(cls, power_point):
-        if power_point < 20:
+        if power_point < 200:
             return cls.COMMON
-        if power_point < 40:
+        if power_point < 500:
             return cls.UNCOMMON
-        if power_point < 60:
+        if power_point < 1000:
             return cls.RARE
-        if power_point < 80:
+        if power_point < 5000:
             return cls.EPIC
         return cls.LEGENDARY
 

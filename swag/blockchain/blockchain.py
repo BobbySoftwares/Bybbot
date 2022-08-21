@@ -17,6 +17,7 @@ from swag.blocks.yfu_blocks import YfuGenerationBlock
 from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId, YfuId
 from swag.yfu import Yfu, YfuDict
+from utils import randomly_distribute
 
 from ..artefacts import Guild
 from ..stylog import unit_style_generation
@@ -28,6 +29,7 @@ from ..block import Block
 from ..cauchy import choice
 
 from ..errors import StyleStillBlocked
+from swag.stylog import stylog
 
 
 @attrs
@@ -252,8 +254,6 @@ class SwagChain:
 
     async def generate_yfu(self,author : UserId):
 
-        #TODO : powerpoint rolling ?
-
         #Recherche du fichier de l'avatar
         avatar_local_folder = "ressources/Yfu/avatar/psi-1.0/"  # TODO à renseigner ailleurs ? psi different en fonction des powerpoint
         avatar_file = random.choice(
@@ -274,15 +274,55 @@ class SwagChain:
 
         await self.append(avatar_asset_block)
         
+        # Powerpoint rolling
+        # Powerpoint generation is mining divided by 1000
+        rolling_power_point = self._accounts.users[author].mine() / 1000
+
+        power, cost_greed_zenitude = self.generate_yfu_power(rolling_power_point)
+
         #Generation de la Yfu
         yfu_block = YfuGenerationBlock(
             issuer_id=author,
             user_id=author,
             yfu_id=new_yfu_id,
-            avatar_asset_key=avatar_asset_block.asset_key
+            avatar_asset_key=avatar_asset_block.asset_key,
+            power_point = rolling_power_point,
+            power = power,
+            activation_cost = cost_greed_zenitude[0],
+            greed = cost_greed_zenitude[1],
+            zenitude = cost_greed_zenitude[2],
         )
 
         await self.append(yfu_block)
 
         return yfu_block.yfu_id
+
+    async def generate_yfu_power(self, yfu_powerpoint : int):
+        """
+        Generate yfu power and Cost Greed Zenitude
+        return : tuple (Power,(Cost, Greed, Zenitude)))
+        """
+        power_cgz_distribution = randomly_distribute(yfu_powerpoint,2)
+
+        ##Find power
+        #TODO
+
+        power = ""
+
+        c_g_z_distribution = randomly_distribute(power_cgz_distribution[1],3)
+
+        ## Elaborate cgz
+
+        # Inverse de la courbe de la zenitude * 10. Le coût max est de 10 style, et la limite atteint 0.
+        cost = max(Style((1 / (stylog(c_g_z_distribution[0] * 1000) * 72 * 2 + 1)) * 10),Style(0.0001))
+
+        #Suit une courbe asymtotique dont la limite touche à 1. On met 20 à la limite grace au min
+        greed = min((200 / c_g_z_distribution[1]) + 1, 20) 
+
+        #Suit le stylog sur une génération de style sur 6 jours avec une valeur minimum à 1
+        zen = stylog(c_g_z_distribution[2] * 1000) * 72 * 2 + 1
+
+        return (power,(cost,greed,zen))
+
+        
 

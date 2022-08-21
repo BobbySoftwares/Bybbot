@@ -1,6 +1,7 @@
 import json
 import math
 import asyncio
+import random
 
 
 with open("config.json", "r") as json_file:
@@ -39,6 +40,17 @@ def format_number(n):
     """
     return format(n, ",").replace(",", " ")
 
+
+def randomly_distribute(total, n):
+    """Distribue de manière aléatoire dans n élément la quantité dans 'total'
+    
+    Returns:
+        List: La liste d'éléments dont la somme fait le total
+    """
+    random_distributed_vector = [random.random() for i in range(n)]
+    vector_sum = sum(random_distributed_vector)
+    random_distributed_vector = [total*i/vector_sum for i in random_distributed_vector]
+    return random_distributed_vector
 
 def chunks(lst, n):
     """Permet de subdiviser des listes en plusieurs sous-liste de même
@@ -217,3 +229,4 @@ async def connect_to_chan(client, chan_to_go):
 
     # If no VoiceClient is already set, create a new one
     return await chan_to_go.connect()
+
