@@ -1,17 +1,20 @@
 from copy import deepcopy
-from typing import List
-from swag.blockchain.blockchain import SwagChain
+from typing import TYPE_CHECKING, List
 from swag.powers.actives.user_actives import Targetting
 from swag.id import AccountId, YfuId
+from swag.powers.power import Active
 
+if TYPE_CHECKING:
+    from swag.blockchain.blockchain import SwagChain
 
-class Kidnapping:
+class Kidnapping(Active):
     title = "Kidnapping"
     effect = "Permet de voler une waifu"
     target = Targetting.YFU
-    has_value = False
+    
+    minimum_power_point = 200
 
-    def _activation(self, chain: SwagChain, owner_id: AccountId, target_id: YfuId):
+    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: YfuId):
         owner = chain._accounts[owner_id]
         yfu = chain._yfus[target_id]
         target = chain._accounts[yfu.owner_id]
@@ -21,13 +24,15 @@ class Kidnapping:
         yfu.owner_id = owner_id
 
 
-class Resurrection:
+class Resurrection(Active):
     title = "Résurrection"
     effect = "Permet de ressusciter une de ses waifu"
     target = Targetting.YFU
-    has_value = False
 
-    def _activation(self, chain: SwagChain, owner_id: AccountId, target_id: YfuId):
+    minimum_power_point = 300
+
+
+    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: YfuId):
         owner = chain._accounts[owner_id]
         yfu = chain._yfus[target_id]
         if yfu.owner_id == owner_id:
@@ -36,13 +41,14 @@ class Resurrection:
             raise NotImplementedError
 
 
-class UltimateResurrection:
+class UltimateResurrection(Active):
     title = "Résurrection suprême"
     effect = "Permet de ressusciter pour soi n'importe quelle waifu"
     target = Targetting.YFU
-    has_value = False
 
-    def _activation(self, chain: SwagChain, owner_id: AccountId, target_id: YfuId):
+    minimum_power_point = 500
+
+    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: YfuId):
         owner = chain._accounts[owner_id]
         yfu = chain._yfus[target_id]
         target = chain._accounts[yfu.owner_id]
@@ -54,13 +60,15 @@ class UltimateResurrection:
         owner.yfu_wallet.add(target_id)
 
 
-class Cloning:
+class Cloning(Active):
     title = "Clonage"
     effect = "Permet de cloner une waifu"
     target = Targetting.YFU
-    has_value = False
 
-    def _activation(self, chain: SwagChain, owner_id: AccountId, target_id: YfuId):
+    minimum_power_point = 300
+
+
+    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: YfuId):
         owner = chain._accounts[owner_id]
         yfu = deepcopy(chain._yfus[target_id])
         yfu.owner_id = owner_id
@@ -70,27 +78,29 @@ class Cloning:
 
 
 # Problematic
-class Copy:
+class Copy(Active):
     title = "Copie"
     effect = "Permet de copier ponctuellement l'actif d'une waifu"
     target = Targetting.YFU
-    has_value = False
+
+    minimum_power_point = 400
 
     def _activation(
-        self, chain: SwagChain, owner_id: AccountId, target_id: YfuId, payload: List
+        self, chain: 'SwagChain', owner_id: AccountId, target_id: YfuId, payload: List
     ):
         chain._yfus[target_id].power._activation(chain, owner_id, *payload)
 
 
-class Clone:
+class Clone(Active):
     title = "Clone"
     tier = "S"
     effect = "Copie de manière permanente le pouvoir d'une waifu"
     target = Targetting.YFU
-    has_value = False
+
+    minimum_power_point = 500
 
     def _activation(
-        self, chain: SwagChain, yfu_id: YfuId, owner_id: AccountId, target_id: YfuId
+        self, chain: 'SwagChain', yfu_id: YfuId, owner_id: AccountId, target_id: YfuId
     ):
         # Would it be fun to let the power linked?
         chain._yfus[yfu_id].power = deepcopy(chain._yfus[target_id].power)

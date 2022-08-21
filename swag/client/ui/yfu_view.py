@@ -289,7 +289,7 @@ class YfuEmbed(disnake.Embed):
             "image": {"url": yfu.avatar_url},
             "color": YfuRarity.from_power_point(yfu.power_point).get_color(),
             "fields": [
-                {"name": yfu.power.name, "value": yfu.power.effect, "inline": False},
+                {"name": yfu.power.title, "value": yfu.power.effect, "inline": False},
                 {"name": "Coût", "value": f"{yfu.activation_cost}", "inline": True},
                 {"name": "Avidité", "value": f"{yfu.greed}", "inline": True},
                 {"name": "Zenitude", "value": f"{yfu.zenitude}", "inline": True},

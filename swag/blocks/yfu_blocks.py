@@ -3,7 +3,10 @@ import hashlib
 
 from attr import attrib, attrs
 from typing import TYPE_CHECKING, Union
-from ..yfu import Yfu, YfuPower
+
+from swag.yfu import Yfu
+
+from ..powers.power import Active, Passive
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -34,7 +37,7 @@ class YfuGenerationBlock(Block):
     greed = attrib(type=float)
     zenitude = attrib(type=float)
     avatar_asset_key = attrib(type=str)
-    power = attrib(type=YfuPower)
+    power = attrib(type=Union[Active,Passive])
 
     @first_name.default
     def _generate_letter(self):

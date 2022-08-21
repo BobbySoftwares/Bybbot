@@ -57,7 +57,7 @@ class Uncomputed:
 @attrs(frozen=True, kw_only=True)
 class Mining(Block):
     user_id = attrib(type=UserId, converter=UserId)
-    amounts = attrib(type=List[Swag], default=Uncomputed)
+    amount = attrib(type=List[Swag], default=Uncomputed)
     harvest = attrib(type=None, default=None)
 
     def execute(self, db: SwagChain):
@@ -72,7 +72,7 @@ class Mining(Block):
             raise AlreadyMineToday
 
         if self.amount is Uncomputed:
-            self.__dict__["amounts"] = [
+            self.__dict__["amount"] = [
                 Swag(bonuses.roll()) for _ in range(bonuses.minings)
             ]
 

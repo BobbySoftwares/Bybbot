@@ -1,23 +1,30 @@
-from typing import List
-from swag.blockchain.blockchain import SwagChain
+from typing import TYPE_CHECKING, List
 from swag.currencies import Swag
 from swag.errors import NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
 from swag.powers.actives.user_actives import Targetting
+from ..power import Active
 
+if TYPE_CHECKING:
+    from swag.blockchain.blockchain import SwagChain
 
-class AfricanPrince:
+class AfricanPrince(Active):
     title = "Prince africain"
     effect = "Permet de transférer du swag d'un joueur vers un autre (autre que vous)"
     target = Targetting.USERS
-    has_value = True
+
+    minimum_power_point = 0
+
+    def __init__(self, pp) -> None:
+        super().__init__(pp)
+        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
 
     @property
     def _x_value(self):
         return Swag(self._raw_x)
 
     def _activation(
-        self, chain: SwagChain, owner_id: AccountId, target_id: List[UserId]
+        self, chain: 'SwagChain', owner_id: AccountId, target_id: List[UserId]
     ):
         if len(target_id) != 2:
             raise NotImplementedError
@@ -35,15 +42,16 @@ class AfricanPrince:
             target0 = Swag(0)
 
 
-class BankAdministrationError:
+class BankAdministrationError(Active):
     title = "Erreur de l'administration bancaire"
     tier = "SSS"
     effect = "Permet d'échanger le swag de deux joueurs"
     target = Targetting.USERS
-    has_value = False
+    
+    minimum_power_point = 150
 
     def _activation(
-        self, chain: SwagChain, owner_id: AccountId, target_id: List[UserId]
+        self, chain: 'SwagChain', owner_id: AccountId, target_id: List[UserId]
     ):
         if len(target_id) != 2:
             raise NotImplementedError

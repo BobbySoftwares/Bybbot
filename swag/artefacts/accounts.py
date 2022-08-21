@@ -79,14 +79,17 @@ class Account:
         return self.swag_balance == Swag(0) and self.style_balance == Style(0)
 
     def check_immunity(self, power):
-        cost = Style("inf")
-        for yfu_id in self.yfu_wallet:
-            cost = min(cost, chain._yfus[yfu_id].power.protection_cost(power))
-        try:
-            self -= cost
-            raise NotImplementedError
-        except NotEnoughStyleInBalance:
-            pass
+        # cost = Style("inf")
+        # for yfu_id in self.yfu_wallet:
+        #     cost = min(cost, chain._yfus[yfu_id].power.protection_cost(power))
+        # try:
+        #     self -= cost
+        #     raise NotImplementedError
+        # except NotEnoughStyleInBalance:
+        #     pass
+        
+        # TODO
+        pass
 
     def mine(self, chain):
         return self.bonuses(chain).roll()
@@ -95,6 +98,8 @@ class Account:
         bonuses = Bonuses(**kwargs)
         for yfu_id in self.yfu_wallet:
             chain._yfus[yfu_id].power.add_bonus(bonuses)
+        
+        return bonuses
 
 
 # ------------------------------------#

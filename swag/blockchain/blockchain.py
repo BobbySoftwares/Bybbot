@@ -28,6 +28,8 @@ from ..blocks import (
 from ..block import Block
 from ..cauchy import choice
 
+from .. import powers
+
 from ..errors import StyleStillBlocked
 from swag.stylog import stylog
 
@@ -276,9 +278,11 @@ class SwagChain:
         
         # Powerpoint rolling
         # Powerpoint generation is mining divided by 1000
-        rolling_power_point = self._accounts.users[author].mine() / 1000
+        rolling_power_point = int(self._accounts.users[author].mine(self) / 1000)
 
-        power, cost_greed_zenitude = self.generate_yfu_power(rolling_power_point)
+        power, cost_greed_zenitude = await self.generate_yfu_power(rolling_power_point)
+
+        print(cost_greed_zenitude)
 
         #Generation de la Yfu
         yfu_block = YfuGenerationBlock(
@@ -304,10 +308,18 @@ class SwagChain:
         """
         power_cgz_distribution = randomly_distribute(yfu_powerpoint,2)
 
-        ##Find power
-        #TODO
 
-        power = ""
+        available_power = [
+    cls for _, cls in powers.__dict__.items() if isinstance(cls, type)
+        ]
+        power_found = False
+
+        while(not power_found):
+            power_class = random.choice(available_power)
+
+            if power_cgz_distribution[0] >= power_class.minimum_power_point:
+                yfu_power = power_class(power_cgz_distribution[0])
+                power_found = True
 
         c_g_z_distribution = randomly_distribute(power_cgz_distribution[1],3)
 
@@ -322,7 +334,7 @@ class SwagChain:
         #Suit le stylog sur une génération de style sur 6 jours avec une valeur minimum à 1
         zen = stylog(c_g_z_distribution[2] * 1000) * 72 * 2 + 1
 
-        return (power,(cost,greed,zen))
+        return (yfu_power,(cost,greed,zen))
 
         
 

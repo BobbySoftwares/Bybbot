@@ -6,19 +6,9 @@ from attr import attrib, attrs
 from enum import Enum
 from swag.currencies import Style
 from swag.id import CagnotteId, UserId, YfuId
+from .powers.power import Active, Passive
 
 from swag.utils import assert_timezone
-
-# Temporary class, waiting for gggto
-@attrs(auto_attribs=True)
-class YfuPower:
-    name: str
-    effect: str
-
-    def activate(self, kw_arg):
-        pass
-
-
 @attrs(auto_attribs=True)
 class Yfu:
     owner_id: Union[UserId, CagnotteId]
@@ -34,7 +24,7 @@ class Yfu:
     activation_cost: Style
     greed: float  # multiplier of the activation_cost after one activation, should be >= 1
     zenitude: float  # multiplier of the activation_cost after one activation, should be <= 1
-    power: YfuPower
+    power: Union[Active,Passive]
 
     is_baptized: bool = attrib(default=False)
 
