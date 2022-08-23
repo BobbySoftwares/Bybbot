@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Union
 from arrow.arrow import Arrow
 import disnake
@@ -6,7 +7,7 @@ from attr import attrib, attrs
 from enum import Enum
 from swag.currencies import Style
 from swag.id import CagnotteId, UserId, YfuId
-from .powers.power import Active, Passive
+from .powers.power import Active, Passive, Power
 
 from swag.utils import assert_timezone
 @attrs(auto_attribs=True)
@@ -22,9 +23,9 @@ class Yfu:
 
     power_point: int
     activation_cost: Style
-    greed: float  # multiplier of the activation_cost after one activation, should be >= 1
-    zenitude: float  # multiplier of the activation_cost after one activation, should be <= 1
-    power: Union[Active,Passive]
+    greed: Decimal  # multiplier of the activation_cost after one activation, should be >= 1
+    zenitude: Decimal  # divided of the activation_cost after one activation, should be >= 1
+    power: Power
 
     is_baptized: bool = attrib(default=False)
 
@@ -37,16 +38,7 @@ class Yfu:
 
     def reduce_activation_cost(self):
         self.activation_cost *= self.zenitude
-
-    def on_receive(self):
-        # Function called when this Yfu is received by a player, can be usefull for passive power
-        pass
-
-    def on_loss(self):
-        # Function called when this Yfu is no longer on a player account, can be usefull for passive power
-        pass
-
-
+            
 class YfuRarity(Enum):
     COMMON = int("0xffffff", base=16)
     UNCOMMON = int("0x1eff00", base=16)

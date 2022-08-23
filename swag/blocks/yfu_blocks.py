@@ -1,4 +1,5 @@
 from __future__ import annotations
+from decimal import Decimal
 import hashlib
 
 from attr import attrib, attrs
@@ -6,7 +7,7 @@ from typing import TYPE_CHECKING, Union
 
 from swag.yfu import Yfu
 
-from ..powers.power import Active, Passive
+from ..powers.power import Active, Passive, Power
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -34,10 +35,10 @@ class YfuGenerationBlock(Block):
     clan = attrib(type=str)
     power_point = attrib(type=int)
     activation_cost = attrib(type=Style)
-    greed = attrib(type=float)
-    zenitude = attrib(type=float)
+    greed = attrib(type=Decimal)
+    zenitude = attrib(type=Decimal)
     avatar_asset_key = attrib(type=str)
-    power = attrib(type=Union[Active,Passive])
+    power = attrib(type=Power)
 
     @first_name.default
     def _generate_letter(self):

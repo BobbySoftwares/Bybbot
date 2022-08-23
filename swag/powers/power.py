@@ -14,6 +14,10 @@ class Power:
         pass
 
     @abstractproperty
+    def type(self) -> str:
+        pass
+
+    @abstractproperty
     def effect(self):
         pass
 
@@ -39,12 +43,21 @@ class Active(Power):
     def target(self):
         pass
 
+    @property
+    def type(self) -> str:
+        return "[ACTIF]"
+
     @abstractmethod
     def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: GenericId):
         pass
 
 class Passive(Power):
 
+    @property
+    def type(self) -> str:
+        return "[PASSIF]"
+
     @abstractmethod
     def add_bonus(self, bonuses: Bonuses):
         pass
+

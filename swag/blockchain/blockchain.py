@@ -1,5 +1,5 @@
 from datetime import datetime
-from decimal import ROUND_DOWN, ROUND_UP, Decimal
+from decimal import ROUND_05UP, ROUND_DOWN, ROUND_UP, Decimal
 import os
 import random
 from typing import Dict, List
@@ -282,8 +282,6 @@ class SwagChain:
 
         power, cost_greed_zenitude = await self.generate_yfu_power(rolling_power_point)
 
-        print(cost_greed_zenitude)
-
         #Generation de la Yfu
         yfu_block = YfuGenerationBlock(
             issuer_id=author,
@@ -329,10 +327,10 @@ class SwagChain:
         cost = max(Style((1 / (stylog(c_g_z_distribution[0] * 1000) * 72 * 2 + 1)) * 10),Style(0.0001))
 
         #Suit une courbe asymtotique dont la limite touche à 1. On met 20 à la limite grace au min
-        greed = min((200 / c_g_z_distribution[1]) + 1, 20) 
+        greed = Decimal(min((200 / c_g_z_distribution[1]) + 1, 20)).quantize(Decimal(".1"), rounding=ROUND_05UP)
 
         #Suit le stylog sur une génération de style sur 6 jours avec une valeur minimum à 1
-        zen = stylog(c_g_z_distribution[2] * 1000) * 72 * 2 + 1
+        zen = (stylog(c_g_z_distribution[2] * 1000) * 72 * 2 + 1).quantize(Decimal(".1"), rounding=ROUND_05UP)
 
         return (yfu_power,(cost,greed,zen))
 
