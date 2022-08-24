@@ -5,7 +5,7 @@ from ...stylog import stylog
 
 class InsolentLuck(Passive):
     title = "Chance insolente"
-    effect = "Augmente les chances à la loterie"
+    effect = "Augmente les chances à la loterie de {}."
 
     minimum_power_point = 10
 
@@ -23,7 +23,7 @@ class InsolentLuck(Passive):
 
 class TaxOptimization(Passive):
     title = "Optimisation fiscale"
-    effect = "Donne l’avantage X au minage"
+    effect = "Donne l’avantage {} au minage."
 
     minimum_power_point = 100
 
@@ -41,7 +41,7 @@ class TaxOptimization(Passive):
 
 class MauritiusCommercialBank(Passive):
     title = "Mauritius Commercial Bank"
-    effect = "Permet de miner X fois de plus par jour"
+    effect = "Permet de miner {} fois de plus par jour."
 
     minimum_power_point = 500
 
@@ -59,7 +59,7 @@ class MauritiusCommercialBank(Passive):
 
 class StockPortfolio(Passive):
     title = "Portefeuille d’actions"
-    effect = "Augmente la swag luck de X"
+    effect = "Augmente la $wag Luck de {}."
 
     minimum_power_point = 20
 
@@ -77,7 +77,7 @@ class StockPortfolio(Passive):
 
 class StockMarketMastery(Passive):
     title = "Maîtrise de la bourse"
-    effect = "Augmente la swag base de X"
+    effect = "Augmente la $wag Base de {}."
 
     minimum_power_point = 20
 
@@ -95,7 +95,7 @@ class StockMarketMastery(Passive):
 
 class StateGuardianship(Passive):
     title = "Tutelle de l’État"
-    effect = "Multiplie le résultat du minage par X"
+    effect = "Multiplie le résultat du minage par {}."
 
     minimum_power_point = 500
 
@@ -113,7 +113,7 @@ class StateGuardianship(Passive):
 
 class SuccessfulInvestment(Passive):
     title = "Placement fructueux"
-    effect = "Augmente le bonus de blocage de X"
+    effect = "Augmente le bonus de blocage de {}."
 
     minimum_power_point = 20
 

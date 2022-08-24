@@ -289,13 +289,13 @@ class YfuEmbed(disnake.Embed):
             "image": {"url": yfu.avatar_url},
             "color": YfuRarity.from_power_point(yfu.power_point).get_color(),
             "fields": [
-                {"name": yfu.power.type + " " + yfu.power.title, "value": yfu.power.effect, "inline": False},
+                {"name": yfu.power.type + " " + yfu.power.title, "value": yfu.power.get_effect(), "inline": False},
                 {"name": "Coût", "value": f"{yfu.activation_cost}", "inline": True},
                 {"name": "Avidité", "value": f"{yfu.greed}", "inline": True},
                 {"name": "Zenitude", "value": f"{yfu.zenitude}", "inline": True},
             ],
             "footer": {
-                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {hex(hash(yfu))}-{yfu.id} "
+                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t {hex(hash(yfu))}-{yfu.power_point}₱₱-{yfu.id} "
             },
         }
         return disnake.Embed.from_dict(yfu_dict)

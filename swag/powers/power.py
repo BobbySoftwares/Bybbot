@@ -34,6 +34,12 @@ class Power:
     def protection_cost(self, power):
         return Style("inf")
 
+    def get_effect(self):
+        if self.has_value():
+            return self.effect.format(self._x_value)
+        else:
+            return self.effect
+
     def has_value(self):
         return hasattr(self,"_x_value")
 

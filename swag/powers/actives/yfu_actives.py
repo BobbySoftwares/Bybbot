@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class Kidnapping(Active):
     title = "Kidnapping"
-    effect = "Permet de voler une waifu"
+    effect = "Permet de voler une ¥fu."
     target = Targetting.YFU
     
     minimum_power_point = 200
@@ -26,7 +26,7 @@ class Kidnapping(Active):
 
 class Resurrection(Active):
     title = "Résurrection"
-    effect = "Permet de ressusciter une de ses waifu"
+    effect = "Permet de ressusciter une de ses ¥fus."
     target = Targetting.YFU
 
     minimum_power_point = 300
@@ -43,7 +43,7 @@ class Resurrection(Active):
 
 class UltimateResurrection(Active):
     title = "Résurrection suprême"
-    effect = "Permet de ressusciter pour soi n'importe quelle waifu"
+    effect = "Permet de ressusciter pour soi n'importe quelle ¥fu."
     target = Targetting.YFU
 
     minimum_power_point = 500
@@ -62,7 +62,7 @@ class UltimateResurrection(Active):
 
 class Cloning(Active):
     title = "Clonage"
-    effect = "Permet de cloner une waifu"
+    effect = "Permet de cloner une ¥fu."
     target = Targetting.YFU
 
     minimum_power_point = 300
@@ -80,7 +80,7 @@ class Cloning(Active):
 # Problematic
 class Copy(Active):
     title = "Copie"
-    effect = "Permet de copier ponctuellement l'actif d'une waifu"
+    effect = "Permet de copier ponctuellement l'actif d'une ¥fu."
     target = Targetting.YFU
 
     minimum_power_point = 400
@@ -94,7 +94,7 @@ class Copy(Active):
 class Clone(Active):
     title = "Clone"
     tier = "S"
-    effect = "Copie de manière permanente le pouvoir d'une waifu"
+    effect = "Copie de manière permanente le pouvoir d'une ¥fu."
     target = Targetting.YFU
 
     minimum_power_point = 500

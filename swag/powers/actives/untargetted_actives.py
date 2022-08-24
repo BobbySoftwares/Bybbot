@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 class Looting(Active):
     title = "Pillage"
-    effect = "Permet de voler du swag à tout le monde"
+    effect = "Permet de voler {} à tout le monde !"
     target = Targetting.NONE
 
     minimum_power_point = 250
@@ -119,7 +119,7 @@ class Looting(Active):
 
 class FiredampCryptoExplosion(Active):
     title = "Cryptogrisou"
-    effect = "Empêche toute le monde sauf l'utilisateur de miner pendant X jours"
+    effect = "Empêche toute le monde sauf l'utilisateur de miner pendant {} jours."
     target = Targetting.NONE
 
     minimum_power_point = 1000
@@ -148,7 +148,7 @@ class FiredampCryptoExplosion(Active):
 
 class TaxEvasion(Active):
     title = "Fraude fiscale"
-    effect = "Permet de miner X fois de plus par jour"
+    effect = "Permet de miner {} fois de plus par jour."
     target = Targetting.NONE
 
     minimum_power_point = 750
@@ -178,7 +178,7 @@ class TaxEvasion(Active):
 # TODO
 class Harvest(Active):
     title = "Moisson"
-    effect = "Permet de tenter de récolter une waifu"
+    effect = "Permet de tenter de récolter une ¥fu."
     target = Targetting.NONE
 
     def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: None):

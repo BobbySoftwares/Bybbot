@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 class AfricanPrince(Active):
     title = "Prince africain"
-    effect = "Permet de transférer du swag d'un joueur vers un autre (autre que vous)"
+    effect = "Permet de transférer {} d'un utilisateur vers un autre (autre que vous)."
     target = Targetting.USERS
 
     minimum_power_point = 0

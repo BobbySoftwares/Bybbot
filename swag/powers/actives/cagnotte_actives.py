@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
 class Embezzlement(Active):
     title = "Détournement de fonds"
-    effect = "Permet de voler du swag d'une cagnotte"
+    effect = "Permet de voler {} à une €agnotte."
     target = Targetting.CAGNOTTE
     
     minimum_power_point = 10
@@ -37,7 +37,7 @@ class Embezzlement(Active):
 
 class DishonestJointVenture(Active):
     title = "Joint-venture malhonnête"
-    effect = "Permet de voler du style d'une cagnotte"
+    effect = "Permet de voler {} à une €agnotte."
     target = Targetting.CAGNOTTE
 
     minimum_power_point = 30

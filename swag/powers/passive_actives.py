@@ -26,32 +26,27 @@ class Cheat:
     title = "Triche"
     effect = "Permet d'augmenter ses chances à la loterie"
     target = Targetting.USER
-    has_value = True
 
 
 class StateGrants:
     title = "Subventions de l’État"
     effect = "Multiplie les résultats d’un minage par X"
     target = Targetting.USER
-    has_value = True
 
 
 class HoleyVein:
     title = "Filon troué"
     effect = "Divise le prochain minage de la cible par X"
     target = Targetting.USER
-    has_value = True
 
 
 class WageCuts:
     title = "Réduction des salaires"
     effect = "Divise le prochain minage des autres mineurs par X"
     target = Targetting.NONE
-    has_value = True
 
 
 class ConvincingThreat:
     title = "Menace convaincante"
     effect = "Réduit le coût d'utilisation de la prochaine waifu par X"
     target = Targetting.NONE
-    has_value = True

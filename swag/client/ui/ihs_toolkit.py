@@ -19,7 +19,7 @@ def yfus_to_select_options(yfus):
     return [
         SelectOption(
             label=f"{yfu.first_name} {yfu.last_name}",
-            description=yfu.power.effect,
+            description=yfu.power.get_effect(),
             emoji=yfu.clan,
             value=index,
         )

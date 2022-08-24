@@ -26,7 +26,7 @@ class Targetting(Flag):
 
 class Robbery(Active):
     title = "Cambriolage"
-    effect = "Permet de voler du swag"
+    effect = "Permet de voler {} à un utilisateur."
     target = Targetting.USER
 
     minimum_power_point = 20
@@ -53,7 +53,7 @@ class Robbery(Active):
 
 class HoldUp(Active):
     title = "Hold-up"
-    effect = "Permet de voler du swag bloqué"
+    effect = "Permet de voler {} bloqué(s) à un utilisateur."
     target = Targetting.USER
 
     minimum_power_point = 50
@@ -80,7 +80,7 @@ class HoldUp(Active):
 
 class Takeover(Active):
     title = "OPA"
-    effect = "Permet de voler du style généré"
+    effect = "Permet de voler {} en cours de génération d'un utilisateur."
     target = Targetting.USER
 
     minimum_power_point = 60
@@ -107,9 +107,8 @@ class Takeover(Active):
 
 class AssetLoss(Active):
     title = "Perte d'actifs"
-    effect = "Permet de débloquer une partie du swag de quelqu'un"
+    effect = "Permet de débloquer {} d'un utilisateur."
     target = Targetting.USER
-    has_value = True
 
     minimum_power_point = 10
 
@@ -134,7 +133,7 @@ class AssetLoss(Active):
 
 class InsiderTrading(Active):
     title = "Délit d'initié"
-    effect = "Permet de détruire une partie du style généré d'autrui"
+    effect = "Permet faire disparaître {} en cours de génération d'un utilisateur."
     target = Targetting.USER
 
     minimum_power_point = 30
@@ -158,7 +157,7 @@ class InsiderTrading(Active):
 
 class DryLoss(Active):
     title = "Perte sèche"
-    effect = "Permet de détruire le swag d'un compte"
+    effect = "Permet de faire disparaître {} d'un compte d'un utilisateur."
     target = Targetting.USER
 
     minimum_power_point = 0
@@ -182,7 +181,7 @@ class DryLoss(Active):
 
 class TaxAudit(Active):
     title = "Contrôle fiscal"
-    effect = "Permet d'envoyer du swag d'un autre joueur vers la cagnotte €"
+    effect = "Permet d'envoyer {} d'un utilisateur vers la €agnotte '€'."
     target = Targetting.USER
 
     minimum_power_point = 15
@@ -209,7 +208,7 @@ class TaxAudit(Active):
 
 class BankingBan(Active):
     title = "Interdit bancaire"
-    effect = "Empêche quelqu'un de miner pendant X jours"
+    effect = "Empêche quelqu'un de miner pendant {} jours."
     target = Targetting.USER
 
     minimum_power_point = 100

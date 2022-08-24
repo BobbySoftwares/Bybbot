@@ -8,6 +8,7 @@ from swag.artefacts.bonuses import Bonuses
 from swag.cauchy import roll
 
 from swag.id import CagnotteId, UserId, YfuId
+from swag.powers.power import Passive
 from swag.utils import assert_timezone
 from swag.yfu import Yfu
 
@@ -97,7 +98,8 @@ class Account:
     def bonuses(self, chain, **kwargs):
         bonuses = Bonuses(**kwargs)
         for yfu_id in self.yfu_wallet:
-            chain._yfus[yfu_id].power.add_bonus(bonuses)
+            if issubclass(type(chain._yfus[yfu_id].power), Passive):
+                chain._yfus[yfu_id].power.add_bonus(bonuses)
         
         return bonuses
 
