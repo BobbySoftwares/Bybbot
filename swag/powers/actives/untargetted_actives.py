@@ -1,10 +1,13 @@
 from typing import TYPE_CHECKING
+
+from numpy import inf
 #from swag.artefacts.accounts import CagnotteAccount
 from swag.currencies import Swag
 from swag.errors import NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
 from swag.powers.actives.user_actives import Targetting
 from swag.powers.power import Active
+from swag.powers.target import TargetProperty, Targets
 from swag.stylog import stylog
 
 if TYPE_CHECKING:
@@ -13,7 +16,7 @@ if TYPE_CHECKING:
 class Looting(Active):
     title = "Pillage"
     effect = "Permet de voler {} à tout le monde !"
-    target = Targetting.NONE
+    target = Targets().anything(inf, [TargetProperty.CASTER_NOT_INCLUDED])
 
     minimum_power_point = 250
 
@@ -120,7 +123,7 @@ class Looting(Active):
 class FiredampCryptoExplosion(Active):
     title = "Cryptogrisou"
     effect = "Empêche toute le monde sauf l'utilisateur de miner pendant {} jours."
-    target = Targetting.NONE
+    target = Targets.user(inf, [TargetProperty.CASTER_NOT_INCLUDED])
 
     minimum_power_point = 1000
 
@@ -149,7 +152,7 @@ class FiredampCryptoExplosion(Active):
 class TaxEvasion(Active):
     title = "Fraude fiscale"
     effect = "Permet de miner {} fois de plus par jour."
-    target = Targetting.NONE
+    target = Targets()
 
     minimum_power_point = 750
 
@@ -179,7 +182,7 @@ class TaxEvasion(Active):
 class Harvest(Active):
     title = "Moisson"
     effect = "Permet de tenter de récolter une ¥fu."
-    target = Targetting.NONE
+    target = Targets()
 
     def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: None):
         raise NotImplementedError

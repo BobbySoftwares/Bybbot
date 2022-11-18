@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, List
 from swag.powers.actives.user_actives import Targetting
 from swag.id import AccountId, YfuId
 from swag.powers.power import Active
+from swag.powers.target import TargetProperty, Targets
 
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
@@ -10,7 +11,7 @@ if TYPE_CHECKING:
 class Kidnapping(Active):
     title = "Kidnapping"
     effect = "Permet de voler une ¥fu."
-    target = Targetting.YFU
+    target = Targets().yfu(1)
     
     minimum_power_point = 200
 
@@ -27,7 +28,7 @@ class Kidnapping(Active):
 class Resurrection(Active):
     title = "Résurrection"
     effect = "Permet de ressusciter une de ses ¥fus."
-    target = Targetting.YFU
+    target = Targets().yfu(1,[TargetProperty.FROM_CASTER_ONLY])
 
     minimum_power_point = 300
 
@@ -44,7 +45,7 @@ class Resurrection(Active):
 class UltimateResurrection(Active):
     title = "Résurrection suprême"
     effect = "Permet de ressusciter pour soi n'importe quelle ¥fu."
-    target = Targetting.YFU
+    target = Targets().yfu(1)
 
     minimum_power_point = 500
 
@@ -63,7 +64,7 @@ class UltimateResurrection(Active):
 class Cloning(Active):
     title = "Clonage"
     effect = "Permet de cloner une ¥fu."
-    target = Targetting.YFU
+    target = Targets().yfu(1)
 
     minimum_power_point = 300
 
@@ -81,7 +82,7 @@ class Cloning(Active):
 class Copy(Active):
     title = "Copie"
     effect = "Permet de copier ponctuellement l'actif d'une ¥fu."
-    target = Targetting.YFU
+    target = Targets().yfu(1)
 
     minimum_power_point = 400
 
@@ -95,7 +96,7 @@ class Clone(Active):
     title = "Clone"
     tier = "S"
     effect = "Copie de manière permanente le pouvoir d'une ¥fu."
-    target = Targetting.YFU
+    target = Targets().yfu(1)
 
     minimum_power_point = 500
 

@@ -1,33 +1,20 @@
 from enum import Flag, auto
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, OrderedDict
 
 from swag.currencies import Style, Swag
 from swag.errors import NotEnoughStyleInBalance, NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
 from swag.powers.power import Active
+from swag.powers.target import Targets
 from swag.stylog import stylog
 
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
 
-class Targetting(Flag):
-    NONE = auto()
-    USER = auto()
-    CAGNOTTE = auto()
-    ACCOUNT = USER | CAGNOTTE
-    YFU = auto()
-    ANYTHING = ACCOUNT | YFU
-    USERS = auto()
-    CAGNOTTES = auto()
-    ACCOUNTS = USERS | CAGNOTTES
-    YFUS = auto()
-    ANYTHINGS = ACCOUNTS | YFUS
-
-
 class Robbery(Active):
     title = "Cambriolage"
     effect = "Permet de voler {} à un utilisateur."
-    target = Targetting.USER
+    target = Targets().user(1)
 
     minimum_power_point = 20
 
@@ -54,7 +41,7 @@ class Robbery(Active):
 class HoldUp(Active):
     title = "Hold-up"
     effect = "Permet de voler {} bloqué(s) à un utilisateur."
-    target = Targetting.USER
+    target = Targets().user(1)
 
     minimum_power_point = 50
 
@@ -81,7 +68,7 @@ class HoldUp(Active):
 class Takeover(Active):
     title = "OPA"
     effect = "Permet de voler {} en cours de génération d'un utilisateur."
-    target = Targetting.USER
+    target = Targets().user(1)
 
     minimum_power_point = 60
 
@@ -108,7 +95,7 @@ class Takeover(Active):
 class AssetLoss(Active):
     title = "Perte d'actifs"
     effect = "Permet de débloquer {} d'un utilisateur."
-    target = Targetting.USER
+    target = Targets().user(1)
 
     minimum_power_point = 10
 
@@ -134,7 +121,7 @@ class AssetLoss(Active):
 class InsiderTrading(Active):
     title = "Délit d'initié"
     effect = "Permet faire disparaître {} en cours de génération d'un utilisateur."
-    target = Targetting.USER
+    target = Targets().user(1)
 
     minimum_power_point = 30
 
@@ -158,7 +145,7 @@ class InsiderTrading(Active):
 class DryLoss(Active):
     title = "Perte sèche"
     effect = "Permet de faire disparaître {} d'un compte d'un utilisateur."
-    target = Targetting.USER
+    target = Targets().user(1)
 
     minimum_power_point = 0
 
@@ -182,7 +169,7 @@ class DryLoss(Active):
 class TaxAudit(Active):
     title = "Contrôle fiscal"
     effect = "Permet d'envoyer {} d'un utilisateur vers la €agnotte '€'."
-    target = Targetting.USER
+    target = Targets().user(1)
 
     minimum_power_point = 15
 
@@ -209,7 +196,7 @@ class TaxAudit(Active):
 class BankingBan(Active):
     title = "Interdit bancaire"
     effect = "Empêche quelqu'un de miner pendant {} jours."
-    target = Targetting.USER
+    target = Targets().user(1)
 
     minimum_power_point = 100
 
