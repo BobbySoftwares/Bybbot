@@ -24,8 +24,11 @@ class SyncedSwagChain(SwagChain):
         async for message in channel.history(limit=None, oldest_first=True):
             unstructured_block = json.loads(message.content)
             block = structure_block(unstructured_block)
-            SwagChain.append(synced_chain, block)
-            synced_chain._messages[block] = message.id
+            try:
+                SwagChain.append(synced_chain, block)
+                synced_chain._messages[block] = message.id
+            except:
+                print("\n\n\033[91mERREUR SUR LA BLOCKCHAIN\033[0m\n\n")
         return synced_chain
 
     async def append(self, block):

@@ -153,6 +153,7 @@ class ReturnOnInvestment(Block):
             or self.timestamp < user_account.unblocking_date
             or user_account.blocked_swag <= Swag(0)
         ):
+            
             raise StyleStillBlocked
 
     def execute(self, db: SwagChain):
