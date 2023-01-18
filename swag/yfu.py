@@ -22,6 +22,7 @@ class Yfu:
     timezone: str = attrib(validator=assert_timezone)
 
     power_point: int
+    initial_activation_cost: Style
     activation_cost: Style
     greed: Decimal  # multiplier of the activation_cost after one activation, should be >= 1
     zenitude: Decimal  # divided of the activation_cost after one activation, should be >= 1
@@ -34,10 +35,19 @@ class Yfu:
         self.increase_activation_cost()
 
     def increase_activation_cost(self):
+        """
+        Increase the cost of the activation of the Yfu power by her greed.
+        """
         self.activation_cost *= self.greed
 
     def reduce_activation_cost(self):
-        self.activation_cost *= self.zenitude
+        """
+        Reduice the cost of the activation of the Yfu power by her zenitude.
+
+        The activation cost can't be less than the initial_activation_cost.
+        """
+        if (self.activation_cost / self.zenitude >= self.initial_activation_cost):
+            self.activation_cost /= self.zenitude
             
 class YfuRarity(Enum):
     COMMON = int("0xffffff", base=16)

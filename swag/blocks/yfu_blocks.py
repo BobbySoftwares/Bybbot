@@ -34,7 +34,7 @@ class YfuGenerationBlock(Block):
     last_name = attrib(type=str)
     clan = attrib(type=str)
     power_point = attrib(type=int)
-    activation_cost = attrib(type=Style)
+    initial_activation_cost = attrib(type=Style)
     greed = attrib(type=Decimal)
     zenitude = attrib(type=Decimal)
     avatar_asset_key = attrib(type=str)
@@ -71,7 +71,8 @@ class YfuGenerationBlock(Block):
             generation_date = self.timestamp,
             timezone = db._accounts[self.user_id].timezone,
             power_point = self.power_point,
-            activation_cost = self.activation_cost,
+            initial_activation_cost = self.initial_activation_cost,
+            activation_cost = self.initial_activation_cost,
             greed = self.greed,
             zenitude = self.zenitude,
             power = self.power,
@@ -81,6 +82,9 @@ class YfuGenerationBlock(Block):
 class YfuPowerActivation(Block):
     yfu_id = attrib(type=YfuId, converter=YfuId)
     target = attrib(type=YfuId | AccountId)
+
+    def validate(self, db: SwagChain):
+        pass  ##TODO Voir si il est bien le propriétaire de la Yfu
 
     def execute(self, db: SwagChain):
         yfu = db._yfus[self.yfu_id]
@@ -109,8 +113,13 @@ class RenameYfuBlock(Block):
     new_first_name = attrib(type=str)
 
     def validate(self, db: SwagChain):
-        pass  ##TODO
+        pass  ##TODO Voir si il est bien le propriétaire de la Yfu
 
     def execute(self, db: SwagChain):
         db._yfus[self.yfu_id].first_name = self.new_first_name
         db._yfus[self.yfu_id].is_baptized = True
+
+class ZenitudeBlock(Block):
+    def execute(self, db: SwagChain):
+        for yfu_id in db._yfus.keys():
+            db._yfus[yfu_id].reduce_activation_cost()

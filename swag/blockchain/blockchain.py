@@ -12,7 +12,7 @@ from swag.artefacts.assets import AssetDict
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
 from swag.blocks.system_blocks import AssetUploadBlock
-from swag.blocks.yfu_blocks import YfuGenerationBlock
+from swag.blocks.yfu_blocks import YfuGenerationBlock, ZenitudeBlock
 
 from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId, YfuId
@@ -334,5 +334,7 @@ class SwagChain:
 
         return (yfu_power,(cost,greed,zen))
 
+    async def apply_zenitude(self):
+        await self.append(ZenitudeBlock(issuer_id=self._id))
         
 

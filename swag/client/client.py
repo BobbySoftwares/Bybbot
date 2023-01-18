@@ -58,6 +58,7 @@ class SwagClient(Module):
         self.the_swaggest = None
         self.last_update = None
         self.last_backup = None
+        self.last_zenitude = None
 
     def register_commands(self):
         
@@ -95,10 +96,18 @@ class SwagClient(Module):
                 self.last_backup = now
                 await self.swagchain.save_backup()
 
+        async def zenitude_job():
+            now = utcnow().replace(microsecond=0, second=0, minute=0)
+            if self.last_zenitude is None or self.last_zenitude < now:
+                self.last_zenitude = now
+                await self.swagchain.apply_zenitude()
+
         #Génération du style toute les heures
         scheduler.add_job(style_job, CronTrigger(hour="*"))
         #Sauvegarde de la swagchain en local tout les jours à 4h du matin 
         scheduler.add_job(backup_job, CronTrigger(day="*", hour="4"))
+        #Génération du block de zenitude des Yfu à minuit
+        scheduler.add_job(zenitude_job, CronTrigger(day="*", hour="*", minute="*"))
 
     async def process(self, message):
         try:
