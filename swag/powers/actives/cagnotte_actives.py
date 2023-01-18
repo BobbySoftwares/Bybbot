@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from swag.currencies import Style, Swag
 from swag.errors import NotEnoughStyleInBalance, NotEnoughSwagInBalance
 from swag.id import AccountId, CagnotteId
-from swag.powers.actives.user_actives import Targetting
+from swag.powers.actives.user_actives import Targets
 from swag.powers.target import Targets
 from ..power import Active
 from swag.stylog import stylog

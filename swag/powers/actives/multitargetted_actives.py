@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, List
 from swag.currencies import Swag
 from swag.errors import NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
-from swag.powers.actives.user_actives import Targetting
 from swag.powers.target import TargetProperty, Targets
 from ..power import Active
 
@@ -12,7 +11,7 @@ if TYPE_CHECKING:
 class AfricanPrince(Active):
     title = "Prince africain"
     effect = "Permet de transférer {} d'un utilisateur vers un autre (autre que vous)."
-    target = Targets.user(2,[TargetProperty.CASTER_NOT_INCLUDED])
+    target = Targets().user(2,[TargetProperty.CASTER_NOT_INCLUDED])
 
     minimum_power_point = 0
 
@@ -47,7 +46,7 @@ class BankAdministrationError(Active):
     title = "Erreur de l'administration bancaire"
     tier = "SSS"
     effect = "Permet d'échanger le swag de deux joueurs"
-    target = Targets.user(2)
+    target = Targets().user(2)
     
     minimum_power_point = 150
 

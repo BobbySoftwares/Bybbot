@@ -5,7 +5,6 @@ from numpy import inf
 from swag.currencies import Swag
 from swag.errors import NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
-from swag.powers.actives.user_actives import Targetting
 from swag.powers.power import Active
 from swag.powers.target import TargetProperty, Targets
 from swag.stylog import stylog
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
 class Looting(Active):
     title = "Pillage"
     effect = "Permet de voler {} à tout le monde !"
-    target = Targets().anything(inf, [TargetProperty.CASTER_NOT_INCLUDED])
+    target = Targets() # Pas de target car c'est tout le monde !
 
     minimum_power_point = 250
 
@@ -123,7 +122,7 @@ class Looting(Active):
 class FiredampCryptoExplosion(Active):
     title = "Cryptogrisou"
     effect = "Empêche toute le monde sauf l'utilisateur de miner pendant {} jours."
-    target = Targets.user(inf, [TargetProperty.CASTER_NOT_INCLUDED])
+    target = Targets() #  Pas de target car c'est tout le monde !
 
     minimum_power_point = 1000
 

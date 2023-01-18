@@ -1,6 +1,6 @@
 from copy import deepcopy
 from typing import TYPE_CHECKING, List
-from swag.powers.actives.user_actives import Targetting
+from swag.powers.actives.user_actives import Targets
 from swag.id import AccountId, YfuId
 from swag.powers.power import Active
 from swag.powers.target import TargetProperty, Targets
