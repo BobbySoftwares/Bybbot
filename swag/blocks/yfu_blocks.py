@@ -80,11 +80,12 @@ class YfuGenerationBlock(Block):
 
 
 class YfuPowerActivation(Block):
+    account_id = attrib(type=Union[UserId, CagnotteId])
     yfu_id = attrib(type=YfuId, converter=YfuId)
     target = attrib(type=YfuId | AccountId)
 
     def validate(self, db: SwagChain):
-        pass  ##TODO Voir si il est bien le propriétaire de la Yfu
+        return self.account_id ==  db._yfus[self.yfu_id].owner_id
 
     def execute(self, db: SwagChain):
         yfu = db._yfus[self.yfu_id]
@@ -96,6 +97,9 @@ class TokenTransactionBlock(Block):
     giver_id = attrib(type=Union[UserId, CagnotteId])
     recipient_id = attrib(type=Union[UserId, CagnotteId])
     token_id = attrib(type=YfuId)
+
+    def validate(self, db: SwagChain):
+        return self.giver_id ==  db._yfus[self.token_id].owner_id
 
     def execute(self, db: SwagChain):
         # moving token through account
@@ -113,7 +117,7 @@ class RenameYfuBlock(Block):
     new_first_name = attrib(type=str)
 
     def validate(self, db: SwagChain):
-        pass  ##TODO Voir si il est bien le propriétaire de la Yfu
+        return self.user_id ==  db._yfus[self.yfu_id].owner_id
 
     def execute(self, db: SwagChain):
         db._yfus[self.yfu_id].first_name = self.new_first_name
