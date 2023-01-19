@@ -290,7 +290,7 @@ class SwagChain:
             avatar_asset_key=avatar_asset_block.asset_key,
             power_point = rolling_power_point,
             power = power,
-            activation_cost = cost_greed_zenitude[0],
+            initial_activation_cost = cost_greed_zenitude[0],
             greed = cost_greed_zenitude[1],
             zenitude = cost_greed_zenitude[2],
         )
