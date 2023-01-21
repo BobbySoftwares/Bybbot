@@ -326,8 +326,11 @@ class SwagChain:
         # Inverse de la courbe de la zenitude * 10. Le coût max est de 10 style, et la limite atteint 0.
         cost = max(Style((1 / (stylog(c_g_z_distribution[0] * 1000) * 72 * 2 + 1)) * 10),Style(0.0001))
 
-        #Suit une courbe asymtotique dont la limite touche à 1. On met 20 à la limite grace au min
-        greed = Decimal(min((200 / c_g_z_distribution[1]) + 1, 20)).quantize(Decimal(".1"), rounding=ROUND_05UP)
+        try:
+            #Suit une courbe asymtotique dont la limite touche à 1. On met 20 à la limite grace au min
+            greed = Decimal(min((200 / c_g_z_distribution[1]) + 1, 20)).quantize(Decimal(".1"), rounding=ROUND_05UP)
+        except ZeroDivisionError:
+            greed = 20
 
         #Suit le stylog sur une génération de style sur 6 jours avec une valeur minimum à 1
         zen = (stylog(c_g_z_distribution[2] * 1000) * 72 * 2 + 1).quantize(Decimal(".1"), rounding=ROUND_05UP)

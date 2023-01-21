@@ -1,61 +1,66 @@
 import asyncio
 import disnake
+
+from typing import TYPE_CHECKING
 from swag.errors import IncorrectYfuName
-from swag.id import CagnotteId, UserId
+from swag.id import CagnotteId, UserId, YfuId
 from swag.yfu import Yfu, YfuRarity
 from swag.blocks.yfu_blocks import RenameYfuBlock, TokenTransactionBlock
 
 from .ihs_toolkit import *
 
+if TYPE_CHECKING:
+    from swag.yfu import Yfu
+    from swag.client import SwagClient
+
 ##TODO apparition du bouton "Renommer" et "Activer" dynamique
 class YfuNavigation(disnake.ui.View):
-    def __init__(self, swag_client, user_id, first_yfu_id):
+    def __init__(self, swag_client : 'SwagClient', user_id : 'UserId', first_yfu_id : 'YfuId'):
         super().__init__(timeout=None)
 
         self.swag_client = swag_client
         self.user_id = user_id
-        self.yfu_ids = sort_yfu_ids(
+        self.yfu_ids : List[YfuId] = sort_yfu_ids(
             swag_client.swagchain.account(self.user_id).yfu_wallet
         )
-        self.yfus = [swag_client.swagchain.yfu(yfu_id) for yfu_id in self.yfu_ids]
+        self.yfus : List[Yfu] = [swag_client.swagchain.yfu(yfu_id) for yfu_id in self.yfu_ids]
 
         # Generation des options du dropdown de waifu
-        ##TODO gérer quand il y a plus de 25 options
-        for option in yfus_to_select_options(self.yfus):
-            self.dropdown_yfu.append_option(option)
+        self.dropdown_yfu.set_options(yfus_to_select_options(self.yfus))
 
-        self.selected_yfu_index = self.yfu_ids.index(first_yfu_id)
+        self.selected_yfu_id = first_yfu_id
         self.update_view()
 
-    @disnake.ui.select(placeholder="Choisis ta Yfu...", row=1)
+
+    @disnake.ui.string_select(UnlimitedSelectMenu, arg_placeholder="Choisis ta Yfu", arg_row=0)
     async def dropdown_yfu(
-        self, select: disnake.ui.Select, interaction: disnake.MessageInteraction
+        self, select: disnake.ui.StringSelect, interaction: disnake.MessageInteraction
     ):
-        self.selected_yfu_index = int(self.dropdown_yfu.values[0])
+        self.selected_yfu_id = self.dropdown_yfu.values[0]
 
         self.update_view()
 
         await self.send_yfu_view(interaction)
 
     @disnake.ui.button(
-        label="Précédente", emoji="⬅", style=disnake.ButtonStyle.blurple, row=2
+        label="Page précédente", emoji="⬅", style=disnake.ButtonStyle.blurple, row=1
     )
     async def previous_yfu(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
-        self.selected_yfu_index -= 1
+        self.dropdown_yfu.go_previous_page()
 
         self.update_view()
 
         await self.send_yfu_view(interaction)
 
     @disnake.ui.button(
-        label="Suivante", emoji="➡", style=disnake.ButtonStyle.blurple, row=2
+        label="Page suivante", emoji="➡", style=disnake.ButtonStyle.blurple, row=1
     )
     async def next_yfu(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
-        self.selected_yfu_index += 1
+        self.dropdown_yfu.go_next_page()
 
         self.update_view()
 
@@ -71,7 +76,7 @@ class YfuNavigation(disnake.ui.View):
         self.update_view()
 
     @disnake.ui.button(
-        label="Montrer", emoji="🎴", style=disnake.ButtonStyle.grey, row=3
+        label="Montrer", emoji="🎴", style=disnake.ButtonStyle.grey, row=2
     )
     async def show_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
@@ -84,7 +89,7 @@ class YfuNavigation(disnake.ui.View):
         )
 
     @disnake.ui.button(
-        label="Baptiser", emoji="✏", style=disnake.ButtonStyle.gray, row=3
+        label="Baptiser", emoji="✏", style=disnake.ButtonStyle.gray, row=2
     )
     async def baptize_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
@@ -94,7 +99,7 @@ class YfuNavigation(disnake.ui.View):
         await interaction.response.send_modal(YfuRename(self, interaction))
 
     @disnake.ui.button(
-        label="Échanger", emoji="🤝", style=disnake.ButtonStyle.secondary, row=3
+        label="Échanger", emoji="🤝", style=disnake.ButtonStyle.secondary, row=2
     )
     async def exchange_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
@@ -112,20 +117,11 @@ class YfuNavigation(disnake.ui.View):
 
     def update_view(self):
 
-        self.selected_yfu = self.swag_client.swagchain.yfu(
-            self.yfu_ids[self.selected_yfu_index]
-        )
-        # previous button
-        if self.selected_yfu_index == 0:
-            self.previous_yfu.disabled = True
-        else:
-            self.previous_yfu.disabled = False
+        self.selected_yfu = self.swag_client.swagchain.yfu(YfuId(self.selected_yfu_id))
 
-        # next button
-        if self.selected_yfu_index >= len(self.yfu_ids) - 1:
-            self.next_yfu.disabled = True
-        else:
-            self.next_yfu.disabled = False
+        #Previous/next button
+        self.previous_yfu.disabled = self.dropdown_yfu.is_first_page()
+        self.next_yfu.disabled = self.dropdown_yfu.is_last_page()
 
         # activate button
         if (
@@ -157,17 +153,40 @@ class YfuExchange(disnake.ui.View):
         self.user_id = user_id
         self.selected_yfu = selected_yfu
 
-        for option in select_options:
-            self.dropdown_account.append_option(option)
+        self.dropdown_account.set_options(select_options)
 
-    @disnake.ui.select(placeholder="Destinataire de la ¥fu...")
+    @disnake.ui.string_select(UnlimitedSelectMenu, arg_placeholder="Choisis ta Yfu", arg_row=0)
     async def dropdown_account(
-        self, select: disnake.ui.Select, interaction: disnake.MessageInteraction
+        self, select: disnake.ui.StringSelect, interaction: disnake.MessageInteraction
     ):
         # On attends que l'utilisateur appuie sur confirmé
         await interaction.response.defer()
 
-    @disnake.ui.button(label="Confirmer", emoji="✅", style=disnake.ButtonStyle.green)
+    @disnake.ui.button(
+        label="Page précédente", emoji="⬅", style=disnake.ButtonStyle.blurple, row=1
+    )
+    async def previous_page(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        self.dropdown_account.go_previous_page()
+
+        self.update_view()
+
+        await self.send_view(interaction)
+
+    @disnake.ui.button(
+        label="Page suivante", emoji="➡", style=disnake.ButtonStyle.blurple, row=1
+    )
+    async def next_page(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        self.dropdown_account.go_next_page()
+
+        self.update_view()
+
+        await self.send_view(interaction)
+
+    @disnake.ui.button(label="Confirmer", emoji="✅", style=disnake.ButtonStyle.green, row=2)
     async def confirm(
         self, confirm_button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
@@ -202,7 +221,7 @@ class YfuExchange(disnake.ui.View):
             ),
         )
 
-    @disnake.ui.button(label="Annuler", emoji="❌", style=disnake.ButtonStyle.red)
+    @disnake.ui.button(label="Annuler", emoji="❌", style=disnake.ButtonStyle.red, row=2)
     async def cancel(
         self, cancel_button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
@@ -213,6 +232,17 @@ class YfuExchange(disnake.ui.View):
             ),
             view=YfuNavigation(self.swag_client, self.user_id, self.selected_yfu.id),
         )
+
+    def update_view(self):
+
+        #Previous/next button
+        self.previous_page.disabled = self.dropdown_yfu.is_first_page()
+        self.next_page.disabled = self.dropdown_yfu.is_last_page()
+
+    async def send_view(self, interaction: disnake.MessageInteraction):
+
+        await interaction.response.edit_message(view=self)
+
 
 
 class YfuRename(disnake.ui.Modal):
@@ -249,7 +279,7 @@ class YfuRename(disnake.ui.Modal):
         renaming_block = RenameYfuBlock(
             issuer_id=self.nav_view.user_id,
             user_id=self.nav_view.user_id,
-            yfu_id=self.nav_view.yfu_ids[self.nav_view.selected_yfu_index],
+            yfu_id=self.nav_view.selected_yfu.id,
             new_first_name=new_yfu_name,
         )
         await self.nav_view.swag_client.swagchain.append(renaming_block)

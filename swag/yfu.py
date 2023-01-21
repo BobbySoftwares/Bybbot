@@ -46,8 +46,10 @@ class Yfu:
 
         The activation cost can't be less than the initial_activation_cost.
         """
-        if (self.activation_cost / self.zenitude >= self.initial_activation_cost):
-            self.activation_cost /= self.zenitude
+        if (self.activation_cost.value / self.zenitude >= self.initial_activation_cost.value):
+            self.activation_cost = Style(self.activation_cost.value / self.zenitude)
+        else:
+            self.activation_cost = self.initial_activation_cost
             
 class YfuRarity(Enum):
     COMMON = int("0xffffff", base=16)
