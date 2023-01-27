@@ -354,7 +354,7 @@ async def update_the_swaggest(guild, swag_client):
     swag_client.the_swaggest = swaggest
 
     # Récupération de l'objet User du plus $wag
-    member = guild.get_member(swag_client.the_swaggest)
+    member = guild.get_member(swag_client.the_swaggest.id)
 
     if member is None:  # Si l'utilisateur n'existe pas, alors ne rien faire
         return
