@@ -105,14 +105,11 @@ class YfuNavigation(disnake.ui.View):
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
         # Oblige de l'appelle ici à cause du await TODO trouver une meilleure solution.
-        exchange_option = await forbes_to_select_options(
-            self.swag_client
-        ) + cagnottes_to_select_options(self.swag_client)
+
+
         await interaction.response.edit_message(
             embed=YfuEmbed.from_yfu(self.selected_yfu),
-            view=YfuExchange(
-                self.swag_client, self.user_id, self.selected_yfu, exchange_option
-            ),
+            view=YfuExchange(self.swag_client, self.user_id, self.selected_yfu),
         )
 
     def update_view(self):
@@ -146,16 +143,19 @@ class YfuNavigation(disnake.ui.View):
 
 
 class YfuExchange(disnake.ui.View):
-    def __init__(self, swag_client, user_id, selected_yfu, select_options):
+    def __init__(self, swag_client, user_id, selected_yfu):
         super().__init__(timeout=None)
 
         self.swag_client = swag_client
         self.user_id = user_id
         self.selected_yfu = selected_yfu
 
-        self.dropdown_account.set_options(select_options)
+        self.dropdown_account.set_options(
+            forbes_to_select_options(self.swag_client) +
+            cagnottes_to_select_options(self.swag_client)
+        )
 
-    @disnake.ui.string_select(UnlimitedSelectMenu, arg_placeholder="Choisis ta Yfu", arg_row=0)
+    @disnake.ui.string_select(UnlimitedSelectMenu, arg_placeholder="Choisis le destinataire", arg_row=0)
     async def dropdown_account(
         self, select: disnake.ui.StringSelect, interaction: disnake.MessageInteraction
     ):
@@ -244,6 +244,12 @@ class YfuExchange(disnake.ui.View):
         await interaction.response.edit_message(view=self)
 
 
+
+class YfuActivation(disnake.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+        self.targets = []
 
 class YfuRename(disnake.ui.Modal):
     def __init__(

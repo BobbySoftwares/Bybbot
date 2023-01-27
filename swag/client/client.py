@@ -49,10 +49,15 @@ from utils import (
 )
 from module import Module
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from disnake.ext.commands import Bot
+
 
 class SwagClient(Module):
     def __init__(self, discord_client) -> None:
-        self.discord_client = discord_client
+        self.discord_client : 'Bot' = discord_client
         print("Initialisation de la $wagChain...\n")
         self.guilds = {}
         self.the_swaggest = None

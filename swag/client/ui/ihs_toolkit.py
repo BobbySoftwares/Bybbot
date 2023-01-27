@@ -29,13 +29,12 @@ def yfus_to_select_options(yfus : List['Yfu']):
     ]
 
 
-async def forbes_to_select_options(swag_client : 'SwagClient'):
+def forbes_to_select_options(swag_client : 'SwagClient'):
     guild = swag_client.discord_client.get_guild(GUILD_ID)
-    client = swag_client.discord_client
     forbes = swag_client.swagchain.forbes
     return [
         SelectOption(
-            label= await get_guild_member_name(user_id, guild, client),
+            label= guild.get_member(user_id.id).display_name,
             description=f"{account.swag_balance} -- {account.style_balance} -- {len(account.yfu_wallet)} ¥fu(s)",
             emoji="💰",
             value=user_id.id,
