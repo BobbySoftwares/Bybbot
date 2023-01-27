@@ -155,3 +155,10 @@ class IncorrectYfuName(Exception):
 
 class InvalidId(Exception):
     pass
+
+class BadOwnership(Exception):
+    def __init__(self, user_id, id) -> None :
+        self.id = id
+        message = f"La Yfu {id} n'apartient pas à {user_id}"
+        super().__init__(message)
+    pass

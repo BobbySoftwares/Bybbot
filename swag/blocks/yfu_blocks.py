@@ -3,7 +3,8 @@ from decimal import Decimal
 import hashlib
 
 from attr import attrib, attrs
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Union
+from swag.errors import BadOwnership
 
 from swag.yfu import Yfu
 
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 
 from ..currencies import Style
 
-from ..id import AccountId,CagnotteId, UserId, YfuId
+from ..id import AccountId,CagnotteId, GenericId, UserId, YfuId
 
 from ..utils import EMOJI_CLAN_YFU
 from ..cauchy import roll
@@ -82,15 +83,19 @@ class YfuGenerationBlock(Block):
 class YfuPowerActivation(Block):
     account_id = attrib(type=Union[UserId, CagnotteId])
     yfu_id = attrib(type=YfuId, converter=YfuId)
-    target = attrib(type=YfuId | AccountId)
+    targets = attrib(type=List[GenericId])
 
     def validate(self, db: SwagChain):
-        return self.account_id ==  db._yfus[self.yfu_id].owner_id
+        if self.account_id != db._yfus[self.yfu_id].owner_id:
+            raise BadOwnership(self.account_id,self.yfu_id)
 
     def execute(self, db: SwagChain):
         yfu = db._yfus[self.yfu_id]
 
-        yfu.power._activation(db, yfu.owner_id, self.target)
+        db._accounts[self.account_id] -= yfu.activation_cost
+
+        yfu.power._activation(db, yfu.owner_id, self.targets)
+        yfu.increase_activation_cost()
         
 @attrs(frozen=True, kw_only=True)
 class TokenTransactionBlock(Block):
@@ -99,7 +104,8 @@ class TokenTransactionBlock(Block):
     token_id = attrib(type=YfuId)
 
     def validate(self, db: SwagChain):
-        return self.giver_id ==  db._yfus[self.token_id].owner_id
+        if self.giver_id != db._yfus[self.token_id].owner_id:
+            raise BadOwnership(self.giver_id,self.token_id)
 
     def execute(self, db: SwagChain):
         # moving token through account
@@ -117,7 +123,8 @@ class RenameYfuBlock(Block):
     new_first_name = attrib(type=str)
 
     def validate(self, db: SwagChain):
-        return self.user_id ==  db._yfus[self.yfu_id].owner_id
+        if self.user_id != db._yfus[self.yfu_id].owner_id:
+            raise BadOwnership(self.user_id,self.yfu_id)
 
     def execute(self, db: SwagChain):
         db._yfus[self.yfu_id].first_name = self.new_first_name

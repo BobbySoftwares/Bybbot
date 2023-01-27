@@ -23,6 +23,7 @@ from swag.id import UserId
 from ..errors import (
     AlreadyCagnotteManager,
     AlreadyMineToday,
+    BadOwnership,
     InvalidCagnotteId,
     InvalidSwagValue,
     InvalidStyleValue,
@@ -289,6 +290,11 @@ class ClientError(commands.Cog):
             await interaction.response.send_message(
                 f"{interaction.author.mention}, merci de mentionner un destinataire"
                 "(@Bobby Machin) !",
+                ephemeral=True,
+            )
+        elif type(error.original) is BadOwnership:
+            await interaction.response.send_message(
+                f"{interaction.author.mention}, tu n'es pas le propriétaire de {error.original.id}. L'action est annulé",
                 ephemeral=True,
             )
         elif type(error.original) is AttributeError and hasattr(error.original,"name") and error.original.name == "swagchain":
