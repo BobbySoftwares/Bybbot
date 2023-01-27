@@ -3,7 +3,8 @@ import disnake
 
 from typing import TYPE_CHECKING
 from swag.errors import IncorrectYfuName
-from swag.id import CagnotteId, UserId, YfuId
+from swag.id import CagnotteId, UserId, YfuId, get_id_from_str
+from swag.powers.target import TargetProperty, TargetType
 from swag.yfu import Yfu, YfuRarity
 from swag.blocks.yfu_blocks import RenameYfuBlock, TokenTransactionBlock
 
@@ -73,7 +74,43 @@ class YfuNavigation(disnake.ui.View):
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
         # TODO Activer Waifu
-        self.update_view()
+        self.selected_target = []
+
+        #Si target vide on active le pouvoir
+        if not self.selected_yfu.power.target._stack_of_targets :
+            await self.activate_yfu_power(self.selected_yfu)
+        #Sinon, si il y a des targets, on appelle la vu permettant de gérer les targets
+        else:
+
+            await interaction.response.edit_message(
+                f"**Choissiez votre cible :**",
+                embed=YfuEmbed.from_yfu(self.selected_yfu),
+                view=YfuTarget(self)
+            )
+
+    async def activate_yfu_power(self,interaction: disnake.MessageInteraction):
+
+        message = f"{UserId(self.user_id)} active sa ¥fu"
+
+        if self.selected_target:
+            message += " contre "
+            message += ", ".join([str(get_id_from_str(target)) for target in self.selected_target])
+            message = " et ".join(message.rsplit(", ", 1))
+        
+        message += " !"
+
+        #TODO block !
+
+        await interaction.response.edit_message(view=disnake.ui.View())
+
+
+        await interaction.send(
+            message,
+            embed=YfuEmbed.from_yfu(self.selected_yfu),
+            view=disnake.ui.View(),
+        )
+
+
 
     @disnake.ui.button(
         label="Montrer", emoji="🎴", style=disnake.ButtonStyle.grey, row=2
@@ -104,8 +141,6 @@ class YfuNavigation(disnake.ui.View):
     async def exchange_button(
         self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
-        # Oblige de l'appelle ici à cause du await TODO trouver une meilleure solution.
-
 
         await interaction.response.edit_message(
             embed=YfuEmbed.from_yfu(self.selected_yfu),
@@ -196,11 +231,7 @@ class YfuExchange(disnake.ui.View):
             return
 
         ##TODO methode detection type id en fonction du début
-        selected_id = self.dropdown_account.values[0]
-        if selected_id.startswith("€"):
-            selected_id = CagnotteId(selected_id)
-        else:
-            selected_id = UserId(selected_id)
+        selected_id = get_id_from_str(self.dropdown_account.values[0])
 
         block = TokenTransactionBlock(
             issuer_id=UserId(self.user_id),
@@ -245,11 +276,109 @@ class YfuExchange(disnake.ui.View):
 
 
 
-class YfuActivation(disnake.ui.View):
-    def __init__(self):
+class YfuTarget(disnake.ui.View):
+    def __init__(self, navigation_view : YfuNavigation):
         super().__init__(timeout=None)
+        self.nav_view = navigation_view
 
-        self.targets = []
+        #Gestion des options par rapport au type de cible
+        target_to_choose = self.nav_view.selected_yfu.power.target._stack_of_targets[len(self.nav_view.selected_target)]
+
+        options = []
+
+        if TargetType.USER in target_to_choose[0] :
+
+            if TargetProperty.CASTER_NOT_INCLUDED in target_to_choose[1]:
+                options = options + forbes_to_select_options(self.nav_view.swag_client, exclude=[self.nav_view.user_id])
+            else:
+                options = options + forbes_to_select_options(self.nav_view.swag_client)
+
+        if TargetType.CAGNOTTE in target_to_choose[0]:
+            options = options + cagnottes_to_select_options(self.nav_view.swag_client)
+
+        if TargetType.YFU in target_to_choose[0]:
+
+            if TargetProperty.FROM_CASTER_ONLY in target_to_choose[1]:
+                options = options + yfus_to_select_options(self.nav_view.yfus) #yfus de l'utilisateur
+            else:
+                options = options + yfus_to_select_options([yfu for yfu_id, yfu in self.nav_view.swag_client.swagchain.yfus])
+
+        self.dropdown_target.set_options(options)
+
+    @disnake.ui.string_select(UnlimitedSelectMenu, arg_placeholder="Choisis ta cible", arg_row=0)
+    async def dropdown_target(
+        self, select: disnake.ui.StringSelect, interaction: disnake.MessageInteraction
+    ):
+        # On attends que l'utilisateur appuie sur confirmé
+        await interaction.response.defer()
+
+    @disnake.ui.button(
+        label="Page précédente", emoji="⬅", style=disnake.ButtonStyle.blurple, row=1
+    )
+    async def previous_page(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        self.dropdown_target.go_previous_page()
+
+        self.update_view()
+
+        await self.send_view(interaction)
+
+    @disnake.ui.button(
+        label="Page suivante", emoji="➡", style=disnake.ButtonStyle.blurple, row=1
+    )
+    async def next_page(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        self.dropdown_target.go_next_page()
+
+        self.update_view()
+
+        await self.send_view(interaction)
+
+    @disnake.ui.button(label="Confirmer", emoji="✅", style=disnake.ButtonStyle.green, row=2)
+    async def confirm(
+        self, confirm_button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+
+        self.nav_view.selected_target.append(self.dropdown_target.values[0])
+
+        #On regarde si assez de cible on été selectionné. Si ce n'est pas le cas, on fait choisir une autre cible
+        if len(self.nav_view.selected_target) == len(self.nav_view.selected_yfu.power.target._stack_of_targets):
+            await self.nav_view.activate_yfu_power(interaction)
+        else:
+            await interaction.response.send_message(
+                f"**Choissiez la {len(self.nav_view.selected_target) + 1}ème cible :**",
+                view=YfuTarget(self.nav_view),
+                ephemeral=True
+            )
+
+            await interaction.delete_original_message()
+
+    @disnake.ui.button(label="Annuler", emoji="❌", style=disnake.ButtonStyle.red, row=2)
+    async def cancel(
+        self, cancel_button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        # On revient sur la vu précédente
+        await interaction.response.edit_message(
+            embed=YfuEmbed.from_yfu(
+                self.swag_client.swagchain.yfu(self.nav_view.selected_yfu.id)
+            ),
+            view=self.nav_view,
+        )
+
+    def update_view(self):
+
+        #Previous/next button
+        self.previous_page.disabled = self.dropdown_yfu.is_first_page()
+        self.next_page.disabled = self.dropdown_yfu.is_last_page()
+
+    async def send_view(self, interaction: disnake.MessageInteraction):
+
+        await interaction.response.edit_message(view=self)
+        
+
+
 
 class YfuRename(disnake.ui.Modal):
     def __init__(

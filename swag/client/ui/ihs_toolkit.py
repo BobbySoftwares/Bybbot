@@ -29,7 +29,7 @@ def yfus_to_select_options(yfus : List['Yfu']):
     ]
 
 
-def forbes_to_select_options(swag_client : 'SwagClient'):
+def forbes_to_select_options(swag_client : 'SwagClient', exclude = []):
     guild = swag_client.discord_client.get_guild(GUILD_ID)
     forbes = swag_client.swagchain.forbes
     return [
@@ -39,7 +39,7 @@ def forbes_to_select_options(swag_client : 'SwagClient'):
             emoji="💰",
             value=user_id.id,
         )
-        for user_id, account in forbes
+        for user_id, account in forbes if user_id not in exclude
     ]
 
 

@@ -2,8 +2,10 @@ import re
 from typing import Union
 from attr import attrib, attrs
 
-from .errors import InvalidCagnotteId, InvalidYfuId
+from .errors import InvalidCagnotteId, InvalidId, InvalidYfuId
 
+
+user_id_regex = re.compile("^\d+$", re.A)
 
 def user_id_converter(user_id):
     if type(user_id) is UserId:
@@ -66,6 +68,16 @@ class YfuId:
 
     def __str__(self) -> str:
         return self.id
+
+
+def get_id_from_str(id : str) -> Union[UserId, CagnotteId, YfuId]:
+    if re.match(yfu_id_regex, id):
+        return YfuId(id)
+    if re.match(cagnotte_id_regex,id):
+        return CagnotteId(id)
+    if re.match(user_id_regex, id):
+        return UserId(id)
+    raise InvalidId
 
 
 AccountId = Union[UserId, CagnotteId]

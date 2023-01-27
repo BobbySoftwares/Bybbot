@@ -159,6 +159,13 @@ class SwagChain:
         )
 
     @property
+    def yfus(self):
+        return(
+            (yfu_id, Info(yfu))
+            for yfu_id, yfu in self._yfus.items()
+        )
+
+    @property
     def swaggest(self):
         for key, _ in self.forbes:
             return key
