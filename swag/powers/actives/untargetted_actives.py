@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 
 from numpy import inf
-#from swag.artefacts.accounts import CagnotteAccount
+
+# from swag.artefacts.accounts import CagnotteAccount
 from swag.currencies import Swag
 from swag.errors import NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
@@ -12,22 +13,23 @@ from swag.stylog import stylog
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
 
+
 class Looting(Active):
     title = "Pillage"
     effect = "Permet de voler {} à tout le monde !"
-    target = Targets() # Pas de target car c'est tout le monde !
+    target = Targets()  # Pas de target car c'est tout le monde !
 
-    minimum_power_point = 250
+    minimum_power_point = 2000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = (pp) * 1000
 
     @property
     def _x_value(self):
         return self._raw_x
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: None):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
         """Try to loot the entire world
 
         First, try to loot $wag balance of non-immunized users. If
@@ -122,9 +124,9 @@ class Looting(Active):
 class FiredampCryptoExplosion(Active):
     title = "Cryptogrisou"
     effect = "Empêche toute le monde sauf l'utilisateur de miner pendant {} jours."
-    target = Targets() #  Pas de target car c'est tout le monde !
+    target = Targets()  #  Pas de target car c'est tout le monde !
 
-    minimum_power_point = 1000
+    minimum_power_point = 64000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -132,9 +134,9 @@ class FiredampCryptoExplosion(Active):
 
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x))
+        return int(stylog(self._raw_x / 64))
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: None):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
         for target in chain._accounts.values():
             if target_id != owner_id:
                 try:
@@ -153,7 +155,7 @@ class TaxEvasion(Active):
     effect = "Permet de miner {} fois de plus par jour."
     target = Targets()
 
-    minimum_power_point = 750
+    minimum_power_point = 2000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -161,9 +163,9 @@ class TaxEvasion(Active):
 
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x))
+        return int(stylog(self._raw_x / 2))
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: None):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
         owner = chain._accounts[owner_id]
         bonuses = owner.bonuses(chain)
 
@@ -183,5 +185,5 @@ class Harvest(Active):
     effect = "Permet de tenter de récolter une ¥fu."
     target = Targets()
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: None):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
         raise NotImplementedError

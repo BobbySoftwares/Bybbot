@@ -4,7 +4,7 @@ import hashlib
 
 from attr import attrib, attrs
 from typing import TYPE_CHECKING, List, Union
-from swag.errors import BadOwnership
+from swag.errors import BadOwnership, YfuNotReady
 
 from swag.yfu import Yfu
 
@@ -36,8 +36,6 @@ class YfuGenerationBlock(Block):
     clan = attrib(type=str)
     power_point = attrib(type=int)
     initial_activation_cost = attrib(type=Style)
-    greed = attrib(type=Decimal)
-    zenitude = attrib(type=Decimal)
     avatar_asset_key = attrib(type=str)
     power = attrib(type=Power)
 
@@ -74,8 +72,6 @@ class YfuGenerationBlock(Block):
             power_point = self.power_point,
             initial_activation_cost = self.initial_activation_cost,
             activation_cost = self.initial_activation_cost,
-            greed = self.greed,
-            zenitude = self.zenitude,
             power = self.power,
         )
 
@@ -88,14 +84,15 @@ class YfuPowerActivation(Block):
     def validate(self, db: SwagChain):
         if self.account_id != db._yfus[self.yfu_id].owner_id:
             raise BadOwnership(self.account_id,self.yfu_id)
+        if self.timestamp.date() == db._yfus[self.yfu_id].last_activation_date.date() :
+            raise YfuNotReady(self.yfu_id)
 
     def execute(self, db: SwagChain):
         yfu = db._yfus[self.yfu_id]
 
         db._accounts[self.account_id] -= yfu.activation_cost
 
-        yfu.power._activation(db, yfu.owner_id, self.targets)
-        yfu.increase_activation_cost()
+        yfu.activate(db, self.targets, self.timestamp)
         
 @attrs(frozen=True, kw_only=True)
 class TokenTransactionBlock(Block):
@@ -129,8 +126,3 @@ class RenameYfuBlock(Block):
     def execute(self, db: SwagChain):
         db._yfus[self.yfu_id].first_name = self.new_first_name
         db._yfus[self.yfu_id].is_baptized = True
-
-class ZenitudeBlock(Block):
-    def execute(self, db: SwagChain):
-        for yfu_id in db._yfus.keys():
-            db._yfus[yfu_id].reduce_activation_cost()

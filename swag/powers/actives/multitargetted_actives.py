@@ -8,23 +8,24 @@ from ..power import Active
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
 
+
 class AfricanPrince(Active):
     title = "Prince africain"
-    effect = "Permet de transférer {} d'un utilisateur vers un autre (autre que vous)."
-    target = Targets().user(2,[TargetProperty.CASTER_NOT_INCLUDED])
+    effect = "Permet de transférer {} d'un utilisateur vers un autre (sauf vous)."
+    target = Targets().user(2, [TargetProperty.CASTER_NOT_INCLUDED])
 
-    minimum_power_point = 0
+    minimum_power_point = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = (pp) * 1000
 
     @property
     def _x_value(self):
-        return Swag(self._raw_x)
+        return Swag(self._raw_x * 3)
 
     def _activation(
-        self, chain: 'SwagChain', owner_id: AccountId, target_id: List[UserId]
+        self, chain: "SwagChain", owner_id: AccountId, target_id: List[UserId]
     ):
         if len(target_id) != 2:
             raise NotImplementedError
@@ -47,11 +48,11 @@ class BankAdministrationError(Active):
     tier = "SSS"
     effect = "Permet d'échanger le swag de deux joueurs"
     target = Targets().user(2)
-    
-    minimum_power_point = 150
+
+    minimum_power_point = 16000
 
     def _activation(
-        self, chain: 'SwagChain', owner_id: AccountId, target_id: List[UserId]
+        self, chain: "SwagChain", owner_id: AccountId, target_id: List[UserId]
     ):
         if len(target_id) != 2:
             raise NotImplementedError

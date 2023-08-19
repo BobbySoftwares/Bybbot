@@ -1,4 +1,5 @@
 from enum import Flag, auto
+from math import floor
 from typing import TYPE_CHECKING, List, OrderedDict
 
 from swag.currencies import Style, Swag
@@ -11,22 +12,23 @@ from swag.stylog import stylog
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
 
+
 class Robbery(Active):
     title = "Cambriolage"
     effect = "Permet de voler {} à un utilisateur."
     target = Targets().user(1)
 
-    minimum_power_point = 20
+    minimum_power_point = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = (pp) * 1000
 
     @property
     def _x_value(self):
         return Swag(self._raw_x)
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: UserId):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         owner = chain._accounts[owner_id]
         target = chain._accounts[target_id]
         target.check_immunity(self)
@@ -43,17 +45,17 @@ class HoldUp(Active):
     effect = "Permet de voler {} bloqué(s) à un utilisateur."
     target = Targets().user(1)
 
-    minimum_power_point = 50
+    minimum_power_point = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = (pp) * 1000
 
     @property
     def _x_value(self):
-        return Swag(self._raw_x)
+        return Swag(self._raw_x * 1.2)
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: UserId):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         owner = chain._accounts[owner_id]
         target = chain._accounts[target_id]
         target.check_immunity(self)
@@ -70,17 +72,17 @@ class Takeover(Active):
     effect = "Permet de voler {} en cours de génération d'un utilisateur."
     target = Targets().user(1)
 
-    minimum_power_point = 60
+    minimum_power_point = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = pp
 
     @property
     def _x_value(self):
-        return Style(stylog(self._raw_x))
+        return Style(0.01 * self._raw_x * 2.5)
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: UserId):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         owner = chain._accounts[owner_id]
         target = chain._accounts[target_id]
         target.check_immunity(self)
@@ -97,17 +99,17 @@ class AssetLoss(Active):
     effect = "Permet de débloquer {} d'un utilisateur."
     target = Targets().user(1)
 
-    minimum_power_point = 10
+    minimum_power_point = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = (pp) * 1000
 
     @property
     def _x_value(self):
-        return Swag(self._raw_x)
+        return Swag(self._raw_x * 2)
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: UserId):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         target = chain._accounts[target_id]
         target.check_immunity(self)
         try:
@@ -123,17 +125,17 @@ class InsiderTrading(Active):
     effect = "Permet faire disparaître {} en cours de génération d'un utilisateur."
     target = Targets().user(1)
 
-    minimum_power_point = 30
+    minimum_power_point = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = pp
 
     @property
     def _x_value(self):
-        return Style(stylog(self._raw_x))
+        return Style(0.01 * self._raw_x * 3)
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: UserId):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         target = chain._accounts[target_id]
         target.check_immunity(self)
         try:
@@ -147,17 +149,17 @@ class DryLoss(Active):
     effect = "Permet de faire disparaître {} d'un compte d'un utilisateur."
     target = Targets().user(1)
 
-    minimum_power_point = 0
+    minimum_power_point = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = (pp) * 1000
 
     @property
     def _x_value(self):
-        return Swag(self._raw_x)
+        return Swag(self._raw_x * 1.75)
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: UserId):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         target = chain._accounts[target_id]
         target.check_immunity(self)
         try:
@@ -171,17 +173,17 @@ class TaxAudit(Active):
     effect = "Permet d'envoyer {} d'un utilisateur vers la €agnotte '€'."
     target = Targets().user(1)
 
-    minimum_power_point = 15
+    minimum_power_point = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
-        self._raw_x = (pp + 1 - self.minimum_power_point) * 1000
+        self._raw_x = (pp) * 1000
 
     @property
     def _x_value(self):
-        return Swag(self._raw_x)
+        return Swag(self._raw_x * 1.75)
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: UserId):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         zero = chain._accounts["€"]  # "€Bobbycratie"? can't remember what I meant
         target = chain._accounts[target_id]
         target.check_immunity(self)
@@ -198,7 +200,7 @@ class BankingBan(Active):
     effect = "Empêche quelqu'un de miner pendant {} jours."
     target = Targets().user(1)
 
-    minimum_power_point = 100
+    minimum_power_point = 1000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -206,9 +208,9 @@ class BankingBan(Active):
 
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x))
+        return int(floor(stylog(self._raw_x)))  # Ne devrait jamais atteindre moins de 1
 
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: UserId):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         target = chain._accounts[target_id]
         target.check_immunity(self)
         target.last_mining_date = target.last_mining_date.shift(days=self._x_value)

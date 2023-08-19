@@ -12,10 +12,11 @@ from swag.artefacts.assets import AssetDict
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
 from swag.blocks.system_blocks import AssetUploadBlock
-from swag.blocks.yfu_blocks import YfuGenerationBlock, ZenitudeBlock
+from swag.blocks.yfu_blocks import YfuGenerationBlock
 
 from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId, YfuId
+from swag.powers.power import Active
 from swag.yfu import Yfu, YfuDict
 from utils import randomly_distribute
 
@@ -40,7 +41,7 @@ class SwagChain:
     _accounts: Accounts = attrib(init=False, factory=Accounts)
     _guilds: Dict[int, Guild] = attrib(init=False, factory=GuildDict)
     _yfus: Dict[YfuId, Yfu] = attrib(init=False, factory=YfuDict)
-    _assets:Dict[str, str] = attrib(init=False, factory=AssetDict)
+    _assets: Dict[str, str] = attrib(init=False, factory=AssetDict)
 
     def __attrs_post_init__(self):
         for block in self._chain:
@@ -56,7 +57,7 @@ class SwagChain:
         for block in blocks:
             self.append(block)
 
-    def remove(self,block):
+    def remove(self, block):
         self._chain.remove(block)
 
     def account(self, user_id):
@@ -127,19 +128,30 @@ class SwagChain:
     async def clean_old_style_gen_block(self):
         ##Get the oldest blocking date of all accounts :
         try:
-            oldest_blocking_date = min([user_account.blocking_date for user_account in self._accounts.users.values() if user_account.blocking_date != None])
+            oldest_blocking_date = min(
+                [
+                    user_account.blocking_date
+                    for user_account in self._accounts.users.values()
+                    if user_account.blocking_date != None
+                ]
+            )
         except ValueError as e:
-            #If no blocking date is found, then we can clean all the StyleGeneration
+            # If no blocking date is found, then we can clean all the StyleGeneration
             oldest_blocking_date = utcnow()
-        
+
         print(f"Nettoyage de la blockchain avant la date du {oldest_blocking_date}\n")
         ##Get all the StyleGenerationBlock which was added before this date
-        old_style_gen_block = [block for block in self._chain if isinstance(block,StyleGeneration) and block.timestamp.datetime < oldest_blocking_date]
+        old_style_gen_block = [
+            block
+            for block in self._chain
+            if isinstance(block, StyleGeneration)
+            and block.timestamp.datetime < oldest_blocking_date
+        ]
 
         ##Remove all those useless block from the chain
         for block in old_style_gen_block:
             await self.remove(block)
-            
+
     @property
     def forbes(self):
         return sorted(
@@ -160,10 +172,7 @@ class SwagChain:
 
     @property
     def yfus(self):
-        return(
-            (yfu_id, Info(yfu))
-            for yfu_id, yfu in self._yfus.items()
-        )
+        return ((yfu_id, Info(yfu)) for yfu_id, yfu in self._yfus.items())
 
     @property
     def swaggest(self):
@@ -260,11 +269,9 @@ class SwagChain:
 
         return account_list, swag_gain, style_gain, winner_rest, swag_rest, style_rest
 
-
-    async def generate_yfu(self,author : UserId):
-
-        #Recherche du fichier de l'avatar
-        avatar_local_folder = "ressources/Yfu/avatar/psi-1.0/"  # TODO à renseigner ailleurs ? psi different en fonction des powerpoint
+    async def generate_yfu(self, author: UserId):
+        # Recherche du fichier de l'avatar
+        avatar_local_folder = "ressources/Yfu/avatars/GEN_1"
         avatar_file = random.choice(
             [
                 os.path.join(avatar_local_folder, file)
@@ -274,77 +281,58 @@ class SwagChain:
 
         new_yfu_id = YfuId(self.next_yfu_id)
 
-        #Upload de l'avatar par un AssetUploadBlock
+        # Upload de l'avatar par un AssetUploadBlock
         avatar_asset_block = AssetUploadBlock(
-            issuer_id = author,
-            asset_key = f"{new_yfu_id}_avatar",
-            local_path = avatar_file
+            issuer_id=author, asset_key=f"{new_yfu_id}_avatar", local_path=avatar_file
         )
 
         await self.append(avatar_asset_block)
-        
+
         # Powerpoint rolling
         # Powerpoint generation is mining divided by 1000
         rolling_power_point = int(self._accounts.users[author].mine(self) / 1000)
 
-        power, cost_greed_zenitude = await self.generate_yfu_power(rolling_power_point)
+        power, cost = await self.generate_yfu_power(rolling_power_point)
 
-        #Generation de la Yfu
+        # Generation de la Yfu
         yfu_block = YfuGenerationBlock(
             issuer_id=author,
             user_id=author,
             yfu_id=new_yfu_id,
             avatar_asset_key=avatar_asset_block.asset_key,
-            power_point = rolling_power_point,
-            power = power,
-            initial_activation_cost = cost_greed_zenitude[0],
-            greed = cost_greed_zenitude[1],
-            zenitude = cost_greed_zenitude[2],
+            power_point=rolling_power_point,
+            power=power,
+            initial_activation_cost=cost,
         )
 
         await self.append(yfu_block)
 
         return yfu_block.yfu_id
 
-    async def generate_yfu_power(self, yfu_powerpoint : int):
+    async def generate_yfu_power(self, yfu_powerpoint: int):
         """
-        Generate yfu power and Cost Greed Zenitude
-        return : tuple (Power,(Cost, Greed, Zenitude)))
+        Generate yfu power and Cost
+        return : tuple (Power, Cost))
         """
-        power_cgz_distribution = randomly_distribute(yfu_powerpoint,2)
-
-
         available_power = [
-    cls for _, cls in powers.__dict__.items() if isinstance(cls, type)
+            cls for _, cls in powers.__dict__.items() if isinstance(cls, type)
         ]
         power_found = False
 
-        while(not power_found):
+        power_cost_distribution = [0, 0]
+
+        while not power_found:
+            power_cost_distribution[0] = yfu_powerpoint
+
             power_class = random.choice(available_power)
 
-            if power_cgz_distribution[0] >= power_class.minimum_power_point:
-                yfu_power = power_class(power_cgz_distribution[0])
+            if issubclass(power_class, Active):
+                power_cost_distribution = randomly_distribute(yfu_powerpoint, 2)
+
+            if power_cost_distribution[0] >= power_class.minimum_power_point:
+                yfu_power = power_class(power_cost_distribution[0])
                 power_found = True
 
-        c_g_z_distribution = randomly_distribute(power_cgz_distribution[1],3)
+        cost = Style(yfu_powerpoint * 0.01) - Style(power_cost_distribution[1] * 0.01)
 
-        ## Elaborate cgz
-
-        # Inverse de la courbe de la zenitude * 10. Le coût max est de 10 style, et la limite atteint 0.
-        cost = max(Style((1 / (stylog(c_g_z_distribution[0] * 1000) * 72 * 2 + 1)) * 10),Style(0.0001))
-
-        try:
-            #Suit une courbe asymtotique dont la limite touche à 1. On met 20 à la limite grace au min
-            greed = Decimal(min((200 / c_g_z_distribution[1]) + 1, 20)).quantize(Decimal(".1"), rounding=ROUND_05UP)
-        except ZeroDivisionError:
-            greed = 20
-
-        #Suit le stylog sur une génération de style sur 6 jours avec une valeur minimum à 1
-        zen = (stylog(c_g_z_distribution[2] * 1000) * 72 * 2 + 1).quantize(Decimal(".1"), rounding=ROUND_05UP)
-
-        return (yfu_power,(cost,greed,zen))
-
-    async def apply_zenitude(self):
-        await self.append(ZenitudeBlock(issuer_id=self._id))
-        
-
+        return (yfu_power, cost)

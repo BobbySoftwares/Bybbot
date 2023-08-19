@@ -159,6 +159,21 @@ class InvalidId(Exception):
 class BadOwnership(Exception):
     def __init__(self, user_id, id) -> None :
         self.id = id
-        message = f"La Yfu {id} n'apartient pas à {user_id}"
+        message = f"La ¥fu {id} n'apartient pas à {user_id}"
+        super().__init__(message)
+    pass
+
+class YfuNotReady(Exception):
+    def __init__(self, id) -> None :
+        self.id = id
+        message = f"La ¥fu {id} ne peut pas encore être activé aujourd'hui"
+        super().__init__(message)
+    pass
+
+class CantUseYfuPower(Exception):
+    def __init__(self, id, target) -> None :
+        self.id = id
+        self.target = target
+        message = f"{id} ne peut pas utilisé son pouvoir contre {target}"
         super().__init__(message)
     pass

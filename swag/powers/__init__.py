@@ -44,7 +44,7 @@ from .actives.untargetted_actives import (
 #### AVAILABLE PASSIVE POWERS ####
 
 from .passives.bonus_passives import (
-    InsolentLuck,
+    # InsolentLuck, # pas interressant pour le moment
     TaxOptimization,
     MauritiusCommercialBank,
     StockPortfolio,

@@ -1,5 +1,5 @@
 from decimal import Decimal, ROUND_UP
-from numpy import log1p
+from numpy import log1p, sqrt
 
 from swag.currencies import Style
 

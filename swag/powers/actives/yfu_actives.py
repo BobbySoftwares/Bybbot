@@ -1,5 +1,6 @@
 from copy import deepcopy
 from typing import TYPE_CHECKING, List
+from swag.errors import CantUseYfuPower
 from swag.powers.actives.user_actives import Targets
 from swag.id import AccountId, YfuId
 from swag.powers.power import Active
@@ -10,15 +11,28 @@ if TYPE_CHECKING:
 
 class Kidnapping(Active):
     title = "Kidnapping"
-    effect = "Permet de voler une ¥fu."
+    effect = "Permet de voler une ¥fu ayant au plus {} ₱₱"
     target = Targets().yfu(1)
     
-    minimum_power_point = 200
+    minimum_power_point = 250
+
+    def __init__(self, pp) -> None:
+        super().__init__(pp)
+        self._raw_x = (pp)
+
+    @property
+    def _x_value(self):
+        return self._raw_x
 
     def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: YfuId):
+
         owner = chain._accounts[owner_id]
         yfu = chain._yfus[target_id]
         target = chain._accounts[yfu.owner_id]
+
+        if yfu.power_point > self._x_value:
+            raise CantUseYfuPower(owner_id,target_id)
+
         target.check_immunity(self)
         target.yfu_wallet.remove(target_id)
         owner.yfu_wallet.add(target_id)
@@ -84,7 +98,7 @@ class Copy(Active):
     effect = "Permet de copier ponctuellement l'actif d'une ¥fu."
     target = Targets().yfu(1)
 
-    minimum_power_point = 400
+    minimum_power_point = 150
 
     def _activation(
         self, chain: 'SwagChain', owner_id: AccountId, target_id: YfuId, payload: List

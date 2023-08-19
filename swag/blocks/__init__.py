@@ -19,7 +19,6 @@ from .yfu_blocks import (
     YfuGenerationBlock,
     RenameYfuBlock,
     TokenTransactionBlock,
-    ZenitudeBlock 
 )
 
 from .system_blocks import ( 
