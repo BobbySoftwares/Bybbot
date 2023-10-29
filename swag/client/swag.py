@@ -55,19 +55,31 @@ class SwagCommand(commands.Cog):
         block = Mining(issuer_id=interaction.author.id, user_id=interaction.author.id)
         await self.swag_client.swagchain.append(block)
 
+        detailed_mining_message = "\n\n> *Détail du minage :* "
+
+        for i, mining in enumerate(block.harvest):
+            avantage_len = len(mining["details"]["avantages"])
+            detailed_mining_message += (
+                f"\n> *{f'{i+1}.' if len(block.harvest) > 1 else ''}"
+                f"{mining['details']['multiplier']} × "
+                f"{'max(' if avantage_len > 1 else ''}{', '.join(format_number(a) for a in mining['details']['avantages'])}{')' if avantage_len > 1 else ''}"
+                f" = {Swag(mining['result'])}*"
+            )
+
         await interaction.response.send_message(
-            f"⛏ {interaction.author.mention} a miné `{block.amount}` !"
+            f"## ⛏ {interaction.author.mention} a miné `{block.amount}` !"
+            + detailed_mining_message
         )
 
         # Yfu Generation
-        if block.amount >= YFU_GENERATION_MINING_THRESHOLD:
+        if block.amount <= YFU_GENERATION_MINING_THRESHOLD:
             new_yfu_id = await self.swag_client.swagchain.generate_yfu(
                 UserId(interaction.author.id)
             )
             new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
 
             await interaction.followup.send(
-                f"{interaction.author.mention}, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
+                f"{interaction.author.mention}, suite à votre minage, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
                 embed=YfuEmbed.from_yfu(new_yfu),
             )
 

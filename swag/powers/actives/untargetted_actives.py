@@ -178,7 +178,7 @@ class TaxEvasion(Active):
         ):
             raise NotImplementedError
 
-        amounts = [Swag(bonuses.roll()) for _ in range(self._x_value)]
+        amounts = [Swag(bonuses.roll()["result"]) for _ in range(self._x_value)]
         owner += sum(amounts)
 
 

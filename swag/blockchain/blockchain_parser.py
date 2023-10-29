@@ -3,7 +3,7 @@ from typing import Any, Dict, Type, Union
 from swag import powers
 
 from swag.currencies import Style, Swag
-from swag.id import CagnotteId, UserId, YfuId
+from swag.id import AccountId, CagnotteId, GenericId, UserId, YfuId, get_id_from_str
 from swag.powers.power import Power
 
 # from cattr import structure, unstructure
@@ -22,10 +22,7 @@ def structure_money(o, t):
 
 
 def structure_id(o, _):
-    try:
-        return UserId(int(o))
-    except ValueError:
-        return CagnotteId(o)
+    return get_id_from_str(str(o))
 
 
 def unstructure_id(o):
@@ -75,7 +72,8 @@ converter.register_structure_hook(
 converter.register_structure_hook(UserId, lambda o, _: UserId(o))
 converter.register_structure_hook(CagnotteId, lambda o, _: CagnotteId(o))
 converter.register_structure_hook(YfuId, lambda o, _: YfuId(o))
-converter.register_structure_hook(Union[UserId, CagnotteId], structure_id)
+converter.register_structure_hook(AccountId, structure_id)
+converter.register_structure_hook(GenericId, structure_id)
 
 block_types = {
     name: cls for name, cls in blocks.__dict__.items() if isinstance(cls, type)

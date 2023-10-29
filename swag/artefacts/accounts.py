@@ -79,7 +79,7 @@ class Account:
         pass
 
     def mine(self, chain):
-        return self.bonuses(chain).roll()
+        return self.bonuses(chain).roll()["result"]
 
     def bonuses(self, chain, **kwargs):
         bonuses = Bonuses(**kwargs)
