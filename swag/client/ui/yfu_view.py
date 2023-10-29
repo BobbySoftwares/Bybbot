@@ -458,7 +458,7 @@ class YfuEmbed(disnake.Embed):
         rarity = YfuRarity.from_power_point(yfu.power_point)
 
         yfu_dict = {
-            "title": f"{yfu.clan} {yfu.first_name} {yfu.last_name} {'✪'*rarity.get_number_of_star()}",
+            "title": f"{yfu.clan} {yfu.first_name} {yfu.last_name} {cls.get_star_icons(rarity.get_number_of_star())}",
             "image": {"url": yfu.avatar_url},
             "color": rarity.get_color(),
             "fields": [
@@ -491,3 +491,7 @@ class YfuEmbed(disnake.Embed):
             )
 
         return disnake.Embed.from_dict(yfu_dict)
+
+    @classmethod
+    def get_star_icons(cls, number_of_star: int) -> str:
+        return ("☆" * (int(number_of_star / 5))) + ("★" * (number_of_star % 5))
