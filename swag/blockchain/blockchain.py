@@ -5,9 +5,10 @@ import random
 from typing import Dict, List
 from arrow import utcnow
 from attr import attrs, attrib
-from numpy import array
+from numpy import array, sqrt
+from numpy.random import triangular
 
-from swag.artefacts.accounts import Accounts, Info
+from swag.artefacts.accounts import Accounts
 from swag.artefacts.assets import AssetDict
 from swag.artefacts.guild import GuildDict
 from swag.blocks.swag_blocks import Transaction
@@ -33,6 +34,25 @@ from .. import powers
 
 from ..errors import StyleStillBlocked
 from swag.stylog import stylog
+
+
+def make_info(obj):
+    cls = type(obj)
+
+    class Info(cls):
+        def __init__(self, orig):
+            self.__dict__ = orig.__dict__
+
+            def setattr(self, __name: str, __value) -> None:
+                raise AttributeError
+
+            def delattr(self, __name: str) -> None:
+                raise AttributeError
+
+            self.__setattr__ = setattr
+            self.__delattr__ = delattr
+
+    return Info(obj)
 
 
 @attrs
@@ -61,13 +81,13 @@ class SwagChain:
         self._chain.remove(block)
 
     def account(self, user_id):
-        return Info(self._accounts[UserId(user_id)])
+        return make_info(self._accounts[UserId(user_id)])
 
     def cagnotte(self, cagnotte_id):
-        return Info(self._accounts[CagnotteId(cagnotte_id)])
+        return make_info(self._accounts[CagnotteId(cagnotte_id)])
 
     def yfu(self, yfu_id):
-        return Info(self._yfus[YfuId(yfu_id)])
+        return make_info(self._yfus[YfuId(yfu_id)])
 
     def _guild(self, guild_id):
         try:
@@ -156,7 +176,7 @@ class SwagChain:
     def forbes(self):
         return sorted(
             (
-                (user_id, Info(user_account))
+                (user_id, make_info(user_account))
                 for user_id, user_account in self._accounts.users.items()
             ),
             key=lambda item: item[1].swag_balance,
@@ -166,13 +186,13 @@ class SwagChain:
     @property
     def cagnottes(self):
         return (
-            (cagnotte_id, Info(cagnotte))
+            (cagnotte_id, make_info(cagnotte))
             for cagnotte_id, cagnotte in self._accounts.cagnottes.items()
         )
 
     @property
     def yfus(self):
-        return ((yfu_id, Info(yfu)) for yfu_id, yfu in self._yfus.items())
+        return ((yfu_id, make_info(yfu)) for yfu_id, yfu in self._yfus.items())
 
     @property
     def swaggest(self):
@@ -289,10 +309,9 @@ class SwagChain:
         await self.append(avatar_asset_block)
 
         # Powerpoint rolling
-        # Powerpoint generation is mining divided by 1000
-        rolling_power_point = int(self._accounts.users[author].mine(self) / 1000)
+        rolling_power_point = int(self._accounts.users[author].mine(self))
 
-        power, cost = await self.generate_yfu_power(rolling_power_point)
+        yfu_powerpoint, power, cost = await self.generate_yfu_power(rolling_power_point)
 
         # Generation de la Yfu
         yfu_block = YfuGenerationBlock(
@@ -300,7 +319,7 @@ class SwagChain:
             user_id=author,
             yfu_id=new_yfu_id,
             avatar_asset_key=avatar_asset_block.asset_key,
-            power_point=rolling_power_point,
+            power_point=yfu_powerpoint,
             power=power,
             initial_activation_cost=cost,
         )
@@ -309,30 +328,38 @@ class SwagChain:
 
         return yfu_block.yfu_id
 
-    async def generate_yfu_power(self, yfu_powerpoint: int):
+    async def generate_yfu_power(self, powerpoint_roll: int):
         """
         Generate yfu power and Cost
-        return : tuple (Power, Cost))
+        return : tuple (Powerpoint ,Power, Cost))
         """
         available_power = [
             cls for _, cls in powers.__dict__.items() if isinstance(cls, type)
         ]
         power_found = False
 
-        power_cost_distribution = [0, 0]
+        # PowerPoint de la Yfu, décrivant la puissance générale de la Yfu au vu de son pouvoir et de son coût
+        yfu_powerpoint = int(powerpoint_roll / 1000)
+
+        # Variable aléatoire permettant de faire des yfu qui font pareil que des yfus de puissance inférieur
+        # Loi de propabilité 0 et 1 tirée suivant une loi triangulaire de mode 1 (aka p(x) = 2 • x)
+        # N'est utilisé que si le pouvoir tiré est actif
+        dampening = triangular(0, 1, 1)
 
         while not power_found:
-            power_cost_distribution[0] = yfu_powerpoint
-
             power_class = random.choice(available_power)
 
             if issubclass(power_class, Active):
-                power_cost_distribution = randomly_distribute(yfu_powerpoint, 2)
+                puissance_pouvoir = int(dampening * yfu_powerpoint)
+            else:
+                # Pas de Dampening pour les pouvoirs passifs.
+                puissance_pouvoir = yfu_powerpoint
 
-            if power_cost_distribution[0] >= power_class.minimum_power_point:
-                yfu_power = power_class(power_cost_distribution[0])
+            if puissance_pouvoir >= power_class.minimum_power_point:
+                yfu_power = power_class(puissance_pouvoir)
                 power_found = True
 
-        cost = Style(yfu_powerpoint * 0.01) - Style(power_cost_distribution[1] * 0.01)
+        initial_cost = 4 * dampening * sqrt(powerpoint_roll / 100000)
+        initial_cost = Style(max(initial_cost, 0.001))
 
-        return (yfu_power, cost)
+        return (yfu_powerpoint, yfu_power, initial_cost)

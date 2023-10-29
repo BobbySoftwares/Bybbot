@@ -5,6 +5,7 @@ import disnake
 from typing import TYPE_CHECKING
 from swag.errors import IncorrectYfuName
 from swag.id import CagnotteId, UserId, YfuId, get_id_from_str
+from swag.powers.power import Active, Passive
 from swag.powers.target import TargetProperty, TargetType
 from swag.yfu import Yfu, YfuRarity
 from swag.blocks.yfu_blocks import RenameYfuBlock, TokenTransactionBlock
@@ -157,14 +158,16 @@ class YfuNavigation(disnake.ui.View):
         # activate button
         if (
             self.swag_client.swagchain.account(self.user_id).style_balance
-            < self.selected_yfu.activation_cost
+            < self.selected_yfu.cost
             or self.selected_yfu.last_activation_date.date() == utcnow().date()
         ):
             self.activate_button.style = disnake.ButtonStyle.red
             self.activate_button.disabled = True
         else:
             self.activate_button.style = disnake.ButtonStyle.green
-            self.activate_button.disabled = self.selected_yfu.power.type == "[PASSIF]"
+            self.activate_button.disabled = issubclass(
+                self.selected_yfu.power.__class__, Passive
+            )
 
         # Baptize button
         # Is disabled if it's already baptized
@@ -469,7 +472,7 @@ class YfuEmbed(disnake.Embed):
                 },
             ],
             "footer": {
-                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t {yfu.power_point}₱₱ - {yfu.id}"
+                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {yfu.power_point}₱₱ - {yfu.id}"
             },
         }
 
@@ -478,9 +481,9 @@ class YfuEmbed(disnake.Embed):
         else:
             last_activation_view = yfu.last_activation_date.humanize(locale="fr_FR")
 
-        if yfu.power.type == "[ACTIF]":
+        if issubclass(yfu.power.__class__, Active):
             yfu_dict["fields"].append(
-                {"name": "Coût", "value": f"{yfu.activation_cost}", "inline": True}
+                {"name": "Coût", "value": f"{yfu.cost}", "inline": True}
             )
             yfu_dict["fields"].append(
                 {

@@ -18,6 +18,7 @@ class Looting(Active):
     title = "Pillage"
     effect = "Permet de voler {} à tout le monde !"
     target = Targets()  # Pas de target car c'est tout le monde !
+    cost_factor = 4
 
     minimum_power_point = 2000
 
@@ -125,6 +126,7 @@ class FiredampCryptoExplosion(Active):
     title = "Cryptogrisou"
     effect = "Empêche toute le monde sauf l'utilisateur de miner pendant {} jours."
     target = Targets()  #  Pas de target car c'est tout le monde !
+    cost_factor = 1.5
 
     minimum_power_point = 64000
 
@@ -154,6 +156,7 @@ class TaxEvasion(Active):
     title = "Fraude fiscale"
     effect = "Permet de miner {} fois de plus par jour."
     target = Targets()
+    cost_factor = 2
 
     minimum_power_point = 2000
 
@@ -184,6 +187,7 @@ class Harvest(Active):
     title = "Moisson"
     effect = "Permet de tenter de récolter une ¥fu."
     target = Targets()
+    cost_factor = 2
 
     def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
         raise NotImplementedError

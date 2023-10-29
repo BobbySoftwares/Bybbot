@@ -17,6 +17,7 @@ class Robbery(Active):
     title = "Cambriolage"
     effect = "Permet de voler {} à un utilisateur."
     target = Targets().user(1)
+    cost_factor = 1
 
     minimum_power_point = 1
 
@@ -44,6 +45,7 @@ class HoldUp(Active):
     title = "Hold-up"
     effect = "Permet de voler {} bloqué(s) à un utilisateur."
     target = Targets().user(1)
+    cost_factor = 0.75
 
     minimum_power_point = 1
 
@@ -53,7 +55,7 @@ class HoldUp(Active):
 
     @property
     def _x_value(self):
-        return Swag(self._raw_x * 1.2)
+        return Swag(self._raw_x * 1.25)
 
     def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
         owner = chain._accounts[owner_id]
@@ -71,6 +73,7 @@ class Takeover(Active):
     title = "OPA"
     effect = "Permet de voler {} en cours de génération d'un utilisateur."
     target = Targets().user(1)
+    cost_factor = 0.5
 
     minimum_power_point = 1
 
@@ -98,6 +101,7 @@ class AssetLoss(Active):
     title = "Perte d'actifs"
     effect = "Permet de débloquer {} d'un utilisateur."
     target = Targets().user(1)
+    cost_factor = 0.5
 
     minimum_power_point = 1
 
@@ -124,6 +128,7 @@ class InsiderTrading(Active):
     title = "Délit d'initié"
     effect = "Permet faire disparaître {} en cours de génération d'un utilisateur."
     target = Targets().user(1)
+    cost_factor = 0.75
 
     minimum_power_point = 1
 
@@ -148,6 +153,7 @@ class DryLoss(Active):
     title = "Perte sèche"
     effect = "Permet de faire disparaître {} d'un compte d'un utilisateur."
     target = Targets().user(1)
+    cost_factor = 0.75
 
     minimum_power_point = 1
 
@@ -172,6 +178,7 @@ class TaxAudit(Active):
     title = "Contrôle fiscal"
     effect = "Permet d'envoyer {} d'un utilisateur vers la €agnotte '€'."
     target = Targets().user(1)
+    cost_factor = 0.75
 
     minimum_power_point = 1
 
@@ -199,6 +206,7 @@ class BankingBan(Active):
     title = "Interdit bancaire"
     effect = "Empêche quelqu'un de miner pendant {} jours."
     target = Targets().user(1)
+    cost_factor = 1
 
     minimum_power_point = 1000
 

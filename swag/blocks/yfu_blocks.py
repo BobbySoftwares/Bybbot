@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 from ..currencies import Style
 
-from ..id import AccountId,CagnotteId, GenericId, UserId, YfuId
+from ..id import AccountId, CagnotteId, GenericId, UserId, YfuId
 
 from ..utils import EMOJI_CLAN_YFU
 from ..cauchy import roll
@@ -54,25 +54,23 @@ class YfuGenerationBlock(Block):
     def _generate_clan(self):
         return random.choice(EMOJI_CLAN_YFU)
 
-
     def validate(self, db: SwagChain):
         pass  ##TODO
 
     def execute(self, db: SwagChain):
         db._accounts[self.user_id].yfu_wallet.add(self.yfu_id)
         db._yfus[self.yfu_id] = Yfu(
-            owner_id = self.user_id,
-            id = self.yfu_id,
-            first_name = self.first_name,
-            last_name = self.last_name,
-            clan = self.clan,
-            avatar_url = db._assets[self.avatar_asset_key],
-            generation_date = self.timestamp,
-            timezone = db._accounts[self.user_id].timezone,
-            power_point = self.power_point,
-            initial_activation_cost = self.initial_activation_cost,
-            activation_cost = self.initial_activation_cost,
-            power = self.power,
+            owner_id=self.user_id,
+            id=self.yfu_id,
+            first_name=self.first_name,
+            last_name=self.last_name,
+            clan=self.clan,
+            avatar_url=db._assets[self.avatar_asset_key],
+            generation_date=self.timestamp,
+            timezone=db._accounts[self.user_id].timezone,
+            power_point=self.power_point,
+            initial_activation_cost=self.initial_activation_cost,
+            power=self.power,
         )
 
 
@@ -83,8 +81,8 @@ class YfuPowerActivation(Block):
 
     def validate(self, db: SwagChain):
         if self.account_id != db._yfus[self.yfu_id].owner_id:
-            raise BadOwnership(self.account_id,self.yfu_id)
-        if self.timestamp.date() == db._yfus[self.yfu_id].last_activation_date.date() :
+            raise BadOwnership(self.account_id, self.yfu_id)
+        if self.timestamp.date() == db._yfus[self.yfu_id].last_activation_date.date():
             raise YfuNotReady(self.yfu_id)
 
     def execute(self, db: SwagChain):
@@ -93,7 +91,8 @@ class YfuPowerActivation(Block):
         db._accounts[self.account_id] -= yfu.activation_cost
 
         yfu.activate(db, self.targets, self.timestamp)
-        
+
+
 @attrs(frozen=True, kw_only=True)
 class TokenTransactionBlock(Block):
     giver_id = attrib(type=Union[UserId, CagnotteId])
@@ -102,7 +101,7 @@ class TokenTransactionBlock(Block):
 
     def validate(self, db: SwagChain):
         if self.giver_id != db._yfus[self.token_id].owner_id:
-            raise BadOwnership(self.giver_id,self.token_id)
+            raise BadOwnership(self.giver_id, self.token_id)
 
     def execute(self, db: SwagChain):
         # moving token through account
@@ -121,7 +120,7 @@ class RenameYfuBlock(Block):
 
     def validate(self, db: SwagChain):
         if self.user_id != db._yfus[self.yfu_id].owner_id:
-            raise BadOwnership(self.user_id,self.yfu_id)
+            raise BadOwnership(self.user_id, self.yfu_id)
 
     def execute(self, db: SwagChain):
         db._yfus[self.yfu_id].first_name = self.new_first_name

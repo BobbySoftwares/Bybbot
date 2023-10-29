@@ -8,13 +8,10 @@ from swag.id import AccountId, GenericId, YfuId
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
 
+
 class Power:
     @abstractproperty
     def title(self):
-        pass
-
-    @abstractproperty
-    def type(self) -> str:
         pass
 
     @abstractproperty
@@ -28,7 +25,17 @@ class Power:
         """
         pass
 
-    def __init__(self,pp) -> None:
+    @abstractproperty
+    def cost_factor(self) -> float:
+        """
+            Multiplicative factor of cost for a power.
+            Is used to modify the final cost of a yfu power.
+        Returns:
+            int: cost factor should be never equal to 0 except for passive power
+        """
+        pass
+
+    def __init__(self, pp) -> None:
         self.power_point = pp
 
     def protection_cost(self, power):
@@ -41,7 +48,7 @@ class Power:
             return self.effect
 
     def has_value(self):
-        return hasattr(self,"_x_value")
+        return hasattr(self, "_x_value")
 
 
 class Active(Power):
@@ -49,21 +56,18 @@ class Active(Power):
     def target(self):
         pass
 
-    @property
-    def type(self) -> str:
-        return "[ACTIF]"
-
     @abstractmethod
-    def _activation(self, chain: 'SwagChain', owner_id: AccountId, target_id: GenericId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, target_id: GenericId
+    ):
         pass
 
-class Passive(Power):
 
+class Passive(Power):
     @property
-    def type(self) -> str:
-        return "[PASSIF]"
+    def cost_factor(self) -> float:
+        return 0  # les pouvoirs actifs n'ont pas de coût par définition
 
     @abstractmethod
     def add_bonus(self, bonuses: Bonuses):
         pass
-

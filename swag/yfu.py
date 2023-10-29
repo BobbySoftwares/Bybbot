@@ -25,11 +25,14 @@ class Yfu:
 
     power_point: int
     initial_activation_cost: Style
-    activation_cost: Style
     power: Power
     last_activation_date: Arrow = attrib(default=Arrow.min)
 
     is_baptized: bool = attrib(default=False)
+
+    @property
+    def cost(self):
+        return self.initial_activation_cost * Style(self.power.cost_factor)
 
     def activate(self, db, targets, activation_date):
         self.power._activation(db, self.owner_id, targets)

@@ -15,6 +15,7 @@ class Embezzlement(Active):
     title = "Détournement de fonds"
     effect = "Permet de voler {} à une €agnotte."
     target = Targets().cagnotte(1)
+    cost_factor = 0.5
 
     minimum_power_point = 10
 
@@ -44,6 +45,7 @@ class DishonestJointVenture(Active):
     title = "Joint-venture malhonnête"
     effect = "Permet de voler {} à une €agnotte."
     target = Targets().cagnotte(1)
+    cost_factor = 0.5
 
     minimum_power_point = 10
 

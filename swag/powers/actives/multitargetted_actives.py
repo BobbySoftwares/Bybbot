@@ -13,6 +13,7 @@ class AfricanPrince(Active):
     title = "Prince africain"
     effect = "Permet de transférer {} d'un utilisateur vers un autre (sauf vous)."
     target = Targets().user(2, [TargetProperty.CASTER_NOT_INCLUDED])
+    cost_factor = 1.25
 
     minimum_power_point = 1
 
@@ -48,6 +49,7 @@ class BankAdministrationError(Active):
     tier = "SSS"
     effect = "Permet d'échanger le swag de deux joueurs"
     target = Targets().user(2)
+    cost_factor = 3
 
     minimum_power_point = 16000
 

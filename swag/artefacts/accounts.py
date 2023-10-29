@@ -25,20 +25,6 @@ from ..errors import (
 from ..currencies import Money, Swag, Style
 
 
-class Info:
-    def __init__(self, orig) -> None:
-        self.__dict__ = orig.__dict__
-
-        def setattr(self, __name: str, __value: Any) -> None:
-            raise AttributeError
-
-        def delattr(self, __name: str) -> None:
-            raise AttributeError
-
-        self.__setattr__ = setattr
-        self.__delattr__ = delattr
-
-
 @attrs(auto_attribs=True)
 class Account:
     swag_balance: Swag = attrib(init=False, default=Swag(0))
@@ -88,7 +74,7 @@ class Account:
         #     raise NotImplementedError
         # except NotEnoughStyleInBalance:
         #     pass
-        
+
         # TODO
         pass
 
@@ -100,7 +86,7 @@ class Account:
         for yfu_id in self.yfu_wallet:
             if issubclass(type(chain._yfus[yfu_id].power), Passive):
                 chain._yfus[yfu_id].power.add_bonus(bonuses)
-        
+
         return bonuses
 
 
@@ -116,7 +102,7 @@ class SwagAccount(Account):
     last_mining_date: Optional[Arrow] = None
     style_rate: Decimal = Decimal(100)
     blocked_swag: Swag = Swag(0)
-    blocking_date : Optional[Arrow] = None
+    blocking_date: Optional[Arrow] = None
     unblocking_date: Optional[Arrow] = None
     pending_style: Style = Style(0)
     timezone_lock_date: Optional[Arrow] = None
