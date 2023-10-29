@@ -60,14 +60,14 @@ class SwagCommand(commands.Cog):
         for i, mining in enumerate(block.harvest):
             avantage_len = len(mining["details"]["avantages"])
             detailed_mining_message += (
-                f"\n> *{f'{i+1}.' if len(block.harvest) > 1 else ''}"
+                f"\n> {f'{i+1}.' if len(block.harvest) > 1 else ''}"
                 f"{mining['details']['multiplier']} × "
                 f"{'max(' if avantage_len > 1 else ''}{', '.join(format_number(a) for a in mining['details']['avantages'])}{')' if avantage_len > 1 else ''}"
-                f" = {Swag(mining['result'])}*"
+                f" = {Swag(mining['result'])}"
             )
 
         await interaction.response.send_message(
-            f"## ⛏ {interaction.author.mention} a miné `{block.amount}` !"
+            f"## ⛏ {interaction.author.mention} a miné {block.amount} !"
             + detailed_mining_message
         )
 
@@ -114,7 +114,9 @@ class SwagCommand(commands.Cog):
             else ""
         )
         await interaction.response.send_message(
-            embed=SwagAccountEmbed.from_swag_account(user_infos, utilisateur),
+            embed=SwagAccountEmbed.from_swag_account(
+                user_infos, user_infos.bonuses(self.swag_client.swagchain), utilisateur
+            ),
             ephemeral=True,
         )
 

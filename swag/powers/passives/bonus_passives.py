@@ -132,4 +132,4 @@ class SuccessfulInvestment(Passive):
         )
 
     def add_bonus(self, bonuses: Bonuses):
-        bonuses.blocking_bonus += self._x_value / 100
+        bonuses.blocking_bonus += self._x_value

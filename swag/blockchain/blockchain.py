@@ -143,7 +143,9 @@ class SwagChain:
             )
 
         for rank, user_account in enumerate(forbes):
-            user_account.style_rate = rate(rank)
+            user_account.style_rate = (
+                rate(rank) + user_account.bonuses(self).blocking_bonus
+            )
 
     async def clean_old_style_gen_block(self):
         ##Get the oldest blocking date of all accounts :
