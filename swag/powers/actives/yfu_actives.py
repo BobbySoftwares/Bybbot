@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, List
 from swag.errors import CantUseYfuPower
 from swag.powers.actives.user_actives import Targets
-from swag.id import AccountId, YfuId
+from swag.id import AccountId, GenericId, YfuId
 from swag.powers.power import Active
 from swag.powers.target import TargetProperty, Targets
 
@@ -26,17 +26,19 @@ class Kidnapping(Active):
     def _x_value(self):
         return self._raw_x
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: YfuId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[YfuId]
+    ):
         owner = chain._accounts[owner_id]
-        yfu = chain._yfus[target_id]
+        yfu = chain._yfus[targets[0]]
         target = chain._accounts[yfu.owner_id]
 
         if yfu.power_point > self._x_value:
-            raise CantUseYfuPower(owner_id, target_id)
+            raise CantUseYfuPower(owner_id, targets[0])
 
         target.check_immunity(self)
-        target.yfu_wallet.remove(target_id)
-        owner.yfu_wallet.add(target_id)
+        target.yfu_wallet.remove(targets[0])
+        owner.yfu_wallet.add(targets[0])
         yfu.owner_id = owner_id
 
 
@@ -48,11 +50,13 @@ class Resurrection(Active):
 
     minimum_power_point = 300
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: YfuId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[YfuId]
+    ):
         owner = chain._accounts[owner_id]
-        yfu = chain._yfus[target_id]
+        yfu = chain._yfus[targets[0]]
         if yfu.owner_id == owner_id:
-            owner.yfu_wallet.add(target_id)
+            owner.yfu_wallet.add(targets[0])
         else:
             raise NotImplementedError
 
@@ -65,16 +69,18 @@ class UltimateResurrection(Active):
 
     minimum_power_point = 500
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: YfuId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[YfuId]
+    ):
         owner = chain._accounts[owner_id]
-        yfu = chain._yfus[target_id]
+        yfu = chain._yfus[targets[0]]
         target = chain._accounts[yfu.owner_id]
         if owner_id != yfu.owner_id:
             target.check_immunity(self)
-        if target_id in target.yfu_wallet:
+        if targets[0] in target.yfu_wallet:
             raise NotImplementedError
         yfu.owner_id = owner_id
-        owner.yfu_wallet.add(target_id)
+        owner.yfu_wallet.add(targets[0])
 
 
 class Cloning(Active):
@@ -85,9 +91,11 @@ class Cloning(Active):
 
     minimum_power_point = 300
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: YfuId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[YfuId]
+    ):
         owner = chain._accounts[owner_id]
-        yfu = deepcopy(chain._yfus[target_id])
+        yfu = deepcopy(chain._yfus[targets[0]])
         yfu.owner_id = owner_id
         yfu.id = YfuId(chain.next_yfu_id)
         owner.yfu_wallet.add(yfu)
@@ -104,14 +112,13 @@ class Copy(Active):
     minimum_power_point = 150
 
     def _activation(
-        self, chain: "SwagChain", owner_id: AccountId, target_id: YfuId, payload: List
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[GenericId]
     ):
-        chain._yfus[target_id].power._activation(chain, owner_id, *payload)
+        chain._yfus[targets[0]].power._activation(chain, owner_id, targets[1:])
 
 
 class Clone(Active):
     title = "Clone"
-    tier = "S"
     effect = "Copie de manière permanente le pouvoir d'une ¥fu."
     target = Targets().yfu(1)
     cost_factor = 2
@@ -119,7 +126,11 @@ class Clone(Active):
     minimum_power_point = 500
 
     def _activation(
-        self, chain: "SwagChain", yfu_id: YfuId, owner_id: AccountId, target_id: YfuId
+        self,
+        chain: "SwagChain",
+        yfu_id: YfuId,
+        owner_id: AccountId,
+        targets: List[YfuId],
     ):
         # Would it be fun to let the power linked?
-        chain._yfus[yfu_id].power = deepcopy(chain._yfus[target_id].power)
+        chain._yfus[yfu_id].power = deepcopy(chain._yfus[targets[0]].power)

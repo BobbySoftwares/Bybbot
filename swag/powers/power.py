@@ -1,5 +1,5 @@
 from abc import abstractmethod, abstractproperty
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from swag.artefacts.bonuses import Bonuses
 
 from swag.currencies import Style
@@ -58,7 +58,7 @@ class Active(Power):
 
     @abstractmethod
     def _activation(
-        self, chain: "SwagChain", owner_id: AccountId, target_id: GenericId
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[GenericId]
     ):
         pass
 

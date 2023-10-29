@@ -19,11 +19,12 @@ from .yfu_blocks import (
     YfuGenerationBlock,
     RenameYfuBlock,
     TokenTransactionBlock,
+    YfuPowerActivation,
 )
 
-from .system_blocks import ( 
-    UserTimezoneUpdate, 
-    GuildTimezoneUpdate, 
+from .system_blocks import (
+    UserTimezoneUpdate,
+    GuildTimezoneUpdate,
     EventGiveaway,
-    AssetUploadBlock
+    AssetUploadBlock,
 )

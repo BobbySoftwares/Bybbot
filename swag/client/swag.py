@@ -4,7 +4,7 @@ import disnake
 from swag.blocks import AccountCreation, Mining
 from swag.blocks import YfuGenerationBlock
 from swag.blocks.swag_blocks import SwagBlocking, Transaction
-from swag.blocks.system_blocks import UserTimezoneUpdate
+from swag.blocks.system_blocks import EventGiveaway, UserTimezoneUpdate
 from swag.client.ui.swag_view import SwagAccountEmbed, TransactionEmbed
 from swag.currencies import Currency, Swag
 from swag.id import UserId
@@ -17,8 +17,7 @@ from ..utils import update_forbes_classement
 from utils import GUILD_ID, format_number
 
 
-
-YFU_GENERATION_MINING_THRESHOLD = Swag(1000000)
+YFU_GENERATION_MINING_THRESHOLD = Swag(15000)
 
 
 class SwagCommand(commands.Cog):
@@ -37,13 +36,15 @@ class SwagCommand(commands.Cog):
             AccountCreation(
                 issuer_id=interaction.author.id,
                 user_id=interaction.author.id,
-                timezone=self.swag_client.swagchain._guild(interaction.guild.id).timezone,
+                timezone=self.swag_client.swagchain._guild(
+                    interaction.guild.id
+                ).timezone,
             )
         )
 
         await interaction.response.send_message(
             f"Bienvenue sur la $wagChain™ {interaction.author.mention} !\n\n"
-            "Tu peux maintenant miner du $wag avec la commande `!$wag miner` 💰"
+            "Tu peux maintenant miner du $wag avec la commande `/swag miner` 💰"
         )
 
     @swag.sub_command(name="miner")
@@ -60,24 +61,30 @@ class SwagCommand(commands.Cog):
 
         # Yfu Generation
         if block.amount >= YFU_GENERATION_MINING_THRESHOLD:
-            new_yfu_id = await self.swag_client.swagchain.generate_yfu(UserId(interaction.author.id))
+            new_yfu_id = await self.swag_client.swagchain.generate_yfu(
+                UserId(interaction.author.id)
+            )
             new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
 
             await interaction.followup.send(
                 f"{interaction.author.mention}, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
                 embed=YfuEmbed.from_yfu(new_yfu),
             )
-            
+
         # Update classement
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
     @swag.sub_command(name="info")
-    async def info(self, interaction: disnake.ApplicationCommandInteraction, utilisateur : disnake.Member = None):
+    async def info(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        utilisateur: disnake.Member = None,
+    ):
         """
         Affiche les informations du porte-monnaie d'un utilisateur.
-        
+
         Parameters
         ----------
         utilisateur : Par défaut, l'utilisateur ayant fait la commande.
@@ -95,15 +102,17 @@ class SwagCommand(commands.Cog):
             else ""
         )
         await interaction.response.send_message(
-            embed=SwagAccountEmbed.from_swag_account(user_infos,utilisateur),
-            ephemeral=True
-            )
+            embed=SwagAccountEmbed.from_swag_account(user_infos, utilisateur),
+            ephemeral=True,
+        )
 
     @swag.sub_command(name="bloquer")
-    async def block(self, interaction: disnake.ApplicationCommandInteraction, montant : str):
+    async def block(
+        self, interaction: disnake.ApplicationCommandInteraction, montant: str
+    ):
         """
         Bloque un montant de $wag pour générer du $tyle.
-        
+
         Parameters
         ----------
         montant : nombre de $wag à bloquer.
@@ -125,10 +134,12 @@ class SwagCommand(commands.Cog):
         )
 
     @swag.sub_command(name="garder")
-    async def keep(self, interaction: disnake.ApplicationCommandInteraction, montant : str):
+    async def keep(
+        self, interaction: disnake.ApplicationCommandInteraction, montant: str
+    ):
         """
         Garde un montant de $wag et utilise le reste pour générer du $tyle.
-        
+
         Parameters
         ----------
         montant : nombre de $wag à garder avant blocage.
@@ -151,7 +162,13 @@ class SwagCommand(commands.Cog):
         )
 
     @swag.sub_command(name="payer")
-    async def pay(self, interaction: disnake.ApplicationCommandInteraction, montant : str, monnaie : Currency ,destinataire : disnake.Member):
+    async def pay(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        montant: str,
+        monnaie: Currency,
+        destinataire: disnake.Member,
+    ):
         """
         Envoie un montant de $wag au destinataire spécifié
 
@@ -162,26 +179,64 @@ class SwagCommand(commands.Cog):
         destinataire : utilisateur à qui donner la monnaie.
         """
 
-        amount_to_send = Currency.get_class(monnaie)(montant)
+        amount_to_send = Currency.get_class(monnaie).from_command(montant)
 
         block = Transaction(
             issuer_id=interaction.author.id,
             giver_id=UserId(interaction.author.id),
             recipient_id=UserId(destinataire.id),
-            amount=amount_to_send
+            amount=amount_to_send,
         )
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
             "Transaction effectué avec succès !",
-            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
+            embed=TransactionEmbed.from_transaction_block(
+                block, self.swag_client.discord_client
+            ),
+        )
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
+        )
+
+    @swag.sub_command(name="générer")
+    async def generate(
+        self,
+        interaction: disnake.ApplicationCommandInteraction,
+        montant: str,
+        monnaie: Currency,
+        destinataire: disnake.Member,
+    ):
+        """
+        Génère du $wag ou du $tyle et l'envoie à l'utilisateur
+
+        Parameters
+        ----------
+        montant : montant à envoyer.
+        monnaie : monnaie à envoyer.
+        destinataire : utilisateur qui recevra la monnaie.
+        """
+
+        amount_to_generate = Currency.get_class(monnaie).from_command(montant)
+
+        block = EventGiveaway(
+            issuer_id=interaction.author.id,
+            user_id=UserId(destinataire.id),
+            amount=amount_to_generate,
+        )
+        await self.swag_client.swagchain.append(block)
+
+        await interaction.response.send_message(
+            f"**{block.amount}** a été généré pour {block.user_id}  à des fins de tests !"
         )
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
     @swag.sub_command(name="timezone")
-    async def change_timezone(self, interaction: disnake.ApplicationCommandInteraction, timezone : str):
+    async def change_timezone(
+        self, interaction: disnake.ApplicationCommandInteraction, timezone: str
+    ):
         """
         Change la timezone du porte-monnaie.
 
@@ -201,8 +256,9 @@ class SwagCommand(commands.Cog):
             f"Ta timezone est désormais {timezone} !\n"
             "Pour des raisons de sécurité, tu ne pourras plus changer celle-ci "
             f"avant {block.lock_date}. Merci de ta compréhension.",
-            ephemeral=True
+            ephemeral=True,
         )
+
 
 # elif "historique" in command_swag:
 #     user = message.author

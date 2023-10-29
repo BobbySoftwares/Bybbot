@@ -27,6 +27,7 @@ def structure_id(o, _):
     except ValueError:
         return CagnotteId(o)
 
+
 def unstructure_id(o):
     return o.id
 
@@ -43,12 +44,15 @@ available_power = {
     name: cls for name, cls in powers.__dict__.items() if isinstance(cls, type)
 }
 
+
 def structure_power(obj: Any, cls: Type) -> Power:
     power_class = available_power[obj[0]]
     return power_class(int(obj[1]))
 
+
 def unstructure_power(obj: Power) -> str:
     return [type(obj).__name__, str(obj.power_point)]
+
 
 converter.register_structure_hook(Decimal, structure_decimal)
 converter.register_unstructure_hook(Decimal, unstructure_decimal)

@@ -77,7 +77,7 @@ class Mining(Block):
             ]
 
         user_account.last_mining_date = self.timestamp.to(user_account.timezone)
-        user_account += sum(self.amounts)
+        user_account += sum(self.amount)
 
 
 @attrs(frozen=True, kw_only=True)
@@ -87,7 +87,6 @@ class Transaction(Block):
     amount = attrib(type=Union[Swag, Style])
 
     def execute(self, db: SwagChain):
-
         if type(self.giver_id) == CagnotteId:
             if self.issuer_id not in db._accounts[self.giver_id].managers:
                 raise NotCagnotteManager

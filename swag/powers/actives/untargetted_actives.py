@@ -30,7 +30,7 @@ class Looting(Active):
     def _x_value(self):
         return self._raw_x
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, targets: None):
         """Try to loot the entire world
 
         First, try to loot $wag balance of non-immunized users. If
@@ -138,7 +138,7 @@ class FiredampCryptoExplosion(Active):
     def _x_value(self):
         return int(stylog(self._raw_x / 64))
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, targets: None):
         for target in chain._accounts.values():
             if target_id != owner_id:
                 try:
@@ -168,7 +168,7 @@ class TaxEvasion(Active):
     def _x_value(self):
         return int(stylog(self._raw_x / 2))
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, targets: None):
         owner = chain._accounts[owner_id]
         bonuses = owner.bonuses(chain)
 
@@ -189,5 +189,5 @@ class Harvest(Active):
     target = Targets()
     cost_factor = 2
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: None):
+    def _activation(self, chain: "SwagChain", owner_id: AccountId, targets: None):
         raise NotImplementedError

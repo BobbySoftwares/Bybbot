@@ -74,6 +74,7 @@ class YfuGenerationBlock(Block):
         )
 
 
+@attrs(frozen=True, kw_only=True)
 class YfuPowerActivation(Block):
     account_id = attrib(type=Union[UserId, CagnotteId])
     yfu_id = attrib(type=YfuId, converter=YfuId)
@@ -88,7 +89,7 @@ class YfuPowerActivation(Block):
     def execute(self, db: SwagChain):
         yfu = db._yfus[self.yfu_id]
 
-        db._accounts[self.account_id] -= yfu.activation_cost
+        db._accounts[self.account_id] -= yfu.cost
 
         yfu.activate(db, self.targets, self.timestamp)
 

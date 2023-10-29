@@ -4,7 +4,6 @@ from ...stylog import stylog
 
 class Immunity:
     title = "Immunité"
-    tier = "SS"
     effect = (
         "Immunise contre les pouvoirs négatifs d'autres waifus (cappé au coût "
         "de construction ?)"
@@ -16,7 +15,6 @@ class Immunity:
 
 class UltimateImmunity:
     title = "Immunité suprême"
-    tier = "SSSS"
     effect = (
         "Immunise contre les pouvoirs négatifs d'autres waifus (cappé au coût "
         "de construction ?)"

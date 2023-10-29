@@ -29,9 +29,11 @@ class Robbery(Active):
     def _x_value(self):
         return Swag(self._raw_x)
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
+    ):
         owner = chain._accounts[owner_id]
-        target = chain._accounts[target_id]
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target -= self._x_value
@@ -57,9 +59,11 @@ class HoldUp(Active):
     def _x_value(self):
         return Swag(self._raw_x * 1.25)
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
+    ):
         owner = chain._accounts[owner_id]
-        target = chain._accounts[target_id]
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target.blocked_swag -= self._x_value
@@ -85,9 +89,11 @@ class Takeover(Active):
     def _x_value(self):
         return Style(0.01 * self._raw_x * 2.5)
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
+    ):
         owner = chain._accounts[owner_id]
-        target = chain._accounts[target_id]
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target.pending_style -= self._x_value
@@ -113,8 +119,10 @@ class AssetLoss(Active):
     def _x_value(self):
         return Swag(self._raw_x * 2)
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
-        target = chain._accounts[target_id]
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
+    ):
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target.blocked_swag -= self._x_value
@@ -140,8 +148,10 @@ class InsiderTrading(Active):
     def _x_value(self):
         return Style(0.01 * self._raw_x * 3)
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
-        target = chain._accounts[target_id]
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
+    ):
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target.style_balance -= self._x_value
@@ -165,8 +175,10 @@ class DryLoss(Active):
     def _x_value(self):
         return Swag(self._raw_x * 1.75)
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
-        target = chain._accounts[target_id]
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
+    ):
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target -= self._x_value
@@ -190,9 +202,11 @@ class TaxAudit(Active):
     def _x_value(self):
         return Swag(self._raw_x * 1.75)
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
+    ):
         zero = chain._accounts["€"]  # "€Bobbycratie"? can't remember what I meant
-        target = chain._accounts[target_id]
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target -= self._x_value
@@ -218,7 +232,9 @@ class BankingBan(Active):
     def _x_value(self):
         return int(floor(stylog(self._raw_x)))  # Ne devrait jamais atteindre moins de 1
 
-    def _activation(self, chain: "SwagChain", owner_id: AccountId, target_id: UserId):
-        target = chain._accounts[target_id]
+    def _activation(
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
+    ):
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         target.last_mining_date = target.last_mining_date.shift(days=self._x_value)

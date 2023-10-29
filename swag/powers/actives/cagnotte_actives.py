@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from swag.currencies import Style, Swag
 from swag.errors import NotEnoughStyleInBalance, NotEnoughSwagInBalance
 from swag.id import AccountId, CagnotteId
@@ -28,10 +28,10 @@ class Embezzlement(Active):
         return Swag(self._raw_x * 1.5)
 
     def _activation(
-        self, chain: "SwagChain", owner_id: AccountId, target_id: CagnotteId
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[CagnotteId]
     ):
         owner = chain._accounts[owner_id]
-        target = chain._accounts[target_id]
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target -= self._x_value
@@ -58,10 +58,10 @@ class DishonestJointVenture(Active):
         return Style(0.01 * self._raw_x * 2.5)
 
     def _activation(
-        self, chain: "SwagChain", owner_id: AccountId, target_id: CagnotteId
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[CagnotteId]
     ):
         owner = chain._accounts[owner_id]
-        target = chain._accounts[target_id]
+        target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
             target -= self._x_value

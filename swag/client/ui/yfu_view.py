@@ -7,8 +7,13 @@ from swag.errors import IncorrectYfuName
 from swag.id import CagnotteId, UserId, YfuId, get_id_from_str
 from swag.powers.power import Active, Passive
 from swag.powers.target import TargetProperty, TargetType
+from swag.utils import update_forbes_classement
 from swag.yfu import Yfu, YfuRarity
-from swag.blocks.yfu_blocks import RenameYfuBlock, TokenTransactionBlock
+from swag.blocks.yfu_blocks import (
+    RenameYfuBlock,
+    TokenTransactionBlock,
+    YfuPowerActivation,
+)
 
 from .ihs_toolkit import *
 
@@ -95,18 +100,26 @@ class YfuNavigation(disnake.ui.View):
             )
 
     async def activate_yfu_power(self, interaction: disnake.MessageInteraction):
-        message = f"{UserId(self.user_id)} active sa ¥fu"
+        targets_id = [get_id_from_str(target) for target in self.selected_target]
+
+        # Génération du block
+        block = YfuPowerActivation(
+            issuer_id=UserId(self.user_id),
+            account_id=UserId(self.user_id),
+            yfu_id=self.selected_yfu_id,
+            targets=targets_id,
+        )
+        await self.swag_client.swagchain.append(block)
+
+        # Envoie du message
+        message = f"{UserId(self.user_id)} active **{self.selected_yfu.first_name} {self.selected_yfu.last_name}**"
 
         if self.selected_target:
             message += " contre "
-            message += ", ".join(
-                [str(get_id_from_str(target)) for target in self.selected_target]
-            )
+            message += ", ".join([str(target_id) for target_id in targets_id])
             message = " et ".join(message.rsplit(", ", 1))
 
         message += " !"
-
-        # TODO block !
 
         await interaction.response.edit_message(view=disnake.ui.View())
 
@@ -114,6 +127,11 @@ class YfuNavigation(disnake.ui.View):
             message,
             embed=YfuEmbed.from_yfu(self.selected_yfu),
             view=disnake.ui.View(),
+        )
+
+        # Update classement
+        await update_forbes_classement(
+            interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
     @disnake.ui.button(

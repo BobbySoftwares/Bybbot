@@ -26,14 +26,14 @@ class AfricanPrince(Active):
         return Swag(self._raw_x * 3)
 
     def _activation(
-        self, chain: "SwagChain", owner_id: AccountId, target_id: List[UserId]
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
     ):
-        if len(target_id) != 2:
+        if len(targets) != 2:
             raise NotImplementedError
-        if owner_id in target_id:
+        if owner_id in targets:
             raise NotImplementedError
-        target0 = chain._accounts[target_id[0]]
-        target1 = chain._accounts[target_id[1]]
+        target0 = chain._accounts[targets[0]]
+        target1 = chain._accounts[targets[1]]
         target0.check_immunity(self)
         target1.check_immunity(self)
         try:
@@ -46,7 +46,6 @@ class AfricanPrince(Active):
 
 class BankAdministrationError(Active):
     title = "Erreur de l'administration bancaire"
-    tier = "SSS"
     effect = "Permet d'échanger le swag de deux joueurs"
     target = Targets().user(2)
     cost_factor = 3
@@ -54,15 +53,15 @@ class BankAdministrationError(Active):
     minimum_power_point = 16000
 
     def _activation(
-        self, chain: "SwagChain", owner_id: AccountId, target_id: List[UserId]
+        self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
     ):
-        if len(target_id) != 2:
+        if len(targets) != 2:
             raise NotImplementedError
-        target0 = chain._accounts[target_id[0]]
-        target1 = chain._accounts[target_id[1]]
-        if owner_id != target_id[0]:
+        target0 = chain._accounts[targets[0]]
+        target1 = chain._accounts[targets[1]]
+        if owner_id != targets[0]:
             target0.check_immunity(self)
-        if owner_id != target_id[1]:
+        if owner_id != targets[1]:
             target1.check_immunity(self)
 
         target0_swag = target0.swag_balance
