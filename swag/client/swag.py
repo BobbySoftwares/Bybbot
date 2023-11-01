@@ -5,7 +5,7 @@ from swag.blocks import AccountCreation, Mining
 from swag.blocks import YfuGenerationBlock
 from swag.blocks.swag_blocks import SwagBlocking, Transaction
 from swag.blocks.system_blocks import EventGiveaway, UserTimezoneUpdate
-from swag.client.ui.swag_view import SwagAccountEmbed, TransactionEmbed
+from swag.client.ui.swag_view import MiningEmbed, SwagAccountEmbed, TransactionEmbed
 from swag.currencies import Currency, Swag
 from swag.id import UserId
 from .ui.yfu_view import YfuEmbed
@@ -55,20 +55,8 @@ class SwagCommand(commands.Cog):
         block = Mining(issuer_id=interaction.author.id, user_id=interaction.author.id)
         await self.swag_client.swagchain.append(block)
 
-        detailed_mining_message = "\n\n> *Détail du minage :* "
-
-        for i, mining in enumerate(block.harvest):
-            avantage_len = len(mining["details"]["avantages"])
-            detailed_mining_message += (
-                f"\n> {f'{i+1}.' if len(block.harvest) > 1 else ''}"
-                f"{mining['details']['multiplier']} × "
-                f"{'max(' if avantage_len > 1 else ''}{', '.join(format_number(a) for a in mining['details']['avantages'])}{')' if avantage_len > 1 else ''}"
-                f" = {Swag(mining['result'])}"
-            )
-
         await interaction.response.send_message(
-            f"## ⛏ {interaction.author.mention} a miné {block.amount} !"
-            + detailed_mining_message
+            embed=MiningEmbed.from_mining_block(block, self.swag_client.discord_client)
         )
 
         # Yfu Generation

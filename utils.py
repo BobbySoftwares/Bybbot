@@ -25,8 +25,12 @@ SWAGCHAIN_CHANNEL_ID = client_config.get("swagchain_channel", 913946510616567848
 # ID unique du canal de log, si il n'est pas défini, sa valeur sera None
 LOG_CHANNEL_ID = client_config.get("log_channel", None)
 
-#ID des administrateurs
+# ID des administrateurs
 ADMINS_ID = client_config.get("admins")
+
+# CLEF API DE TENOR GIF
+TENOR_API_KEY = client_config.get("tenor_api_key")
+
 
 def format_number(n):
     """Fonction qui permet de rajouter des espaces fin entre chaque
@@ -43,14 +47,17 @@ def format_number(n):
 
 def randomly_distribute(total, n):
     """Distribue de manière aléatoire dans n élément la quantité dans 'total'
-    
+
     Returns:
         List: La liste d'éléments dont la somme fait le total
     """
     random_distributed_vector = [random.random() for i in range(n)]
     vector_sum = sum(random_distributed_vector)
-    random_distributed_vector = [int(total*i/vector_sum) for i in random_distributed_vector]
+    random_distributed_vector = [
+        int(total * i / vector_sum) for i in random_distributed_vector
+    ]
     return random_distributed_vector
+
 
 def chunks(lst, n):
     """Permet de subdiviser des listes en plusieurs sous-liste de même
@@ -229,4 +236,3 @@ async def connect_to_chan(client, chan_to_go):
 
     # If no VoiceClient is already set, create a new one
     return await chan_to_go.connect()
-

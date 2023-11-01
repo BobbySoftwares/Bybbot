@@ -1,11 +1,15 @@
+import json
+import random
+import requests
 from arrow import Arrow
 import disnake
 
 from swag.artefacts.accounts import SwagAccount
 from swag.artefacts.bonuses import Bonuses
-from swag.blocks.swag_blocks import Transaction
+from swag.blocks.swag_blocks import Mining, Transaction
+from swag.currencies import Swag
 from swag.id import UserId
-from utils import format_number
+from utils import TENOR_API_KEY, format_number
 
 
 class SwagAccountEmbed(disnake.Embed):
@@ -150,3 +154,91 @@ class TransactionEmbed(disnake.Embed):
         }
 
         return disnake.Embed.from_dict(transaction_dict)
+
+
+class MiningEmbed(disnake.Embed):
+    @classmethod
+    def from_mining_block(cls, block: Mining, bot: disnake.Client):
+        user = bot.get_user(block.user_id.id)
+
+        detailed_mining_message = ""
+
+        # Ajout d'un message detaillé du minage sur un bonus (avantage / minage multiple / multiplicateur de minage)
+        # S'est ajouté
+        if block.amount.value != block.harvest[0]["details"]["avantages"][0]:
+            detailed_mining_message = "\n\n### Détail du minage : "
+
+            for i, mining in enumerate(block.harvest):
+                avantage_len = len(mining["details"]["avantages"])
+                detailed_mining_message += (
+                    f"\n {f'{i+1}.' if len(block.harvest) > 1 else ''}"
+                    f"{mining['details']['multiplier']} × "
+                    f"{'max(' if avantage_len > 1 else ''}{', '.join(format_number(a) for a in mining['details']['avantages'])}{')' if avantage_len > 1 else ''}"
+                    f" = {Swag(mining['result'])}"
+                )
+
+        mining_dict = {
+            # Pas d'utilisation du titre car le titre ne supporte pas les mention sur desktop à ce jour
+            "color": int("0xd1b671", base=16),
+            "thumbnail": {
+                "url": user.display_avatar.url,
+            },
+            "description": f"### {block.user_id} a miné ⛏️ !\n ## {format_number(block.amount.value)} $wag"  # Gestion un peu spéciale des espaces pour les embeds
+            + detailed_mining_message,
+            "image": {"url": cls.search_gif_from_mining(block), "width": 512},
+        }
+
+        return disnake.Embed.from_dict(mining_dict)
+
+    @classmethod
+    def search_gif_from_mining(cls, block: Mining) -> str:
+        result = ""
+        keyword_by_mining = {
+            10000: [
+                "bad",
+                "poor",
+                "awfull",
+                "empty",
+                "desert",
+                "no money",
+            ],
+            50000: ["sad", "unhappy", "not good", "cringe", "awkward"],
+            100000: ["ok", "cool", "why not ?", "smile"],
+            200000: ["nice", "wonderfull", "happy", "mining"],
+            1000000: [
+                "rich",
+                "super happy",
+                "hyped",
+                "picsou",
+                "dollars",
+                "raining money",
+            ],
+        }
+
+        keywords = list(keyword_by_mining.values())[-1]
+
+        for k, v in keyword_by_mining.items():
+            if block.amount.value < k:
+                keywords = v
+                break
+
+        # get the top 8 GIFs for the search term
+        r = requests.get(
+            "https://tenor.googleapis.com/v2/search?q=%s&key=%s&client_key=%s&limit=%s"
+            % (random.choice(keywords), TENOR_API_KEY, "Bybbot", 50)
+        )
+
+        print(
+            "https://tenor.googleapis.com/v2/search?q=%s&key=%s&client_key=%s&limit=%s"
+            % (random.choice(keywords), TENOR_API_KEY, "Bybbot", 50)
+        )
+
+        if r.status_code == 200:
+            # load the GIFs using the urls for the smaller GIF sizes
+            result = random.choice(json.loads(r.content)["results"])["media_formats"][
+                "gif"
+            ]["url"]
+        else:
+            print("erreur API tenor")
+
+        return result
