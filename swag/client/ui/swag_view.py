@@ -164,18 +164,27 @@ class MiningEmbed(disnake.Embed):
         detailed_mining_message = ""
 
         # Ajout d'un message detaillé du minage sur un bonus (avantage / minage multiple / multiplicateur de minage)
-        # S'est ajouté
+        # Si la valeur totale du minage est égal au premier jet d'avantage sans multiplicateur, alors pas besoin de détaillé le minage
+        # il s'agit d'un minage sans bonus
         if block.amount.value != block.harvest[0]["details"]["avantages"][0]:
-            detailed_mining_message = "\n\n### Détail du minage : "
+            detailed_mining_message = "\n\n### Détail : "
 
             for i, mining in enumerate(block.harvest):
-                avantage_len = len(mining["details"]["avantages"])
-                detailed_mining_message += (
-                    f"\n {f'{i+1}.' if len(block.harvest) > 1 else ''}"
-                    f"{mining['details']['multiplier']} × "
-                    f"{'max(' if avantage_len > 1 else ''}{', '.join(format_number(a) for a in mining['details']['avantages'])}{')' if avantage_len > 1 else ''}"
-                    f" = {Swag(mining['result'])}"
+                result = Swag(mining["result"])
+                multiplier = mining["details"]["multiplier"]
+                avantages = mining["details"]["avantages"]
+
+                detailed_multiplier_message = (
+                    f"{multiplier} × " if multiplier != 1 else ""
                 )
+                detailed_avantages_message = "\n" + "\n".join(
+                    [
+                        f" - {format_number(avantage)}{' **←**' if avantage == max(avantages) else ''}"
+                        for avantage in avantages
+                    ]
+                )
+
+                detailed_mining_message += f"\n- **{result}** = {detailed_multiplier_message}{detailed_avantages_message}"
 
         mining_dict = {
             # Pas d'utilisation du titre car le titre ne supporte pas les mention sur desktop à ce jour
