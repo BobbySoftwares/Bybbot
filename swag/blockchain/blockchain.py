@@ -2,6 +2,7 @@ from datetime import datetime
 from decimal import ROUND_05UP, ROUND_DOWN, ROUND_UP, Decimal
 import os
 import random
+import shutil
 from typing import Dict, List
 from arrow import utcnow
 from attr import attrs, attrib
@@ -309,6 +310,11 @@ class SwagChain:
         )
 
         await self.append(avatar_asset_block)
+
+        # Déplacement de l'image pour pas qu'elle soit une nouvelle fois utilisé par la suite
+        used_avatar_local_folder = avatar_local_folder + "/used"
+        os.makedirs(used_avatar_local_folder, exist_ok=True)
+        shutil.move(avatar_file, used_avatar_local_folder)
 
         # Powerpoint rolling
         rolling_power_point = int(self._accounts.users[author].mine(self))
