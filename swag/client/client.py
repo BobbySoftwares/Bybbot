@@ -1,8 +1,8 @@
 import disnake
 from disnake.ext import commands
+from swag.client.swagdmin import SwagminCommand
 from swag.client.cagnotte import CagnotteCommand
 from swag.client.swag import SwagCommand
-from swag.client.swagdmin import execute_swagdmin_command
 from swag.blockchain import SyncedSwagChain
 from swag.client.yfu import YfuCommand
 from swag.errors import (
@@ -45,7 +45,6 @@ from ..utils import (
 )
 
 from utils import (
-    ADMINS_ID,
     GUILD_ID,
     LOG_CHANNEL_ID,
     SWAGCHAIN_CHANNEL_ID,
@@ -60,7 +59,7 @@ if TYPE_CHECKING:
 
 class SwagClient(Module):
     def __init__(self, discord_client) -> None:
-        self.discord_client : 'Bot' = discord_client
+        self.discord_client: "Bot" = discord_client
         print("Initialisation de la $wagChain...\n")
         self.guilds = {}
         self.the_swaggest = None
@@ -68,10 +67,10 @@ class SwagClient(Module):
         self.last_backup = None
 
     def register_commands(self):
-        
         self.discord_client.add_cog(SwagCommand(self))
         self.discord_client.add_cog(CagnotteCommand(self))
         self.discord_client.add_cog(YfuCommand(self))
+        self.discord_client.add_cog(SwagminCommand(self))
         self.discord_client.add_cog(ClientError())
 
     async def setup(self):
@@ -103,32 +102,10 @@ class SwagClient(Module):
                 self.last_backup = now
                 await self.swagchain.save_backup()
 
-        #Génération du style toute les heures
+        # Génération du style toute les heures
         scheduler.add_job(style_job, CronTrigger(hour="*"))
-        #Sauvegarde de la swagchain en local tout les jours à 4h du matin 
+        # Sauvegarde de la swagchain en local tout les jours à 4h du matin
         scheduler.add_job(backup_job, CronTrigger(day="*", hour="4"))
-
-
-    async def process(self, message):
-        try:
-            if message.content.startswith("!$wagdmin"):
-                await execute_swagdmin_command(self, message)
-        except InvalidTimeZone as e:
-            await message.channel.send(
-                f"{e.name}, n'est pas un nom de timezone valide !\n"
-                "Vérifie le nom correct sur "
-                "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones, "
-                "à la colone `TZ database name`."
-            )
-        except TimeZoneFieldLocked as e:
-            await message.channel.send(
-                "Tu viens déjà de changer de timezone. Tu ne pourras effectuer "
-                f"à nouveau cette opération qu'après le {e.date}. Cette mesure "
-                "vise à empécher l'abus de minage, merci de ta compréhension.\n\n"
-                "*L'abus de minage est dangereux pour la santé. À Miner avec "
-                "modération. Ceci était un message de la Fédération Bobbyique du "
-                "Minage*"
-            )
 
 
 ##TODO : Possible amélioration
@@ -147,7 +124,6 @@ class ClientError(commands.Cog):
         interaction: disnake.ApplicationCommandInteraction,
         error: commands.CommandInvokeError,
     ):
-
         if type(error.original) is AccountAlreadyExist:
             await interaction.response.send_message(
                 f"⚠️ {interaction.author.mention}, tu possèdes déjà un compte sur la $wagChain™ !",
@@ -295,24 +271,41 @@ class ClientError(commands.Cog):
             await interaction.response.send_message(
                 f"{interaction.author.mention}, Tu as déjà utilisé cette Yfu aujourd'hui !",
                 ephemeral=True,
-        )
+            )
         elif type(error.original) is CantUseYfuPower:
             await interaction.response.send_message(
                 f"{interaction.author.mention}, tu ne peux pas utiliser ton pouvoir contre {error.original.target} !",
                 ephemeral=True,
-        )
-        elif type(error.original) is AttributeError and hasattr(error.original,"name") and error.original.name == "swagchain":
-                await interaction.response.send_message(
-                    f"{interaction.author.mention}, la $wagChain n'est pas encore disponible. "
-                    "Veuillez réessayer d'ici quelques secondes !",
-                    ephemeral=True,
-                )
+            )
+        elif type(error.original) is InvalidTimeZone:
+            await interaction.response.send_message(
+                f"{error.original.name}, n'est pas un nom de timezone valide !\n"
+                "Vérifie le nom correct sur "
+                "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones, "
+                "à la colone `TZ database name`."
+            )
+        elif type(error.original) is TimeZoneFieldLocked:
+            await interaction.response.send_message(
+                "Tu viens déjà de changer de timezone. Tu ne pourras effectuer "
+                f"à nouveau cette opération qu'après le {error.original.date}. Cette mesure "
+                "vise à empécher l'abus de minage, merci de ta compréhension.\n\n"
+                "*L'abus de minage est dangereux pour la santé. À Miner avec "
+                "modération. Ceci était un message de la Fédération Bobbyique du "
+                "Minage*"
+            )
+        elif (
+            type(error.original) is AttributeError
+            and hasattr(error.original, "name")
+            and error.original.name == "swagchain"
+        ):
+            await interaction.response.send_message(
+                f"{interaction.author.mention}, la $wagChain n'est pas encore disponible. "
+                "Veuillez réessayer d'ici quelques secondes !",
+                ephemeral=True,
+            )
         else:
             try:
-                admins_id = [str(UserId(admin_id)) for admin_id in ADMINS_ID]
-
                 await interaction.client.get_channel(LOG_CHANNEL_ID).send(
-                    f"{', '.join(admins_id)} ! "
                     "Une erreur inattendue est "
                     f"survenue suite à la commande de {interaction.author.mention} :\n\n"
                     f"`/{interaction.data.name} {interaction.options}`\n\n"

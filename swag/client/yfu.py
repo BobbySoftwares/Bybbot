@@ -34,22 +34,3 @@ class YfuCommand(commands.Cog):
             view=YfuNavigation(self.swag_client, interaction.author.id, first_yfu_id),
             ephemeral=True,
         )
-
-    @yfu.sub_command(name="générer")
-    async def generate(self, interaction: disnake.ApplicationCommandInteraction, exemplaire : int = 1):
-        """Génère une ¥fu
-        
-        Parameters
-        ----------
-        exemplaire : Par défaut 1. Peut être utilisé pour généré plusieurs Yfu en même temps !
-        """
-
-        for i in range(exemplaire):
-
-            new_yfu_id = await self.swag_client.swagchain.generate_yfu(UserId(interaction.author.id))
-            new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
-
-            await interaction.send(
-                f"{interaction.author.mention}, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs à des fins de test !",
-                embed=YfuEmbed.from_yfu(new_yfu),
-            )

@@ -10,6 +10,9 @@ with open("config.json", "r") as json_file:
 # ID unique du serveur
 GUILD_ID = client_config.get("guild_id", 487244765558210580)
 
+# Admin guild id
+ADMIN_GUILD_ID = client_config.get("admin_guild_id", 856278929296195602)
+
 # ID unique du role du plus swag
 ROLE_ID_SWAGGEST = client_config.get("swaggest_role", 846736189310238751)
 
@@ -24,9 +27,6 @@ SWAGCHAIN_CHANNEL_ID = client_config.get("swagchain_channel", 913946510616567848
 
 # ID unique du canal de log, si il n'est pas défini, sa valeur sera None
 LOG_CHANNEL_ID = client_config.get("log_channel", None)
-
-# ID des administrateurs
-ADMINS_ID = client_config.get("admins")
 
 # CLEF API DE TENOR GIF
 TENOR_API_KEY = client_config.get("tenor_api_key")

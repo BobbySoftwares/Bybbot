@@ -12,7 +12,7 @@ from swag import SwagClient
 from maintenance.maintenance_client import MaintenanceClient
 from swag.id import UserId
 
-from utils import ADMINS_ID, LOG_CHANNEL_ID
+from utils import LOG_CHANNEL_ID
 
 with open("config.json", "r") as json_file:
     client_config = json.load(json_file)
@@ -32,13 +32,14 @@ swag_module = SwagClient(client)
 modules = [
     swag_module,
     JukeboxClient(client),
-    MaintenanceClient(client, client_config.get("admins"), swag_module),
+    MaintenanceClient(client, swag_module),
 ]
 
-#Registration of commands (like slash_commands) MUST be before the bot launch
-#That's why register_commands is used outside "on_ready" event
+# Registration of commands (like slash_commands) MUST be before the bot launch
+# That's why register_commands is used outside "on_ready" event
 for module in modules:
     module.register_commands()
+
 
 @client.event
 async def on_ready():
@@ -131,10 +132,7 @@ async def on_message(message):
             await module.process(message)
         except Exception as e:
             try:
-                admins_id = [str(UserId(admin_id)) for admin_id in ADMINS_ID]
-                
                 await client.get_channel(LOG_CHANNEL_ID).send(
-                    f"{', '.join(admins_id)} ! "
                     "Une erreur inattendue est "
                     f"survenue suite à ce message de {message.author.mention} : "
                     f"{message.jump_url}\n"

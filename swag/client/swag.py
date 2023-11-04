@@ -201,40 +201,6 @@ class SwagCommand(commands.Cog):
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    @swag.sub_command(name="générer")
-    async def generate(
-        self,
-        interaction: disnake.ApplicationCommandInteraction,
-        montant: str,
-        monnaie: Currency,
-        destinataire: disnake.Member,
-    ):
-        """
-        Génère du $wag ou du $tyle et l'envoie à l'utilisateur
-
-        Parameters
-        ----------
-        montant : montant à envoyer.
-        monnaie : monnaie à envoyer.
-        destinataire : utilisateur qui recevra la monnaie.
-        """
-
-        amount_to_generate = Currency.get_class(monnaie).from_command(montant)
-
-        block = EventGiveaway(
-            issuer_id=interaction.author.id,
-            user_id=UserId(destinataire.id),
-            amount=amount_to_generate,
-        )
-        await self.swag_client.swagchain.append(block)
-
-        await interaction.response.send_message(
-            f"**{block.amount}** a été généré pour {block.user_id}  à des fins de tests !"
-        )
-        await update_forbes_classement(
-            interaction.guild, self.swag_client, self.swag_client.discord_client
-        )
-
     @swag.sub_command(name="timezone")
     async def change_timezone(
         self, interaction: disnake.ApplicationCommandInteraction, timezone: str
