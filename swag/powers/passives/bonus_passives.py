@@ -1,5 +1,4 @@
 from decimal import ROUND_HALF_UP, Decimal
-from math import floor
 from swag.artefacts.bonuses import Bonuses
 from ..power import Passive
 from ...stylog import stylog
@@ -35,7 +34,7 @@ class TaxOptimization(Passive):
 
     @property
     def _x_value(self):
-        return int(floor(stylog(self._raw_x)))
+        return int(stylog(self._raw_x))
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.avantage += self._x_value
