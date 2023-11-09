@@ -21,13 +21,9 @@ class Robbery(Active):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Swag(self._raw_x)
+        return Swag(self.power_points * 1_000)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -51,13 +47,9 @@ class HoldUp(Active):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Swag(self._raw_x * 1.25)
+        return Swag(self.power_points * 1_250)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -81,13 +73,9 @@ class Takeover(Active):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = pp
-
     @property
     def _x_value(self):
-        return Style(0.01 * self._raw_x * 2.5)
+        return Style(0.01 * self.power_points * 2.5)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -111,13 +99,9 @@ class AssetLoss(Active):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Swag(self._raw_x * 2)
+        return Swag(self.power_points * 1_000 * 2)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -140,13 +124,9 @@ class InsiderTrading(Active):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = pp
-
     @property
     def _x_value(self):
-        return Style(0.01 * self._raw_x * 3)
+        return Style(0.01 * self.power_points * 3)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -167,13 +147,9 @@ class DryLoss(Active):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Swag(self._raw_x * 1.75)
+        return Swag(self.power_points * 1_750)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -194,13 +170,9 @@ class TaxAudit(Active):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Swag(self._raw_x * 1.75)
+        return Swag(self.power_points * 1_750)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -224,13 +196,10 @@ class BankingBan(Active):
 
     minimum_power_points = 1000
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return int(floor(stylog(self._raw_x)))  # Ne devrait jamais atteindre moins de 1
+        # Ne devrait jamais atteindre moins de 1
+        return int(stylog(self.power_points * 1_000))
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]

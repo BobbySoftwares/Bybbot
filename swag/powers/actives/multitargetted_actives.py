@@ -17,13 +17,9 @@ class AfricanPrince(Active):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Swag(self._raw_x * 3)
+        return Swag(self.power_points * 3_000)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]

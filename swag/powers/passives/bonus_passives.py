@@ -10,13 +10,9 @@ class InsolentLuck(Passive):
 
     minimum_power_points = 10
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp + 1) * 1000
-
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x))
+        return int(stylog(self.power_points * 1_000))
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.lottery_luck += self._x_value
@@ -28,13 +24,9 @@ class TaxOptimization(Passive):
 
     minimum_power_points = 1000
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x))
+        return int(stylog(self.power_points * 1_000))
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.avantage += self._x_value
@@ -46,13 +38,9 @@ class MauritiusCommercialBank(Passive):
 
     minimum_power_points = 4000
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x / 4))
+        return int(stylog(self.power_points * 1_000 / 4))
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.minings += self._x_value
@@ -64,13 +52,9 @@ class StockPortfolio(Passive):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = pp * 100
-
     @property
     def _x_value(self):
-        return self._raw_x
+        return self.power_points * 100
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.luck += self._x_value
@@ -82,13 +66,9 @@ class StockMarketMastery(Passive):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = pp * 10
-
     @property
     def _x_value(self):
-        return self._raw_x
+        return self.power_points * 10
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.base += self._x_value
@@ -100,13 +80,9 @@ class StateGuardianship(Passive):
 
     minimum_power_points = 1000
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Decimal(stylog(self._raw_x)).quantize(
+        return Decimal(stylog(self.power_points * 1_000)).quantize(
             Decimal(".1"), rounding=ROUND_HALF_UP
         )
 
@@ -120,13 +96,9 @@ class SuccessfulInvestment(Passive):
 
     minimum_power_points = 1
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Decimal((stylog(self._raw_x)) * 100).quantize(
+        return Decimal((stylog(self.power_points * 1_000)) * 100).quantize(
             Decimal(".01"), rounding=ROUND_HALF_UP
         )
 

@@ -19,13 +19,9 @@ class Embezzlement(Active):
 
     minimum_power_points = 10
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return Swag(self._raw_x * 1.5)
+        return Swag(self.power_points * 1_500)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[CagnotteId]
@@ -49,13 +45,9 @@ class DishonestJointVenture(Active):
 
     minimum_power_points = 10
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = pp
-
     @property
     def _x_value(self):
-        return Style(0.01 * self._raw_x * 2.5)
+        return Style(0.01 * self.power_points * 2.5)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[CagnotteId]

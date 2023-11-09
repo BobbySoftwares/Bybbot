@@ -18,13 +18,9 @@ class Kidnapping(Active):
 
     minimum_power_points = 250
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = pp
-
     @property
     def _x_value(self):
-        return self._raw_x
+        return self.power_points
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[YfuId]

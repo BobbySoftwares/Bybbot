@@ -22,13 +22,9 @@ class Looting(Active):
 
     minimum_power_points = 2000
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return self._raw_x
+        return self.power_points * 1_000
 
     def _activation(self, chain: "SwagChain", owner_id: AccountId, targets: None):
         """Try to loot the entire world
@@ -130,13 +126,9 @@ class FiredampCryptoExplosion(Active):
 
     minimum_power_points = 64000
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x / 64))
+        return int(stylog(self.power_points * 1_000 / 64))
 
     def _activation(self, chain: "SwagChain", owner_id: AccountId, targets: None):
         for target in chain._accounts.values():
@@ -160,13 +152,9 @@ class TaxEvasion(Active):
 
     minimum_power_points = 2000
 
-    def __init__(self, pp) -> None:
-        super().__init__(pp)
-        self._raw_x = (pp) * 1000
-
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x / 2))
+        return int(stylog(self.power_points * 1_000 / 2))
 
     def _activation(self, chain: "SwagChain", owner_id: AccountId, targets: None):
         owner = chain._accounts[owner_id]
