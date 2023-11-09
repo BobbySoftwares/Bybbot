@@ -19,7 +19,7 @@ class Robbery(Active):
     target = Targets().user(1)
     cost_factor = 1
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -49,7 +49,7 @@ class HoldUp(Active):
     target = Targets().user(1)
     cost_factor = 0.75
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -79,7 +79,7 @@ class Takeover(Active):
     target = Targets().user(1)
     cost_factor = 0.5
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -109,7 +109,7 @@ class AssetLoss(Active):
     target = Targets().user(1)
     cost_factor = 0.5
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -138,7 +138,7 @@ class InsiderTrading(Active):
     target = Targets().user(1)
     cost_factor = 0.75
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -165,7 +165,7 @@ class DryLoss(Active):
     target = Targets().user(1)
     cost_factor = 0.75
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -192,7 +192,7 @@ class TaxAudit(Active):
     target = Targets().user(1)
     cost_factor = 0.75
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -222,7 +222,7 @@ class BankingBan(Active):
     target = Targets().user(1)
     cost_factor = 1
 
-    minimum_power_point = 1000
+    minimum_power_points = 1000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)

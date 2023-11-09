@@ -19,7 +19,7 @@ class Power:
         pass
 
     @abstractproperty
-    def minimum_power_point(self):
+    def minimum_power_points(self):
         """
         The minimum amount of PP (Power Point) to have to be able to generate this power
         """
@@ -36,7 +36,7 @@ class Power:
         pass
 
     def __init__(self, pp) -> None:
-        self.power_point = pp
+        self.power_points = pp
 
     def protection_cost(self, power):
         return Style("inf")

@@ -476,7 +476,7 @@ class YfuRename(disnake.ui.Modal):
 class YfuEmbed(disnake.Embed):
     @classmethod
     def from_yfu(cls, yfu: Yfu):
-        rarity = YfuRarity.from_power_point(yfu.power_point)
+        rarity = YfuRarity.from_power_point(yfu.power_points)
 
         yfu_dict = {
             "title": f"{yfu.clan} {yfu.first_name} {yfu.last_name} {cls.get_star_icons(rarity.get_number_of_star())}",
@@ -490,7 +490,7 @@ class YfuEmbed(disnake.Embed):
                 },
             ],
             "footer": {
-                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {yfu.power_point}₱₱ - {yfu.id}"
+                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {yfu.power_points}₱₱ - {yfu.id}"
             },
         }
 

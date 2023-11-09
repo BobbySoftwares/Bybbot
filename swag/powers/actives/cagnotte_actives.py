@@ -17,7 +17,7 @@ class Embezzlement(Active):
     target = Targets().cagnotte(1)
     cost_factor = 0.5
 
-    minimum_power_point = 10
+    minimum_power_points = 10
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -47,7 +47,7 @@ class DishonestJointVenture(Active):
     target = Targets().cagnotte(1)
     cost_factor = 0.5
 
-    minimum_power_point = 10
+    minimum_power_points = 10
 
     def __init__(self, pp) -> None:
         super().__init__(pp)

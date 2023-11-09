@@ -16,7 +16,7 @@ class Kidnapping(Active):
     target = Targets().yfu(1)
     cost_factor = 2
 
-    minimum_power_point = 250
+    minimum_power_points = 250
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -33,7 +33,7 @@ class Kidnapping(Active):
         yfu = chain._yfus[targets[0]]
         target = chain._accounts[yfu.owner_id]
 
-        if yfu.power_point > self._x_value:
+        if yfu.power_points > self._x_value:
             raise CantUseYfuPower(owner_id, targets[0])
 
         target.check_immunity(self)
@@ -48,7 +48,7 @@ class Resurrection(Active):
     target = Targets().yfu(1, [TargetProperty.FROM_CASTER_ONLY])
     cost_factor = 2
 
-    minimum_power_point = 300
+    minimum_power_points = 300
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[YfuId]
@@ -67,7 +67,7 @@ class UltimateResurrection(Active):
     target = Targets().yfu(1)
     cost_factor = 2.5
 
-    minimum_power_point = 500
+    minimum_power_points = 500
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[YfuId]
@@ -89,7 +89,7 @@ class Cloning(Active):
     target = Targets().yfu(1)
     cost_factor = 2
 
-    minimum_power_point = 300
+    minimum_power_points = 300
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[YfuId]
@@ -109,7 +109,7 @@ class Copy(Active):
     target = Targets().yfu(1)
     cost_factor = 1.5
 
-    minimum_power_point = 150
+    minimum_power_points = 150
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[GenericId]
@@ -123,7 +123,7 @@ class Clone(Active):
     target = Targets().yfu(1)
     cost_factor = 2
 
-    minimum_power_point = 500
+    minimum_power_points = 500
 
     def _activation(
         self,

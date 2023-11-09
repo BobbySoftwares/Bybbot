@@ -317,9 +317,9 @@ class SwagChain:
         shutil.move(avatar_file, used_avatar_local_folder)
 
         # Powerpoint rolling
-        rolling_power_point = int(self._accounts.users[author].mine(self))
+        power_points_roll = int(self._accounts.users[author].mine(self))
 
-        yfu_powerpoint, power, cost = await self.generate_yfu_power(rolling_power_point)
+        yfu_powerpoints, power, cost = await self.generate_yfu_power(power_points_roll)
 
         # Generation de la Yfu
         yfu_block = YfuGenerationBlock(
@@ -327,7 +327,7 @@ class SwagChain:
             user_id=author,
             yfu_id=new_yfu_id,
             avatar_asset_key=avatar_asset_block.asset_key,
-            power_point=yfu_powerpoint,
+            power_points=yfu_powerpoints,
             power=power,
             initial_activation_cost=cost,
         )
@@ -336,7 +336,7 @@ class SwagChain:
 
         return yfu_block.yfu_id
 
-    async def generate_yfu_power(self, powerpoint_roll: int):
+    async def generate_yfu_power(self, powerpoints_roll: int):
         """
         Generate yfu power and Cost
         return : tuple (Powerpoint ,Power, Cost))
@@ -347,30 +347,30 @@ class SwagChain:
         power_found = False
 
         # PowerPoint de la Yfu, décrivant la puissance générale de la Yfu au vu de son pouvoir et de son coût
-        yfu_powerpoint = int(powerpoint_roll / 1_000)
+        yfu_powerpoints = int(powerpoints_roll / 1_000)
 
         # Variable aléatoire permettant de faire des yfu qui font pareil que des yfus de puissance inférieur
         # Loi de propabilité 0 et 1 tirée suivant une loi triangulaire de mode 1 (aka p(x) = 2 • x)
         # N'est utilisé que si le pouvoir tiré est actif
         # max_dampening sert à capper la puissance des yfu 6+ étoiles pour qu'elles restent utilisables et ne
         # coûtent pas déraisonnablement cher à utiliser
-        max_dampening = min(8_000 / sqrt(yfu_powerpoint), 1)
+        max_dampening = min(8_000 / sqrt(yfu_powerpoints), 1)
         dampening = triangular(0, max_dampening, max_dampening)
 
         while not power_found:
             power_class = random.choice(available_power)
 
             if issubclass(power_class, Active):
-                puissance_pouvoir = int(dampening * yfu_powerpoint)
+                puissance_pouvoir = int(dampening * yfu_powerpoints)
             else:
                 # Pas de Dampening pour les pouvoirs passifs.
-                puissance_pouvoir = yfu_powerpoint
+                puissance_pouvoir = yfu_powerpoints
 
-            if puissance_pouvoir >= power_class.minimum_power_point:
+            if puissance_pouvoir >= power_class.minimum_power_points:
                 yfu_power = power_class(puissance_pouvoir)
                 power_found = True
 
-        initial_cost = 4 * dampening * sqrt(powerpoint_roll / 100_000)
+        initial_cost = 4 * dampening * sqrt(powerpoints_roll / 100_000)
         initial_cost = Style(max(initial_cost, 0.001))
 
-        return (yfu_powerpoint, yfu_power, initial_cost)
+        return (yfu_powerpoints, yfu_power, initial_cost)

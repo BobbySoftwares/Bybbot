@@ -23,7 +23,7 @@ class Yfu:
     generation_date: Arrow
     timezone: str = attrib(validator=assert_timezone)
 
-    power_point: int
+    power_points: int
     initial_activation_cost: Style
     power: Power
     last_activation_date: Arrow = attrib(default=Arrow.min)
@@ -49,18 +49,18 @@ class YfuRarity(Enum):
     UNREAL = (7, int("0xff033e", base=16))
 
     @classmethod
-    def from_power_point(cls, power_point):
-        if power_point < 500:  # stylog(1) / 2
+    def from_power_point(cls, power_points):
+        if power_points < 500:  # stylog(1) / 2
             return cls.COMMON
-        if power_point < 1000:  # stylog(1)
+        if power_points < 1000:  # stylog(1)
             return cls.UNCOMMON
-        if power_point < 4000:  # stylog(2)
+        if power_points < 4000:  # stylog(2)
             return cls.RARE
-        if power_point < 16000:  # stylog(3)
+        if power_points < 16000:  # stylog(3)
             return cls.EPIC
-        if power_point < 64000:  # stylog(4)
+        if power_points < 64000:  # stylog(4)
             return cls.MYTHIC
-        if power_point < 256000:  # stylog(5)
+        if power_points < 256000:  # stylog(5)
             return cls.LEGENDARY
         return cls.UNREAL
 

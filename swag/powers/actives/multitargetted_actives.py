@@ -15,7 +15,7 @@ class AfricanPrince(Active):
     target = Targets().user(2, [TargetProperty.CASTER_NOT_INCLUDED])
     cost_factor = 1.25
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -50,7 +50,7 @@ class BankAdministrationError(Active):
     target = Targets().user(2)
     cost_factor = 3
 
-    minimum_power_point = 16000
+    minimum_power_points = 16000
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]

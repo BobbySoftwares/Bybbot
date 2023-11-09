@@ -20,7 +20,7 @@ class Looting(Active):
     target = Targets()  # Pas de target car c'est tout le monde !
     cost_factor = 4
 
-    minimum_power_point = 2000
+    minimum_power_points = 2000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -128,7 +128,7 @@ class FiredampCryptoExplosion(Active):
     target = Targets()  #  Pas de target car c'est tout le monde !
     cost_factor = 1.5
 
-    minimum_power_point = 64000
+    minimum_power_points = 64000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -158,7 +158,7 @@ class TaxEvasion(Active):
     target = Targets()
     cost_factor = 2
 
-    minimum_power_point = 2000
+    minimum_power_points = 2000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)

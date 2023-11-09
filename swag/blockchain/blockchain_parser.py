@@ -48,7 +48,7 @@ def structure_power(obj: Any, cls: Type) -> Power:
 
 
 def unstructure_power(obj: Power) -> str:
-    return [type(obj).__name__, str(obj.power_point)]
+    return [type(obj).__name__, str(obj.power_points)]
 
 
 converter.register_structure_hook(Decimal, structure_decimal)

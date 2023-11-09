@@ -8,7 +8,7 @@ class InsolentLuck(Passive):
     title = "Chance insolente"
     effect = "Augmente les chances à la loterie de {}."
 
-    minimum_power_point = 10
+    minimum_power_points = 10
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -26,7 +26,7 @@ class TaxOptimization(Passive):
     title = "Optimisation fiscale"
     effect = "Donne l’avantage {} au minage."
 
-    minimum_power_point = 1000
+    minimum_power_points = 1000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -44,7 +44,7 @@ class MauritiusCommercialBank(Passive):
     title = "Mauritius Commercial Bank"
     effect = "Permet de miner {} fois de plus par jour."
 
-    minimum_power_point = 4000
+    minimum_power_points = 4000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -62,7 +62,7 @@ class StockPortfolio(Passive):
     title = "Portefeuille d’actions"
     effect = "Augmente la $wag Luck de {}."
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -80,7 +80,7 @@ class StockMarketMastery(Passive):
     title = "Maîtrise de la bourse"
     effect = "Augmente la $wag Base de {}."
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -98,7 +98,7 @@ class StateGuardianship(Passive):
     title = "Tutelle de l’État"
     effect = "Multiplie le résultat du minage par {}."
 
-    minimum_power_point = 1000
+    minimum_power_points = 1000
 
     def __init__(self, pp) -> None:
         super().__init__(pp)
@@ -118,7 +118,7 @@ class SuccessfulInvestment(Passive):
     title = "Placement fructueux"
     effect = "Augmente le bonus de blocage de {}%."
 
-    minimum_power_point = 1
+    minimum_power_points = 1
 
     def __init__(self, pp) -> None:
         super().__init__(pp)

@@ -34,7 +34,7 @@ class YfuGenerationBlock(Block):
     first_name = attrib(type=str)
     last_name = attrib(type=str)
     clan = attrib(type=str)
-    power_point = attrib(type=int)
+    power_points = attrib(type=int)
     initial_activation_cost = attrib(type=Style)
     avatar_asset_key = attrib(type=str)
     power = attrib(type=Power)
@@ -68,7 +68,7 @@ class YfuGenerationBlock(Block):
             avatar_url=db._assets[self.avatar_asset_key],
             generation_date=self.timestamp,
             timezone=db._accounts[self.user_id].timezone,
-            power_point=self.power_point,
+            power_points=self.power_points,
             initial_activation_cost=self.initial_activation_cost,
             power=self.power,
         )
