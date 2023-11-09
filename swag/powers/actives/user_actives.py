@@ -23,7 +23,7 @@ class Robbery(Active):
 
     @property
     def _x_value(self):
-        return Swag(self.power_points * 1_000)
+        return Swag(self._raw_x)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -49,7 +49,7 @@ class HoldUp(Active):
 
     @property
     def _x_value(self):
-        return Swag(self.power_points * 1_250)
+        return Swag(self._raw_x * 1.25)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -101,7 +101,7 @@ class AssetLoss(Active):
 
     @property
     def _x_value(self):
-        return Swag(self.power_points * 1_000 * 2)
+        return Swag(self._raw_x * 2)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -149,7 +149,7 @@ class DryLoss(Active):
 
     @property
     def _x_value(self):
-        return Swag(self.power_points * 1_750)
+        return Swag(self._raw_x * 1.75)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -199,7 +199,7 @@ class BankingBan(Active):
     @property
     def _x_value(self):
         # Ne devrait jamais atteindre moins de 1
-        return int(stylog(self.power_points * 1_000))
+        return int(stylog(self._raw_x))
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]

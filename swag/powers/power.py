@@ -38,6 +38,10 @@ class Power:
     def __init__(self, pp) -> None:
         self.power_points = pp
 
+    @property
+    def _raw_x(self) -> float:
+        return self._raw_x
+
     def protection_cost(self, power):
         return Style("inf")
 

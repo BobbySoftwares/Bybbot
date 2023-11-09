@@ -19,7 +19,7 @@ class AfricanPrince(Active):
 
     @property
     def _x_value(self):
-        return Swag(self.power_points * 3_000)
+        return Swag(self._raw_x * 3)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]

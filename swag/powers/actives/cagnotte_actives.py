@@ -21,7 +21,7 @@ class Embezzlement(Active):
 
     @property
     def _x_value(self):
-        return Swag(self.power_points * 1_500)
+        return Swag(self._raw_x * 1.5)
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[CagnotteId]

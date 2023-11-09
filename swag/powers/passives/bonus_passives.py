@@ -12,7 +12,7 @@ class InsolentLuck(Passive):
 
     @property
     def _x_value(self):
-        return int(stylog(self.power_points * 1_000))
+        return int(stylog(self._raw_x))
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.lottery_luck += self._x_value
@@ -26,7 +26,7 @@ class TaxOptimization(Passive):
 
     @property
     def _x_value(self):
-        return int(stylog(self.power_points * 1_000))
+        return int(stylog(self._raw_x))
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.avantage += self._x_value
@@ -40,7 +40,7 @@ class MauritiusCommercialBank(Passive):
 
     @property
     def _x_value(self):
-        return int(stylog(self.power_points * 1_000 / 4))
+        return int(stylog(self._raw_x / 4))
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.minings += self._x_value
@@ -54,7 +54,7 @@ class StockPortfolio(Passive):
 
     @property
     def _x_value(self):
-        return self.power_points * 100
+        return self._raw_x / 10
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.luck += self._x_value
@@ -68,7 +68,7 @@ class StockMarketMastery(Passive):
 
     @property
     def _x_value(self):
-        return self.power_points * 10
+        return self._raw_x / 100
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.base += self._x_value
@@ -82,7 +82,7 @@ class StateGuardianship(Passive):
 
     @property
     def _x_value(self):
-        return Decimal(stylog(self.power_points * 1_000)).quantize(
+        return Decimal(stylog(self._raw_x)).quantize(
             Decimal(".1"), rounding=ROUND_HALF_UP
         )
 
@@ -98,7 +98,7 @@ class SuccessfulInvestment(Passive):
 
     @property
     def _x_value(self):
-        return Decimal((stylog(self.power_points * 1_000)) * 100).quantize(
+        return Decimal((stylog(self._raw_x)) * 100).quantize(
             Decimal(".01"), rounding=ROUND_HALF_UP
         )
 
