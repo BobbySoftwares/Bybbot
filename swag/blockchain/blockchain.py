@@ -347,12 +347,15 @@ class SwagChain:
         power_found = False
 
         # PowerPoint de la Yfu, décrivant la puissance générale de la Yfu au vu de son pouvoir et de son coût
-        yfu_powerpoint = int(powerpoint_roll / 1000)
+        yfu_powerpoint = int(powerpoint_roll / 1_000)
 
         # Variable aléatoire permettant de faire des yfu qui font pareil que des yfus de puissance inférieur
         # Loi de propabilité 0 et 1 tirée suivant une loi triangulaire de mode 1 (aka p(x) = 2 • x)
         # N'est utilisé que si le pouvoir tiré est actif
-        dampening = triangular(0, 1, 1)
+        # max_dampening sert à capper la puissance des yfu 6+ étoiles pour qu'elles restent utilisables et ne
+        # coûtent pas déraisonnablement cher à utiliser
+        max_dampening = min(8_000 / sqrt(yfu_powerpoint), 1)
+        dampening = triangular(0, max_dampening, max_dampening)
 
         while not power_found:
             power_class = random.choice(available_power)
@@ -367,7 +370,7 @@ class SwagChain:
                 yfu_power = power_class(puissance_pouvoir)
                 power_found = True
 
-        initial_cost = 4 * dampening * sqrt(powerpoint_roll / 100000)
+        initial_cost = 4 * dampening * sqrt(powerpoint_roll / 100_000)
         initial_cost = Style(max(initial_cost, 0.001))
 
         return (yfu_powerpoint, yfu_power, initial_cost)
