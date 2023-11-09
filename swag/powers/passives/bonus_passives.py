@@ -54,7 +54,7 @@ class StockPortfolio(Passive):
 
     @property
     def _x_value(self):
-        return self._raw_x / 10
+        return self._raw_x / 100
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.luck += self._x_value
