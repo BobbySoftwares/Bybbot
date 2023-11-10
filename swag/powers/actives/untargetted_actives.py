@@ -122,9 +122,9 @@ class FiredampCryptoExplosion(Active):
     title = "Cryptogrisou"
     effect = "Empêche toute le monde sauf l'utilisateur de miner pendant {} jours."
     target = Targets()  #  Pas de target car c'est tout le monde !
-    cost_factor = 1.5
+    cost_factor = 1
 
-    minimum_power_points = 64000
+    minimum_power_points = 64_000
 
     @property
     def _x_value(self):
