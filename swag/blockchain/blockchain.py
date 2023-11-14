@@ -354,8 +354,8 @@ class SwagChain:
         # N'est utilisé que si le pouvoir tiré est actif
         # limiter sert à capper la puissance des yfu 6+ étoiles pour qu'elles restent utilisables et ne
         # coûtent pas déraisonnablement cher à utiliser
-        minimum = 0.1 / sqrt(powerpoints_roll)
-        limiter = min(8_000 / sqrt(yfu_powerpoints), 1)
+        minimum = 0.1 / sqrt(float(powerpoints_roll))
+        limiter = min(8_000 / sqrt(float(yfu_powerpoints)), 1)
         dampening = triangular(minimum, limiter, limiter)
 
         while not power_found:
