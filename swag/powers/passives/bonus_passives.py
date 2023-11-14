@@ -10,6 +10,9 @@ class InsolentLuck(Passive):
 
     minimum_power_points = 10
 
+    def _correct_dampening(self):
+        return styxp(self._x_value) / self._raw_x
+
     @property
     def _x_value(self):
         return int(stylog(self._raw_x))
@@ -24,6 +27,9 @@ class TaxOptimization(Passive):
 
     minimum_power_points = 1000
 
+    def _correct_dampening(self):
+        return styxp(self._x_value) / self._raw_x
+
     @property
     def _x_value(self):
         return int(stylog(self._raw_x))
@@ -37,6 +43,9 @@ class MauritiusCommercialBank(Passive):
     effect = "Permet de miner {} fois de plus par jour."
 
     minimum_power_points = 4000
+
+    def _correct_dampening(self):
+        return 4 * styxp(self._x_value) / self._raw_x
 
     @property
     def _x_value(self):

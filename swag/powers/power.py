@@ -42,6 +42,9 @@ class Power:
     def _raw_x(self) -> float:
         return self._raw_x
 
+    def _correct_dampening(self):
+        return 1.0
+
     def protection_cost(self, power):
         return Style("inf")
 

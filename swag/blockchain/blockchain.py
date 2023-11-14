@@ -371,6 +371,7 @@ class SwagChain:
                 yfu_power = power_class(puissance_pouvoir)
                 power_found = True
 
+        dampening *= yfu_power._correct_dampening()
         initial_cost = Style(4 * dampening * sqrt(powerpoints_roll / 100_000))
 
         return (yfu_powerpoints, yfu_power, initial_cost)

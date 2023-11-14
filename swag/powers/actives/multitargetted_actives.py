@@ -44,9 +44,12 @@ class BankAdministrationError(Active):
     title = "Erreur de l'administration bancaire"
     effect = "Permet d'échanger le swag de deux joueurs"
     target = Targets().user(2)
-    cost_factor = 3
+    cost_factor = 4
 
-    minimum_power_points = 16000
+    minimum_power_points = 64_000
+
+    def _correct_dampening(self):
+        return 64_000 / self.power_points
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]

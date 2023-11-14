@@ -126,6 +126,9 @@ class FiredampCryptoExplosion(Active):
 
     minimum_power_points = 64_000
 
+    def _correct_dampening(self):
+        return 64 * styxp(self._x_value) / self._raw_x
+
     @property
     def _x_value(self):
         return int(stylog(self._raw_x / 64))
@@ -151,6 +154,9 @@ class TaxEvasion(Active):
     cost_factor = 2
 
     minimum_power_points = 2000
+
+    def _correct_dampening(self):
+        return 2 * styxp(self._x_value) / self._raw_x
 
     @property
     def _x_value(self):

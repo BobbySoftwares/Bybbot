@@ -7,7 +7,7 @@ from swag.errors import NotEnoughStyleInBalance, NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
 from swag.powers.power import Active
 from swag.powers.target import Targets
-from swag.stylog import stylog
+from swag.stylog import stylog, styxp
 
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
@@ -195,6 +195,9 @@ class BankingBan(Active):
     cost_factor = 1
 
     minimum_power_points = 1000
+
+    def _correct_dampening(self):
+        return styxp(self._x_value) / self._raw_x
 
     @property
     def _x_value(self):
