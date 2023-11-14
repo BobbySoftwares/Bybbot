@@ -2,6 +2,7 @@ from decimal import Decimal
 from typing import Union
 from arrow.arrow import Arrow
 import disnake
+from numpy import log2
 
 from attr import attrib, attrs
 from enum import Enum
@@ -52,17 +53,18 @@ class YfuRarity(Enum):
     def from_power_point(cls, power_points):
         if power_points < 500:  # stylog(1) / 2
             return cls.COMMON
-        if power_points < 1000:  # stylog(1)
+        if power_points < 1_000:  # stylog(1)
             return cls.UNCOMMON
-        if power_points < 4000:  # stylog(2)
+        if power_points < 4_000:  # stylog(2)
             return cls.RARE
-        if power_points < 16000:  # stylog(3)
+        if power_points < 16_000:  # stylog(3)
             return cls.EPIC
-        if power_points < 64000:  # stylog(4)
+        if power_points < 64_000:  # stylog(4)
             return cls.MYTHIC
-        if power_points < 256000:  # stylog(5)
+        if power_points < 256_000:  # stylog(5)
             return cls.LEGENDARY
-        return cls.UNREAL
+        stars = int(log2(power_points/1_000)) + 3
+        return (stars, cls.UNREAL[1]))
 
     def get_number_of_star(self):
         return self.value[0]
