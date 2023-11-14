@@ -40,7 +40,7 @@ class Power:
 
     @property
     def _raw_x(self) -> float:
-        return self._raw_x
+        return self.power_points * 1_000
 
     def _correct_dampening(self):
         return 1.0
