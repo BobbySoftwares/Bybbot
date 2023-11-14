@@ -63,8 +63,8 @@ class YfuRarity(Enum):
             return cls.MYTHIC
         if power_points < 256_000:  # stylog(5)
             return cls.LEGENDARY
-        stars = int(log2(power_points/1_000)) + 3
-        return (stars, cls.UNREAL[1]))
+        stars = int(log2(power_points / 1_000)) + 3
+        return (stars, cls.UNREAL[1])
 
     def get_number_of_star(self):
         return self.value[0]
