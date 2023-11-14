@@ -79,18 +79,18 @@ class StockMarketMastery(Passive):
 
 class StateGuardianship(Passive):
     title = "Tutelle de l’État"
-    effect = "Multiplie le résultat du minage par {}."
+    effect = "Augmente le résultat du minage de {}%."
 
-    minimum_power_points = 1000
+    minimum_power_points = 500
 
     @property
     def _x_value(self):
-        return Decimal(stylog(self._raw_x)).quantize(
-            Decimal(".1"), rounding=ROUND_HALF_UP
+        return Decimal(stylog(self._raw_x / 8) * 100).quantize(
+            Decimal(".01"), rounding=ROUND_HALF_UP
         )
 
     def add_bonus(self, bonuses: Bonuses):
-        bonuses.multiplier *= self._x_value
+        bonuses.multiplier += self._x_value / 100
 
 
 class SuccessfulInvestment(Passive):
