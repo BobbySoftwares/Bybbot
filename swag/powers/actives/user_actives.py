@@ -1,5 +1,5 @@
 from enum import Flag, auto
-from math import floor
+from math import floor, sqrt
 from typing import TYPE_CHECKING, List, OrderedDict
 
 from swag.currencies import Style, Swag

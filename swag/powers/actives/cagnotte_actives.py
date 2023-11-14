@@ -6,6 +6,7 @@ from swag.powers.actives.user_actives import Targets
 from swag.powers.target import Targets
 from ..power import Active
 from swag.stylog import stylog
+from math import sqrt
 
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain

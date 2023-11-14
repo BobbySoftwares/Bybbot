@@ -1,7 +1,7 @@
 from decimal import ROUND_HALF_UP, Decimal
 from swag.artefacts.bonuses import Bonuses
 from ..power import Passive
-from ...stylog import stylog
+from ...stylog import stylog, styxp
 
 
 class InsolentLuck(Passive):
