@@ -41,13 +41,13 @@ class DishonestJointVenture(Active):
     title = "Joint-venture malhonnête"
     effect = "Permet de voler {} à une €agnotte."
     target = Targets().cagnotte(1)
-    cost_factor = 0.5
+    cost_factor = 0.15
 
     minimum_power_points = 10
 
     @property
     def _x_value(self):
-        return Style(0.01 * self.power_points * 2.5)
+        return Style(sqrt(self._raw_x / 100_000))
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[CagnotteId]

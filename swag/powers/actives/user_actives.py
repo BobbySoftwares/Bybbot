@@ -69,13 +69,13 @@ class Takeover(Active):
     title = "OPA"
     effect = "Permet de voler {} en cours de génération d'un utilisateur."
     target = Targets().user(1)
-    cost_factor = 0.5
+    cost_factor = 0.1
 
     minimum_power_points = 1
 
     @property
     def _x_value(self):
-        return Style(0.01 * self.power_points * 2.5)
+        return Style(sqrt(self._raw_x / 100_000))
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
@@ -120,13 +120,13 @@ class InsiderTrading(Active):
     title = "Délit d'initié"
     effect = "Permet faire disparaître {} en cours de génération d'un utilisateur."
     target = Targets().user(1)
-    cost_factor = 0.75
+    cost_factor = 0.05
 
     minimum_power_points = 1
 
     @property
     def _x_value(self):
-        return Style(0.01 * self.power_points * 3)
+        return Style(sqrt(self._raw_x / 100_000))
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
