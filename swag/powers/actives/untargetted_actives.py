@@ -8,7 +8,7 @@ from swag.errors import NotEnoughSwagInBalance
 from swag.id import AccountId, UserId
 from swag.powers.power import Active
 from swag.powers.target import TargetProperty, Targets
-from swag.stylog import stylog
+from swag.stylog import stylog, styxp
 
 if TYPE_CHECKING:
     from swag.blockchain.blockchain import SwagChain
