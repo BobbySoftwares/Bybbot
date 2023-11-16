@@ -40,7 +40,7 @@ class Yfu:
         self.last_activation_date = activation_date
 
 
-class YfuRarity(Enum):
+class YfuColor(Enum):
     COMMON = (1, int("0xffffff", base=16))
     UNCOMMON = (2, int("0x1eff00", base=16))
     RARE = (3, int("0x0070dd", base=16))
@@ -49,28 +49,34 @@ class YfuRarity(Enum):
     LEGENDARY = (6, int("0xffea00", base=16))
     UNREAL = (7, int("0xff033e", base=16))
 
+
+@attrs(auto_attribs=True)
+class YfuRarity:
+    stars: int
+    color: YfuColor
+
     @classmethod
     def from_power_point(cls, power_points):
         if power_points < 500:  # stylog(1) / 2
-            return cls.COMMON
+            return cls(1, YfuColor.COMMON)
         if power_points < 1_000:  # stylog(1)
-            return cls.UNCOMMON
+            return cls(2, YfuColor.UNCOMMON)
         if power_points < 4_000:  # stylog(2)
-            return cls.RARE
+            return cls(3, YfuColor.RARE)
         if power_points < 16_000:  # stylog(3)
-            return cls.EPIC
+            return cls(4, YfuColor.EPIC)
         if power_points < 64_000:  # stylog(4)
-            return cls.MYTHIC
+            return cls(5, YfuColor.MYTHIC)
         if power_points < 256_000:  # stylog(5)
-            return cls.LEGENDARY
+            return cls(6, YfuColor.LEGENDARY)
         stars = int(log2(power_points / 1_000)) + 3
-        return (stars, cls.UNREAL[1])
+        return cls(stars, YfuColor.UNREAL)
 
     def get_number_of_star(self):
-        return self.value[0]
+        return self.stars
 
     def get_color(self):
-        return self.value[1]
+        return self.color.value[1]
 
 
 class YfuNotFound(Exception):
