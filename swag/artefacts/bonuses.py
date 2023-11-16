@@ -18,9 +18,12 @@ class Bonuses:
     blocking_bonus: Decimal = Decimal(0)
 
     def roll(self):
-        avantage_rolls = [roll(self.base, self.luck) for _ in range(self.avantage)]
+        avantage_rolls = [self.unit_roll() for _ in range(self.avantage)]
 
         return {
             "result": self.multiplier * max(avantage_rolls),
             "details": {"multiplier": self.multiplier, "avantages": avantage_rolls},
         }
+
+    def unit_roll(self):
+        return roll(self.base, self.luck)

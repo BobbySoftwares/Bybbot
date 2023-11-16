@@ -317,7 +317,7 @@ class SwagChain:
         shutil.move(avatar_file, used_avatar_local_folder)
 
         # Powerpoint rolling
-        power_points_roll = int(self._accounts.users[author].mine(self))
+        power_points_roll = int(self._accounts.users[author].bonuses(self).unit_roll())
 
         yfu_powerpoints, power, cost = await self.generate_yfu_power(power_points_roll)
 
@@ -347,7 +347,7 @@ class SwagChain:
         power_found = False
 
         # PowerPoint de la Yfu, décrivant la puissance générale de la Yfu au vu de son pouvoir et de son coût
-        yfu_powerpoints = int(powerpoints_roll / 1_000)
+        yfu_powerpoints = int(powerpoints_roll / 1_000) + 1
 
         # Variable aléatoire permettant de faire des yfu qui font pareil que des yfus de puissance inférieur
         # Loi de propabilité 0 et 1 tirée suivant une loi triangulaire de mode 1 (aka p(x) = 2 • x)
