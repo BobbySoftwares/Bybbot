@@ -1,5 +1,5 @@
 from decimal import ROUND_HALF_UP, Decimal
-from swag.artefacts.bonuses import Bonuses
+from swag.artefacts.bonuses import SWAG_LUCK, Bonuses
 from ..power import Passive
 from ...stylog import stylog
 
@@ -54,7 +54,7 @@ class StockPortfolio(Passive):
 
     @property
     def _x_value(self):
-        return self._raw_x / 100
+        return int(stylog(self._raw_x) * SWAG_LUCK)
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.luck += self._x_value
@@ -68,7 +68,7 @@ class StockMarketMastery(Passive):
 
     @property
     def _x_value(self):
-        return self._raw_x / 100
+        return int(stylog(self._raw_x) * SWAG_LUCK)
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.base += self._x_value
