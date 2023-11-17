@@ -362,16 +362,19 @@ class SwagChain:
             power_class = random.choice(available_power)
 
             if issubclass(power_class, Active):
-                puissance_pouvoir = int(dampening * yfu_powerpoints)
+                effective_powerpoints = int(dampening * yfu_powerpoints)
             else:
                 # Pas de Dampening pour les pouvoirs passifs.
-                puissance_pouvoir = yfu_powerpoints
+                effective_powerpoints = yfu_powerpoints
 
-            if puissance_pouvoir >= power_class.minimum_power_points:
-                yfu_power = power_class(puissance_pouvoir)
+            if effective_powerpoints >= power_class.minimum_power_points:
+                yfu_power = power_class(effective_powerpoints)
                 power_found = True
 
         dampening *= yfu_power._correct_dampening()
-        initial_cost = Style(4 * dampening * sqrt(powerpoints_roll / 100_000))
+        initial_cost = max(
+            Style("0.002"),
+            Style(4 * dampening * sqrt(yfu_powerpoints / 100)),
+        )
 
         return (yfu_powerpoints, yfu_power, initial_cost)
