@@ -21,16 +21,23 @@ class YfuCommand(commands.Cog):
         """Ouvre le menu des ¥fus"""
         # TODO gérer le cas où il n'y a pas de Yfu
 
-        first_yfu_id = sort_yfu_ids(
-            self.swag_client.swagchain.account(interaction.author.id).yfu_wallet
-        )[0]
+        yfu_wallet = self.swag_client.swagchain.account(
+            interaction.author.id
+        ).yfu_wallet
 
-        # Envoie du message publique
-        await interaction.send(f"{interaction.author.mention} regarde ses Yfus 👀")
+        if len(yfu_wallet) == 0:
+            await interaction.send(
+                f"Tu n'as pas encore de ¥fu ! Retape cette commande lorsque tu auras récupérer une ¥fu.",
+                ephemeral=True,
+            )
+        else:
+            first_yfu_id = sort_yfu_ids(yfu_wallet)[0]
 
-        # Message privée
-        await interaction.followup.send(
-            embed=YfuEmbed.from_yfu(self.swag_client.swagchain.yfu(first_yfu_id)),
-            view=YfuNavigation(self.swag_client, interaction.author.id, first_yfu_id),
-            ephemeral=True,
-        )
+            # Message privée
+            await interaction.followup.send(
+                embed=YfuEmbed.from_yfu(self.swag_client.swagchain.yfu(first_yfu_id)),
+                view=YfuNavigation(
+                    self.swag_client, interaction.author.id, first_yfu_id
+                ),
+                ephemeral=True,
+            )

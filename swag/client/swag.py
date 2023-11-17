@@ -68,7 +68,8 @@ class SwagCommand(commands.Cog):
                 new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
 
                 await interaction.followup.send(
-                    f"{interaction.author.mention}, suite à votre minage, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
+                    f"{interaction.author.mention}, suite à votre minage désastreux, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !\n\n"
+                    "Utilise la commande `/yfu menu` pour en savoir plus !",
                     embed=YfuEmbed.from_yfu(new_yfu),
                 )
 
