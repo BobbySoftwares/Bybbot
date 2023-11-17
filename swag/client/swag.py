@@ -60,16 +60,17 @@ class SwagCommand(commands.Cog):
         )
 
         # Yfu Generation
-        if block.amount <= YFU_GENERATION_MINING_THRESHOLD:
-            new_yfu_id = await self.swag_client.swagchain.generate_yfu(
-                UserId(interaction.author.id)
-            )
-            new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
+        for mining in block.harvest:
+            if Swag(mining["result"]) <= YFU_GENERATION_MINING_THRESHOLD:
+                new_yfu_id = await self.swag_client.swagchain.generate_yfu(
+                    UserId(interaction.author.id)
+                )
+                new_yfu = self.swag_client.swagchain.yfu(new_yfu_id)
 
-            await interaction.followup.send(
-                f"{interaction.author.mention}, suite à votre minage, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
-                embed=YfuEmbed.from_yfu(new_yfu),
-            )
+                await interaction.followup.send(
+                    f"{interaction.author.mention}, suite à votre minage, **{new_yfu.first_name} {new_yfu.last_name}** a rejoint vos rangs !",
+                    embed=YfuEmbed.from_yfu(new_yfu),
+                )
 
         # Update classement
         await update_forbes_classement(
