@@ -82,7 +82,7 @@ class StateGuardianship(Passive):
 
     @property
     def _x_value(self):
-        return Decimal(stylog(self._raw_x / 2.7) * 100).quantize(
+        return Decimal(stylog(self._raw_x / 3) * 100).quantize(
             Decimal(".01"), rounding=ROUND_HALF_UP
         )
 
