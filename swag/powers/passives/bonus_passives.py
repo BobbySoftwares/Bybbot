@@ -1,7 +1,7 @@
 from decimal import ROUND_HALF_UP, Decimal
 from swag.artefacts.bonuses import Bonuses
 from ..power import Passive
-from ...stylog import stylog, styxp
+from ...stylog import stylog
 
 
 class InsolentLuck(Passive):
@@ -23,9 +23,6 @@ class TaxOptimization(Passive):
     effect = "Donne l’avantage {} au minage."
 
     minimum_power_points = 1000
-
-    def _correct_dampening(self):
-        return styxp(self._x_value) / self._raw_x
 
     @property
     def _x_value(self):
