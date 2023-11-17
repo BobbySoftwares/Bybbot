@@ -164,7 +164,7 @@ class DryLoss(Active):
 
 class TaxAudit(Active):
     title = "Contrôle fiscal"
-    effect = "Permet d'envoyer {} d'un utilisateur vers la €agnotte '€'."
+    effect = "Permet d'envoyer {} d'un utilisateur vers la €agnotte '€Bobbycratie'."
     target = Targets().user(1)
     cost_factor = 0.75
 
@@ -177,7 +177,7 @@ class TaxAudit(Active):
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
     ):
-        zero = chain._accounts["€"]  # "€Bobbycratie"? can't remember what I meant
+        zero = chain._accounts["€Bobbycratie"]
         target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
