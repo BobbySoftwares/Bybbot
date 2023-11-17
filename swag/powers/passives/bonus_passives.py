@@ -78,11 +78,11 @@ class StateGuardianship(Passive):
     title = "Tutelle de l’État"
     effect = "Augmente le résultat du minage de {}%."
 
-    minimum_power_points = 500
+    minimum_power_points = 1
 
     @property
     def _x_value(self):
-        return Decimal(stylog(self._raw_x / 8) * 100).quantize(
+        return Decimal(stylog(self._raw_x / 2.7) * 100).quantize(
             Decimal(".01"), rounding=ROUND_HALF_UP
         )
 
