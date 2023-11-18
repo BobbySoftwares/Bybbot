@@ -312,7 +312,7 @@ class YfuTarget(disnake.ui.View):
         if TargetType.USER in target_to_choose[0]:
             if TargetProperty.CASTER_NOT_INCLUDED in target_to_choose[1]:
                 options = options + forbes_to_select_options(
-                    self.nav_view.swag_client, exclude=[self.nav_view.user_id]
+                    self.nav_view.swag_client, exclude=[UserId(self.nav_view.user_id)]
                 )
             else:
                 options = options + forbes_to_select_options(self.nav_view.swag_client)
@@ -394,7 +394,7 @@ class YfuTarget(disnake.ui.View):
         # On revient sur la vu précédente
         await interaction.response.edit_message(
             embed=YfuEmbed.from_yfu(
-                self.swag_client.swagchain.yfu(self.nav_view.selected_yfu.id)
+                self.nav_view.swag_client.swagchain.yfu(self.nav_view.selected_yfu.id)
             ),
             view=self.nav_view,
         )
