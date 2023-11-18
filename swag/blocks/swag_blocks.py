@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
-from swag.id import CagnotteId, UserId
+from swag.id import CagnotteId, UserId, YfuId
 from swag.utils import assert_timezone
+from swag.yfu import Yfu
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -41,22 +42,27 @@ class AccountCreation(Block):
         db._accounts[self.user_id] = SwagAccount(self.timestamp, self.timezone)
 
 
-SWAG_BASE = 1000
-SWAG_LUCK = 100000
+class Uncomputed:
+    @classmethod
+    def converter(cls, type_converter):
+        def cv(input):
+            if input is cls:
+                return input
+            else:
+                return type_converter(input)
+
+        return cv
 
 
 @attrs(frozen=True, kw_only=True)
 class Mining(Block):
     user_id = attrib(type=UserId, converter=UserId)
-    amount = attrib(type=Swag, converter=Swag)
-    harvest = attrib(type=None, default=None)
+    amount = attrib(type=Swag, default=Uncomputed)
+    harvest = attrib(type=Union[dict, None], default=None)
 
-    @amount.default
-    def _mining_booty(self):
-        return roll(SWAG_BASE, SWAG_LUCK)
-
-    def validate(self, db: SwagChain):
+    def execute(self, db: SwagChain):
         user_account = db._accounts[self.user_id]
+        bonuses = user_account.bonuses(db)
 
         if (
             user_account.last_mining_date is not None
@@ -65,11 +71,13 @@ class Mining(Block):
         ):
             raise AlreadyMineToday
 
-    def execute(self, db: SwagChain):
-        user_account = db._accounts[self.user_id]
+        if self.amount is Uncomputed:
+            rolls = [bonuses.roll() for _ in range(bonuses.minings)]
+            self.__dict__["amount"] = Swag(sum([roll["result"] for roll in rolls]))
+            self.__dict__["harvest"] = rolls
 
         user_account.last_mining_date = self.timestamp.to(user_account.timezone)
-        user_account += self.amount
+        user_account += self.__dict__["amount"]
 
 
 @attrs(frozen=True, kw_only=True)
@@ -79,7 +87,6 @@ class Transaction(Block):
     amount = attrib(type=Union[Swag, Style])
 
     def execute(self, db: SwagChain):
-
         if type(self.giver_id) is CagnotteId:
             if self.issuer_id not in db._accounts[self.giver_id].managers:
                 raise NotCagnotteManager
@@ -153,7 +160,6 @@ class ReturnOnInvestment(Block):
             or self.timestamp < user_account.unblocking_date
             or user_account.blocked_swag <= Swag(0)
         ):
-            
             raise StyleStillBlocked
 
     def execute(self, db: SwagChain):
@@ -167,6 +173,7 @@ class ReturnOnInvestment(Block):
 
         user_account.unblocking_date = None
         user_account.blocking_date = None
+
 
 @attrs(frozen=True, kw_only=True, eq=False)
 class StyleGeneration(Block):

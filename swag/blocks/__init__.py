@@ -15,4 +15,16 @@ from .swag_blocks import (
     StyleGeneration,
 )
 
-from .system_blocks import UserTimezoneUpdate, GuildTimezoneUpdate, EventGiveaway
+from .yfu_blocks import (
+    YfuGenerationBlock,
+    RenameYfuBlock,
+    TokenTransactionBlock,
+    YfuPowerActivation,
+)
+
+from .system_blocks import (
+    UserTimezoneUpdate,
+    GuildTimezoneUpdate,
+    EventGiveaway,
+    AssetUploadBlock,
+)

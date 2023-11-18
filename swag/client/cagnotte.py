@@ -46,19 +46,21 @@ class CagnotteCommand(commands.Cog):
     async def autocomplete_cagnotte_id(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
     ):
-        cagnotte_ids = [cagnotte[0].id for cagnotte in self.swag_client.swagchain.cagnottes]
-        return fuzzysearch(user_input,cagnotte_ids)
+        cagnotte_ids = [
+            cagnotte[0].id for cagnotte in self.swag_client.swagchain.cagnottes
+        ]
+        return fuzzysearch(user_input, cagnotte_ids)
 
     async def autocomplete_managed_cagnotte_id(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
     ):
         managed_cagnotte_ids = [
-            cagnotte[0].id for cagnotte in self.swag_client.swagchain.cagnottes 
+            cagnotte[0].id
+            for cagnotte in self.swag_client.swagchain.cagnottes
             if UserId(interaction.author.id) in cagnotte[1].managers
-            ]
+        ]
 
-        return fuzzysearch(user_input,managed_cagnotte_ids)
-
+        return fuzzysearch(user_input, managed_cagnotte_ids)
 
     @commands.slash_command(name="cagnotte", guild_ids=[GUILD_ID])
     async def cagnotte(self, interaction: disnake.ApplicationCommandInteraction):
@@ -127,7 +129,9 @@ class CagnotteCommand(commands.Cog):
             for participant in cagnotte_info.participants
         ]
         await interaction.response.send_message(
-            embed=CagnotteAccountEmbed.from_cagnotte_account(cagnotte_id,cagnotte_info,self.swag_client.discord_client),
+            embed=CagnotteAccountEmbed.from_cagnotte_account(
+                cagnotte_id, cagnotte_info, self.swag_client.discord_client
+            ),
             ephemeral=True,
         )
 
@@ -168,8 +172,9 @@ class CagnotteCommand(commands.Cog):
 
         await interaction.response.send_message(
             "Transaction effectuée avec succès !",
-            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
-        )
+            embed=TransactionEmbed.from_transaction_block(
+                block,self.swag_client.discord_client)
+            )
 
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
@@ -409,14 +414,15 @@ class CagnotteCommand(commands.Cog):
             giver_id=UserId(interaction.author.id),
             recipient_id=cagnotte_id,
             amount=get_money_class(monnaie).from_human_readable(montant)
-        )
+         )
 
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
             "Transaction effectuée avec succès !",
-            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
+            embed=TransactionEmbed.from_transaction_block(block, self.swag__client.discord_client)
         )
+        
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )

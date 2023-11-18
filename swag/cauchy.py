@@ -17,3 +17,7 @@ def roll(loc, scale):
     """
     rv = rng.standard_cauchy() * scale + loc
     return int(abs(round(rv)))
+
+
+def choice(a, size=None, replace=True, p=None):
+    return rng.choice(a, size, replace, p)

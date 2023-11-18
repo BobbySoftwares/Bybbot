@@ -1,17 +1,20 @@
 import json
 import math
 import asyncio
+import random
 from typing import List
 
 from thefuzz import fuzz
 from thefuzz import process
-
 
 with open("config.json", "r") as json_file:
     client_config = json.load(json_file)
 
 # ID unique du serveur
 GUILD_ID = client_config.get("guild_id", 487244765558210580)
+
+# Admin guild id
+ADMIN_GUILD_ID = client_config.get("admin_guild_id", 856278929296195602)
 
 # ID unique du role du plus swag
 ROLE_ID_SWAGGEST = client_config.get("swaggest_role", 846736189310238751)
@@ -28,9 +31,12 @@ SWAGCHAIN_CHANNEL_ID = client_config.get("swagchain_channel", 913946510616567848
 # ID unique du canal de log, si il n'est pas défini, sa valeur sera None
 LOG_CHANNEL_ID = client_config.get("log_channel", None)
 
-#ID unique du canal des jeux
+# CLEF API DE TENOR GIF
+TENOR_API_KEY = client_config.get("tenor_api_key")
 
+# ID unique du canal des jeux
 GAME_CHANNEL_ID = client_config.get("game_channel", None)
+
 
 def format_number(n):
     """Fonction qui permet de rajouter des espaces fin entre chaque
@@ -43,6 +49,20 @@ def format_number(n):
         String: le nombre, formaté
     """
     return format(n, ",").replace(",", " ")
+
+
+def randomly_distribute(total, n):
+    """Distribue de manière aléatoire dans n élément la quantité dans 'total'
+
+    Returns:
+        List: La liste d'éléments dont la somme fait le total
+    """
+    random_distributed_vector = [random.random() for i in range(n)]
+    vector_sum = sum(random_distributed_vector)
+    random_distributed_vector = [
+        int(total * i / vector_sum) for i in random_distributed_vector
+    ]
+    return random_distributed_vector
 
 
 def chunks(lst, n):
@@ -224,10 +244,9 @@ async def connect_to_chan(client, chan_to_go):
     return await chan_to_go.connect()
 
 
-def fuzzysearch(input : str, choices : List[str]) -> List[str]:
-      
-    result = process.extractBests(input,choices, scorer = fuzz.ratio, limit = len(choices))
-    total_score = sum(score[1] for score in result) # score of all result
+def fuzzysearch(input: str, choices: List[str]) -> List[str]:
+    result = process.extractBests(input, choices, scorer=fuzz.ratio, limit=len(choices))
+    total_score = sum(score[1] for score in result)  # score of all result
 
     # If all the result have a score of 0
     # return initial choices

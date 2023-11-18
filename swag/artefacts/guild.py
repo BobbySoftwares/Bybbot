@@ -1,3 +1,4 @@
+from typing import Optional
 from attr import attrs, attrib
 
 from swag.utils import assert_timezone
@@ -6,6 +7,8 @@ from swag.utils import assert_timezone
 @attrs(auto_attribs=True)
 class Guild:
     timezone: str = attrib(validator=assert_timezone, default="UTC")
+    system_channel_id: Optional[int] = None
+    forbes_channel_id: Optional[int] = None
 
 
 class GuildDict(dict):

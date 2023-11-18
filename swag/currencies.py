@@ -8,8 +8,7 @@ from utils import format_number
 
 
 @attrs(frozen=True)
-class Money(metaclass = ABCMeta):
-
+class Money(metaclass=ABCMeta):
     @property
     @abstractmethod
     def _CURRENCY(self) -> str:
@@ -17,7 +16,7 @@ class Money(metaclass = ABCMeta):
 
     @classmethod
     @abstractmethod
-    def from_human_readable(cls, text : str):
+    def from_human_readable(cls, text: str):
         raise NotImplementedError
 
     def __str__(self) -> str:
@@ -27,12 +26,12 @@ class Money(metaclass = ABCMeta):
 @attrs(frozen=True)
 class Swag(Money):
     value: int = attrib(converter=int)
-    _CURRENCY : str = "$wag"
+    _CURRENCY: str = "$wag"
 
     @classmethod
-    def from_human_readable(cls, text : str):
+    def from_human_readable(cls, text: str):
         try:
-            return cls(text.replace(" ",""))
+            return cls(text.replace(" ", ""))
         except ValueError:
             raise InvalidSwagValue
 
@@ -41,8 +40,17 @@ class Swag(Money):
         if value < 0:
             raise InvalidSwagValue
 
-    def __add__(self, other: "Swag"):
-        return Swag(self.value + other.value)
+    def __add__(self, other):
+        if isinstance(other, Swag):
+            return Swag(self.value + other.value)
+        else:
+            return Swag(self.value + other)
+
+    def __radd__(self, other):
+        if isinstance(other, Swag):
+            return Swag(self.value + other.value)
+        else:
+            return Swag(self.value + other)
 
     def __sub__(self, other: "Swag"):
         return Swag(self.value - other.value)
@@ -70,12 +78,12 @@ def style_decimal(amount):
 @attrs(frozen=True)
 class Style(Money):
     value: Decimal = attrib(converter=style_decimal)
-    _CURRENCY : str = "$tyle"
+    _CURRENCY: str = "$tyle"
 
     @classmethod
-    def from_human_readable(cls, text : str):
+    def from_human_readable(cls, text: str):
         try:
-            return cls(value=text.replace(" ","").replace(",","."))
+            return cls(value=text.replace(" ", "").replace(",", "."))
         except ValueError:
             raise InvalidStyleValue
 
@@ -105,14 +113,15 @@ class Style(Money):
             raise InvalidStyleValue
 
 
-class Currency(str, Enum): 
+class Currency(str, Enum):
     """
-    Only used by slash command, 
+    Only used by slash command,
     Could be automaticly built thanks to Money children I guess ?
     """
 
     SWAG = Swag._CURRENCY
     STYLE = Style._CURRENCY
+
 
 def get_money_class(currency_str):
     if currency_str == Swag._CURRENCY:

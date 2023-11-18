@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
+from disnake import User
+
 from swag.id import CagnotteId, UserId
 
 if TYPE_CHECKING:
@@ -43,6 +45,11 @@ class CagnotteCreation(Block):
 class CagnotteRenaming(Block):
     cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
     new_name = attrib(type=str)
+    user_id = attrib(type=UserId, converter=UserId)
+
+    @user_id.default
+    def _user_id_default(self):
+        return self.issuer_id
 
     def validate(self, db: SwagChain):
         cagnotte_names = (cagnotte.name for cagnotte in db._accounts.cagnottes.values())
@@ -61,6 +68,11 @@ class CagnotteRenaming(Block):
 @attrs(frozen=True, kw_only=True)
 class CagnotteParticipantsReset(Block):
     cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    user_id = attrib(type=UserId, converter=UserId)
+
+    @user_id.default
+    def _user_id_default(self):
+        return self.issuer_id
 
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
@@ -74,6 +86,11 @@ class CagnotteParticipantsReset(Block):
 @attrs(frozen=True, kw_only=True)
 class CagnotteDeletion(Block):
     cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    user_id = attrib(type=UserId, converter=UserId)
+
+    @user_id.default
+    def _user_id_default(self):
+        return self.issuer_id
 
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
@@ -108,6 +125,11 @@ class CagnotteAddManagerBlock(Block):
 class CagnotteRevokeManagerBlock(Block):
     cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
     manager_id = attrib(type=UserId, converter=UserId)
+    user_id = attrib(type=UserId, converter=UserId)
+
+    @user_id.default
+    def _user_id_default(self):
+        return self.issuer_id
 
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]

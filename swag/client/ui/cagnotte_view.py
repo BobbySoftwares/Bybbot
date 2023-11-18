@@ -15,7 +15,12 @@ class CagnotteAccountEmbed(disnake.Embed):
         participants = ", ".join([bot.get_user(user_id.id).display_name for user_id in cagnotte_account.participants])
         if len(participants) == 0:
             participants = "N/A"
+
+        yfu_wallet = ', '.join([f'{yfu_id}' for yfu_id in cagnotte_account.yfu_wallet])
+        if len(cagnotte_account.yfu_wallet) == 0:
+            yfu_wallet = "N/A"
             
+
         account_dict = {
             "title": f"€agnotte {cagnotte_account.name}",
             "color": int("0xcfac23", base=16),
@@ -26,6 +31,7 @@ class CagnotteAccountEmbed(disnake.Embed):
 
                 {"name" : "💰 $wag", "value" : f"{cagnotte_account.swag_balance}", "inline" : True},
                 {"name" : "👛 $tyle", "value" : f"{cagnotte_account.style_balance}", "inline" : True},
+                {"name" : "👩‍🎤 ¥fus", "value" : yfu_wallet, "inline" : True},
                 
                 {"name" : "🙋‍♀️🙋‍♂️ Participant(s)", "value" : participants, "inline" : False},
                 

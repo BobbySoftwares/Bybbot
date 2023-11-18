@@ -1,8 +1,11 @@
 import re
+from typing import Union
 from attr import attrib, attrs
 
-from .errors import InvalidCagnotteId
+from .errors import InvalidCagnotteId, InvalidId, InvalidYfuId
 
+
+user_id_regex = re.compile("^\d+$", re.A)
 
 def user_id_converter(user_id):
     if type(user_id) is UserId:
@@ -40,3 +43,42 @@ class CagnotteId:
 
     def __str__(self) -> str:
         return self.id
+
+
+yfu_id_regex = re.compile("^¥\d+$", re.A)
+
+
+def yfu_id_converter(yfu_id):
+    if type(yfu_id) is YfuId:
+        return yfu_id.id
+    elif type(yfu_id) is int:
+        return f"¥{yfu_id}"
+    else:
+        return str(yfu_id)
+
+
+@attrs(frozen=True, auto_attribs=True)
+class YfuId:
+    id: str = attrib(converter=yfu_id_converter)
+
+    @id.validator
+    def _validate(self, attribute, value):
+        if not re.match(yfu_id_regex, value):
+            raise InvalidYfuId
+
+    def __str__(self) -> str:
+        return self.id
+
+
+def get_id_from_str(id : str) -> Union[UserId, CagnotteId, YfuId]:
+    if re.match(yfu_id_regex, id):
+        return YfuId(id)
+    if re.match(cagnotte_id_regex,id):
+        return CagnotteId(id)
+    if re.match(user_id_regex, id):
+        return UserId(id)
+    raise InvalidId
+
+
+AccountId = Union[UserId, CagnotteId]
+GenericId = Union[UserId, CagnotteId, YfuId]
