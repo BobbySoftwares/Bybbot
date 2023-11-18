@@ -2,6 +2,8 @@ from enum import Flag, auto
 from math import floor, sqrt
 from typing import TYPE_CHECKING, List, OrderedDict
 
+from arrow import utcnow
+
 from swag.currencies import Style, Swag
 from swag.errors import NotEnoughStyleInBalance, NotEnoughSwagInBalance
 from swag.id import AccountId, CagnotteId, UserId
@@ -209,4 +211,4 @@ class BankingBan(Active):
     ):
         target = chain._accounts[targets[0]]
         target.check_immunity(self)
-        target.last_mining_date = target.last_mining_date.shift(days=self._x_value)
+        target.last_mining_date = utcnow().shift(days=self._x_value)
