@@ -97,5 +97,7 @@ class JukeboxClient(Module):
         # Lorsque aucun son n'est joué dans le canal vocal actuel, on
         # lance le son !
         if not vc.is_playing():
+            if not vc.is_connected():
+                sleep(1)
             sound_to_play = disnake.FFmpegPCMAudio(file_to_play)
             vc.play(sound_to_play, after=None)

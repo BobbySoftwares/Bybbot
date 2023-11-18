@@ -8,10 +8,14 @@ from arrow import utcnow
 from attr import attrs, attrib
 from numpy import array, sqrt
 from numpy.random import triangular
+import cbor2
+import json
+from arrow import Arrow
 
 from swag.artefacts.accounts import Accounts
 from swag.artefacts.assets import AssetDict
 from swag.artefacts.guild import GuildDict
+from swag.blockchain.blockchain_parser import unstructure_block
 from swag.blocks.swag_blocks import Transaction
 from swag.blocks.system_blocks import AssetUploadBlock
 from swag.blocks.yfu_blocks import YfuGenerationBlock
@@ -56,6 +60,11 @@ def make_info(obj):
     return Info(obj)
 
 
+def json_converter(o):
+    if isinstance(o, Arrow):
+        return o.__str__()
+
+
 @attrs
 class SwagChain:
     _chain: List[Block] = attrib()
@@ -80,6 +89,17 @@ class SwagChain:
 
     def remove(self, block):
         self._chain.remove(block)
+
+    def save_backup(self):
+        saved_blocks = []
+
+        for block in self._chain:
+            saved_blocks.append(
+                json.dumps(unstructure_block(block), default=json_converter)
+            )
+
+        with open("swagchain.bk", "wb") as backup_file:
+            cbor2.dump(saved_blocks, backup_file)
 
     def account(self, user_id):
         return make_info(self._accounts[UserId(user_id)])
@@ -175,6 +195,28 @@ class SwagChain:
         for block in old_style_gen_block:
             await self.remove(block)
 
+    async def clean_old_style_gen_block(self):
+        # Get the oldest blocking date of all accounts :
+        try:
+            oldest_blocking_date = min(
+                user_account.blocking_date
+                for user_account in self._accounts.users.values()
+                if user_account.blocking_date is not None
+            )
+        except ValueError as e:
+            # If no blocking date is found, then we can clean all the StyleGeneration
+            oldest_blocking_date = utcnow()
+
+        print(f"Nettoyage de la blockchain avant la date du {oldest_blocking_date}\n")
+
+        # Remove all the StyleGenerationBlock which was added before the oldest date
+        for block in self._chain:
+            if (
+                isinstance(block, StyleGeneration)
+                and block.timestamp.datetime < oldest_blocking_date
+            ):
+                await self.remove(block)
+
     @property
     def forbes(self):
         return sorted(
@@ -255,12 +297,8 @@ class SwagChain:
         if not account_list:
             account_list = [account_id for account_id in self._accounts.users]
 
-        swag_gain = Swag(int(cagnotte.swag_balance.value / len(account_list)))
-        style_gain = Style(
-            (cagnotte.style_balance.value / len(account_list)).quantize(
-                Decimal(".0001"), rounding=ROUND_DOWN
-            )
-        )
+        swag_gain = Swag(cagnotte.swag_balance.value / len(account_list))
+        style_gain = Style(cagnotte.style_balance.value / len(account_list))
 
         for account_id in account_list:
             if swag_gain != Swag(0):

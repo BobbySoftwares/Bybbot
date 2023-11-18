@@ -6,7 +6,7 @@ from swag.blocks import YfuGenerationBlock
 from swag.blocks.swag_blocks import SwagBlocking, Transaction
 from swag.blocks.system_blocks import EventGiveaway, UserTimezoneUpdate
 from swag.client.ui.swag_view import MiningEmbed, SwagAccountEmbed, TransactionEmbed
-from swag.currencies import Currency, Swag
+from swag.currencies import Currency, Swag, get_money_class
 from swag.id import UserId
 from .ui.yfu_view import YfuEmbed
 
@@ -15,7 +15,6 @@ from ..stylog import BLOCKING_TIME
 from ..utils import update_forbes_classement
 
 from utils import GUILD_ID, format_number
-
 
 YFU_GENERATION_MINING_THRESHOLD = Swag(15000)
 
@@ -125,7 +124,7 @@ class SwagCommand(commands.Cog):
         block = SwagBlocking(
             issuer_id=interaction.author.id,
             user_id=interaction.author.id,
-            amount=Swag.from_command(montant),
+            amount=Swag.from_human_readable(montant),
         )
         await self.swag_client.swagchain.append(block)
 
@@ -153,7 +152,7 @@ class SwagCommand(commands.Cog):
             issuer_id=interaction.author.id,
             user_id=interaction.author.id,
             amount=(account_info.swag_balance + account_info.blocked_swag)
-            - Swag.from_command(montant),
+            - Swag.from_human_readable(montant),
         )
         await self.swag_client.swagchain.append(block)
 
@@ -182,14 +181,14 @@ class SwagCommand(commands.Cog):
         monnaie : monnaie à envoyer.
         destinataire : utilisateur à qui donner la monnaie.
         """
-
-        amount_to_send = Currency.get_class(monnaie).from_command(montant)
+        amount_to_send = get_money_class(monnaie).from_human_readable(montant)
 
         block = Transaction(
             issuer_id=interaction.author.id,
             giver_id=UserId(interaction.author.id),
             recipient_id=UserId(destinataire.id),
-            amount=amount_to_send,
+            amount=amount_to_send
+
         )
         await self.swag_client.swagchain.append(block)
 
@@ -226,7 +225,8 @@ class SwagCommand(commands.Cog):
             f"Ta timezone est désormais {timezone} !\n"
             "Pour des raisons de sécurité, tu ne pourras plus changer celle-ci "
             f"avant {block.lock_date}. Merci de ta compréhension.",
-            ephemeral=True,
+            ephemeral=True
+
         )
 
 

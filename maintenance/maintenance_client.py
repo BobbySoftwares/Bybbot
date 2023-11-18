@@ -2,7 +2,7 @@ import disnake
 import time
 from swag.blocks.system_blocks import EventGiveaway
 from swag.client.ui.yfu_view import YfuEmbed
-from swag.currencies import Currency
+from swag.currencies import Currency, get_money_class
 from swag.id import UserId
 from utils import ADMIN_GUILD_ID, GUILD_ID
 from swag.utils import update_forbes_classement
@@ -67,7 +67,7 @@ class AdminCommand(commands.Cog):
         destinataire : utilisateur qui recevra la monnaie.
         """
 
-        amount_to_generate = Currency.get_class(monnaie).from_command(montant)
+        amount_to_generate = get_money_class(monnaie).from_human_readable(montant)
 
         block = EventGiveaway(
             issuer_id=interaction.author.id,

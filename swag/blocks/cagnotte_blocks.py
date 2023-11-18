@@ -59,8 +59,8 @@ class CagnotteRenaming(Block):
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
 
-        if self.user_id not in cagnotte.managers:
-            raise NotCagnotteManager(self.user_id)
+        if self.issuer_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.issuer_id)
 
         cagnotte.name = self.new_name
 
@@ -77,8 +77,8 @@ class CagnotteParticipantsReset(Block):
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
 
-        if self.user_id not in cagnotte.managers:
-            raise NotCagnotteManager(self.user_id)
+        if self.issuer_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.issuer_id)
 
         cagnotte.participants.clear()
 
@@ -95,8 +95,8 @@ class CagnotteDeletion(Block):
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
 
-        if self.user_id not in cagnotte.managers:
-            raise NotCagnotteManager(self.user_id)
+        if self.issuer_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.issuer_id)
 
         if not cagnotte.is_empty:
             raise CagnotteDestructionForbidden
@@ -108,17 +108,12 @@ class CagnotteDeletion(Block):
 class CagnotteAddManagerBlock(Block):
     cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
     new_manager = attrib(type=UserId, converter=UserId)
-    user_id = attrib(type=UserId, converter=UserId)
-
-    @user_id.default
-    def _user_id_default(self):
-        return self.issuer_id
 
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
 
-        if self.user_id not in cagnotte.managers:
-            raise NotCagnotteManager(self.user_id)
+        if self.issuer_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.issuer_id)
 
         if self.new_manager in cagnotte.managers:
             raise AlreadyCagnotteManager(self.new_manager)
@@ -139,8 +134,8 @@ class CagnotteRevokeManagerBlock(Block):
     def execute(self, db: SwagChain):
         cagnotte = db._accounts[self.cagnotte_id]
 
-        if self.user_id not in cagnotte.managers:
-            raise NotCagnotteManager(self.user_id)
+        if self.issuer_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.issuer_id)
 
         if self.manager_id not in cagnotte.managers:
             raise NotCagnotteManager(self.manager_id)

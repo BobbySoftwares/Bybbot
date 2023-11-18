@@ -8,13 +8,13 @@ import disnake
 from swag.block import Block
 from swag.blocks.system_blocks import AssetUploadBlock
 
+from disnake import TextChannel
+import disnake
+from swag.block import Block
+
+
 from .blockchain_parser import structure_block, unstructure_block
-from .blockchain import SwagChain
-
-
-def json_converter(o):
-    if isinstance(o, Arrow):
-        return o.__str__()
+from .blockchain import SwagChain, json_converter
 
 
 @attrs
@@ -31,13 +31,16 @@ class SyncedSwagChain(SwagChain):
         async for message in channel.history(limit=None, oldest_first=True):
             unstructured_block = json.loads(message.content)
             block = structure_block(unstructured_block)
-            SwagChain.append(synced_chain, block)
-            synced_chain._messages[block.timestamp] = message.id
-            if isinstance(block, AssetUploadBlock):
-                # Mise à jour de la bibliothèque des assets
-                asset_url = message.attachments[0].url
-                synced_chain._assets[block.asset_key] = asset_url
 
+            try:
+                SwagChain.append(synced_chain, block)
+                synced_chain._messages[block.timestamp] = message.id
+                if isinstance(block, AssetUploadBlock):
+                    # Mise à jour de la bibliothèque des assets
+                    asset_url = message.attachments[0].url
+                    synced_chain._assets[block.asset_key] = asset_url
+            except:
+                print("\n\n\033[91mERREUR SUR LA BLOCKCHAIN\033[0m\n\n")
         return synced_chain
 
     async def append(self, block):

@@ -14,11 +14,11 @@ converter = Converter()
 
 
 def unstructure_money(o):
-    return [o.currency, converter.unstructure(o.value)]
+    return [o._CURRENCY, converter.unstructure(o.value)]
 
 
 def structure_money(o, t):
-    converter.structure(o, Swag if t.currency in o else Style)
+    converter.structure(o, Swag if t._CURRENCY in o else Style)
 
 
 def structure_id(o, _):

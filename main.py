@@ -6,6 +6,7 @@ import traceback
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import json
+from bobbycall.bobbycall import Bobbycall
 
 from jukebox.jukebox_client import JukeboxClient
 from swag import SwagClient
@@ -23,6 +24,7 @@ print("Lancement du bot...")
 # des membres d'un serveur
 intents = disnake.Intents.default()
 intents.members = True
+intents.message_content = True
 
 # Création du client
 client = Bot(intents=intents)
@@ -145,9 +147,13 @@ async def on_message(message):
                     "```"
                 )
                 await message.channel.send(
-                    f"{message.author.mention} ! Une erreur inattendue est survenue. "
-                    "Les développeurs viennent d'en être informés. Merci de bien vouloir "
-                    "patienter."
+                    f"{message.author.mention} ! **Une erreur inattendue est survenue**. "
+                    "Elle est manifestement la preuve d'un **bug** dans le logiciel.\n"
+                    "Les développeurs viennent d'en être informés. **Merci de bien vouloir "
+                    "patienter** le temps qu'on répare **et de ne pas continuer à provoquer le "
+                    "bug**, ce qui constituerait un déni de service et ne serait vraiment pas "
+                    "sympa envers les développeurs.\n\n\n"
+                    "Merci par avance pour votre coopération."
                 )
             except:
                 raise e

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, List, OrderedDict
 
 from swag.currencies import Style, Swag
 from swag.errors import NotEnoughStyleInBalance, NotEnoughSwagInBalance
-from swag.id import AccountId, UserId
+from swag.id import AccountId, CagnotteId, UserId
 from swag.powers.power import Active
 from swag.powers.target import Targets
 from swag.stylog import stylog, styxp
@@ -177,7 +177,7 @@ class TaxAudit(Active):
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
     ):
-        zero = chain._accounts["€Bobbycratie"]
+        zero = chain._accounts[CagnotteId("€Bobbycratie")]
         target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:

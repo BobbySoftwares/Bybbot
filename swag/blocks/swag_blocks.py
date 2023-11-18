@@ -87,7 +87,7 @@ class Transaction(Block):
     amount = attrib(type=Union[Swag, Style])
 
     def execute(self, db: SwagChain):
-        if type(self.giver_id) == CagnotteId:
+        if type(self.giver_id) is CagnotteId:
             if self.issuer_id not in db._accounts[self.giver_id].managers:
                 raise NotCagnotteManager
 
@@ -170,6 +170,9 @@ class ReturnOnInvestment(Block):
 
         user_account += self.amount
         user_account.pending_style = Style(0)
+
+        user_account.unblocking_date = None
+        user_account.blocking_date = None
 
 
 @attrs(frozen=True, kw_only=True, eq=False)

@@ -11,7 +11,7 @@ from swag.blocks.cagnotte_blocks import (
 from swag.blocks.swag_blocks import Transaction
 from swag.client.ui.cagnotte_view import CagnotteAccountEmbed
 from swag.client.ui.swag_view import TransactionEmbed
-from swag.currencies import Currency
+from swag.currencies import Currency, get_money_class
 from swag.id import CagnotteId, UserId
 
 from ..utils import (
@@ -23,6 +23,7 @@ from ..utils import (
 from utils import (
     GUILD_ID,
     format_number,
+    fuzzysearch,
     get_guild_member_name,
     reaction_message_building,
 )
@@ -42,24 +43,24 @@ class CagnotteCommand(commands.Cog):
     def __init__(self, swag_client):
         self.swag_client = swag_client
 
-    async def cagnotte_id_autocomplete(
+    async def autocomplete_cagnotte_id(
         self, interaction: disnake.ApplicationCommandInteraction, user_input: str
     ):
-        return [
-            cagnotte_id[0].id
-            for cagnotte_id in self.swag_client.swagchain.cagnottes
-            if user_input in cagnotte_id[0].id
+        cagnotte_ids = [
+            cagnotte[0].id for cagnotte in self.swag_client.swagchain.cagnottes
+        ]
+        return fuzzysearch(user_input, cagnotte_ids)
+
+    async def autocomplete_managed_cagnotte_id(
+        self, interaction: disnake.ApplicationCommandInteraction, user_input: str
+    ):
+        managed_cagnotte_ids = [
+            cagnotte[0].id
+            for cagnotte in self.swag_client.swagchain.cagnottes
+            if UserId(interaction.author.id) in cagnotte[1].managers
         ]
 
-    async def cagnotte_id_autocomplete_manager(
-        self, interaction: disnake.ApplicationCommandInteraction, user_input: str
-    ):
-        return [
-            cagnotte_id[0].id
-            for cagnotte_id in self.swag_client.swagchain.cagnottes
-            if user_input in cagnotte_id[0].id
-            and UserId(interaction.author.id) in cagnotte_id[1].managers
-        ]
+        return fuzzysearch(user_input, managed_cagnotte_ids)
 
     @commands.slash_command(name="cagnotte", guild_ids=[GUILD_ID])
     async def cagnotte(self, interaction: disnake.ApplicationCommandInteraction):
@@ -128,12 +129,14 @@ class CagnotteCommand(commands.Cog):
             for participant in cagnotte_info.participants
         ]
         await interaction.response.send_message(
-            embed=CagnotteAccountEmbed.from_cagnotte_account(cagnotte_id,cagnotte_info,self.swag_client.discord_client),
+            embed=CagnotteAccountEmbed.from_cagnotte_account(
+                cagnotte_id, cagnotte_info, self.swag_client.discord_client
+            ),
             ephemeral=True,
         )
 
     # Add autocompletion for the argument identifiant for the "info" command
-    info.autocomplete("identifiant")(cagnotte_id_autocomplete)
+    info.autocomplete("identifiant")(autocomplete_cagnotte_id)
 
     @cagnotte.sub_command(name="donner")
     async def give(
@@ -141,7 +144,7 @@ class CagnotteCommand(commands.Cog):
         interaction: disnake.ApplicationCommandInteraction,
         identifiant: str,
         destinataire: disnake.Member,
-        montant: int,
+        montant: str,
         monnaie: Currency,
     ):
         """
@@ -162,22 +165,23 @@ class CagnotteCommand(commands.Cog):
             issuer_id=UserId(interaction.author.id),
             giver_id=cagnotte_id,
             recipient_id=UserId(destinataire.id),
-            amount=Currency.get_class(monnaie)(montant),
+            amount=get_money_class(monnaie).from_human_readable(montant),
         )
 
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
             "Transaction effectuée avec succès !",
-            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
-        )
+            embed=TransactionEmbed.from_transaction_block(
+                block,self.swag_client.discord_client)
+            )
 
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
     # Add autocompletion for the argument identifiant for the "give" command
-    give.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    give.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="partager")
     async def share(
@@ -229,7 +233,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "share" command
-    share.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    share.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="loto")
     async def loto(
@@ -268,7 +272,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    loto.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    loto.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="renommer")
     async def rename(
@@ -294,7 +298,6 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteRenaming(
                 issuer_id=UserId(interaction.author.id),
-                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
                 new_name=nom,
             )
@@ -310,7 +313,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    rename.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    rename.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="reset")
     async def reset(
@@ -333,7 +336,6 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteParticipantsReset(
                 issuer_id=UserId(interaction.author.id),
-                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
             )
         )
@@ -348,7 +350,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    reset.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    reset.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="détruire")
     async def destroy(
@@ -370,7 +372,6 @@ class CagnotteCommand(commands.Cog):
         await self.swag_client.swagchain.append(
             CagnotteDeletion(
                 issuer_id=UserId(interaction.author.id),
-                user_id=UserId(interaction.author.id),
                 cagnotte_id=cagnotte_id,
             )
         )
@@ -384,7 +385,7 @@ class CagnotteCommand(commands.Cog):
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    destroy.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    destroy.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @cagnotte.sub_command(name="payer")
     async def pay(
@@ -412,21 +413,22 @@ class CagnotteCommand(commands.Cog):
             issuer_id=UserId(interaction.author.id),
             giver_id=UserId(interaction.author.id),
             recipient_id=cagnotte_id,
-            amount=Currency.get_class(monnaie)(montant),
-        )
+            amount=get_money_class(monnaie).from_human_readable(montant)
+         )
 
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
             "Transaction effectuée avec succès !",
-            embed=TransactionEmbed.from_transaction_block(block,self.swag_client.discord_client)
+            embed=TransactionEmbed.from_transaction_block(block, self.swag__client.discord_client)
         )
+        
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
     # Add autocompletion for the argument identifiant for the "loto" command
-    pay.autocomplete("identifiant")(cagnotte_id_autocomplete)
+    pay.autocomplete("identifiant")(autocomplete_cagnotte_id)
 
     @cagnotte.sub_command_group(name="gestionnaire")
     async def manager(self, interaction: disnake.ApplicationCommandInteraction):
@@ -452,8 +454,7 @@ class CagnotteCommand(commands.Cog):
         cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
 
         block = CagnotteAddManagerBlock(
-            issuer_id=UserId(interaction.author.id),
-            user_id=UserId(interaction.author.id),
+            issuer_id=interaction.author.id,
             cagnotte_id=cagnotte_id,
             new_manager=UserId(utilisateur.id),
         )
@@ -468,7 +469,7 @@ class CagnotteCommand(commands.Cog):
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    add_manager.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    add_manager.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     @manager.sub_command(name="révoquer")
     async def revoke_manager(
@@ -489,8 +490,7 @@ class CagnotteCommand(commands.Cog):
         cagnotte_info = self.swag_client.swagchain.cagnotte(cagnotte_id)
 
         block = CagnotteRevokeManagerBlock(
-            issuer_id=UserId(interaction.author.id),
-            user_id=UserId(interaction.author.id),
+            issuer_id=interaction.author.id,
             cagnotte_id=cagnotte_id,
             manager_id=UserId(utilisateur.id),
         )
@@ -505,7 +505,7 @@ class CagnotteCommand(commands.Cog):
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
 
-    revoke_manager.autocomplete("identifiant")(cagnotte_id_autocomplete_manager)
+    revoke_manager.autocomplete("identifiant")(autocomplete_managed_cagnotte_id)
 
     # elif "historique" in splited_command:
     #     user = message.author
