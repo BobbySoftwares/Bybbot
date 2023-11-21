@@ -5,6 +5,7 @@ import random
 
 from arrow import Arrow
 import arrow
+from swag.blocks.swag_blocks import AccountDeletion
 from swag.currencies import Style, Swag
 from swag.errors import InvalidTimeZone
 
@@ -267,8 +268,7 @@ async def mini_forbes_cagnottes(cagnottes_chunk, guild, client):
         String: message à envoyer pour visualiser une partie des €agnottes
     """
     cagnottes = []
-    for (cagnotte_id, cagnotte) in cagnottes_chunk:
-
+    for cagnotte_id, cagnotte in cagnottes_chunk:
         managers = [
             await get_guild_member_name(manager, guild, client)
             for manager in cagnotte.managers
@@ -329,7 +329,7 @@ async def update_the_style(client, swag_client):  # appelé toute les heures
         bobbycratie_guild, swag_client, client
     )  # Mise à jour du classement après les gains de $tyle
 
-    #Si il y a eut un déblocage de swag, on supprime les block stylegeneration de la swagchain inutiles
+    # Si il y a eut un déblocage de swag, on supprime les block stylegeneration de la swagchain inutiles
     if unblock_happen:
         await swag_client.swagchain.clean_old_style_gen_block()
 
@@ -384,6 +384,13 @@ async def update_forbes_classement(guild, swag_client, client):
     # Récupération du canal #$wag-forbes
     channel_forbes = guild.get_channel(FORBES_CHANNEL_ID)
 
+    # Slow, dirty, and would need a function. Just what we love.
+    for user_id, _ in swag_client.swagchain.forbes:
+        if client.get_user(user_id.id) is None:
+            await swag_client.swagchain.append(
+                AccountDeletion(issuer_id=client.user.id, user_id=user_id)
+            )
+
     # Récupération du classement complet
     forbes = swag_client.swagchain.forbes
 
@@ -416,7 +423,6 @@ async def update_forbes_classement(guild, swag_client, client):
     cpt_message_classement = 0
     cpt_message_cagnottes = 0
     async for message in channel_forbes.history(oldest_first=True):
-
         # On écrit d'abord les €agnottes
         if cpt_message_cagnottes < nbr_pages_cagnottes:
             await message.edit(
@@ -430,7 +436,6 @@ async def update_forbes_classement(guild, swag_client, client):
 
         # Ensuite, le classement
         elif cpt_message_classement < nbr_pages_classement:
-
             await message.edit(
                 content=await mini_forbes_swag(
                     forbes_chunks[cpt_message_classement],
@@ -532,10 +537,3 @@ EMOJI_CLAN_YFU = [
     "🤟",
     "🍞",
 ]
-
-
-def assert_timezone(self, attribute, timezone):
-    try:
-        arrow.now(timezone)
-    except arrow.parser.ParserError:
-        raise InvalidTimeZone(timezone)

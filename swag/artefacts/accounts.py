@@ -9,7 +9,7 @@ from swag.cauchy import roll
 
 from swag.id import CagnotteId, UserId, YfuId
 from swag.powers.power import Passive
-from swag.utils import assert_timezone
+from swag.assert_timezone import assert_timezone
 from swag.yfu import Yfu
 
 from ..errors import (

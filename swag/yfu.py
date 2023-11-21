@@ -10,7 +10,7 @@ from swag.currencies import Style
 from swag.id import CagnotteId, UserId, YfuId
 from .powers.power import Active, Passive, Power
 
-from swag.utils import assert_timezone
+from swag.assert_timezone import assert_timezone
 
 
 @attrs(auto_attribs=True)

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from swag.id import UserId
-from swag.utils import assert_timezone
+from swag.assert_timezone import assert_timezone
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -80,6 +80,7 @@ class EventGiveaway(Block):
         user_account = db._accounts[self.user_id]
 
         user_account += self.amount
+
 
 @attrs(frozen=True, kw_only=True)
 class AssetUploadBlock(Block):

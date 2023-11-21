@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from swag.id import CagnotteId, UserId, YfuId
-from swag.utils import assert_timezone
+from swag.assert_timezone import assert_timezone
 from swag.yfu import Yfu
 
 if TYPE_CHECKING:
@@ -40,6 +40,25 @@ class AccountCreation(Block):
 
     def execute(self, db: SwagChain):
         db._accounts[self.user_id] = SwagAccount(self.timestamp, self.timezone)
+
+
+@attrs(frozen=True, kw_only=True)
+class AccountDeletion(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+
+    def validate(self, db: SwagChain):
+        if self.user_id not in db._accounts:
+            raise AccountAlreadyExist
+
+    def execute(self, db: SwagChain):
+        account = db._accounts.users.pop(self.user_id)
+        dev_cagnotte = db._accounts[CagnotteId("€")]
+
+        dev_cagnotte += account.swag_balance
+        dev_cagnotte += account.style_balance
+        dev_cagnotte += account.blocked_swag
+        dev_cagnotte += account.pending_style
+        dev_cagnotte.yfu_wallet.update(account.yfu_wallet)
 
 
 class Uncomputed:
