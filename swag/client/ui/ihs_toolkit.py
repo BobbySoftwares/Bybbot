@@ -31,9 +31,20 @@ def yfus_to_select_options(yfus: List["Yfu"]):
 def forbes_to_select_options(swag_client: "SwagClient", exclude=[]):
     guild = swag_client.discord_client.get_guild(GUILD_ID)
     forbes = swag_client.swagchain.forbes
+
+    def get_user_name(user_id):
+        if (user_name := guild.get_member(user_id.id).display_name) is not None:
+            return user_name
+        elif (
+            user_name := swag_client.discord_client.get_user(user_id.id).display_name
+        ) is not None:
+            return user_name
+        else:
+            return f"INVALID USER {user_id.id}"
+
     return [
         SelectOption(
-            label=guild.get_member(user_id.id).display_name,
+            label=get_user_name(user_id),
             description=f"{account.swag_balance} -- {account.style_balance} -- {len(account.yfu_wallet)} ¥fu(s)",
             emoji="💰",
             value=user_id.id,
