@@ -8,6 +8,7 @@ from .cagnotte_blocks import (
 )
 from .swag_blocks import (
     AccountCreation,
+    AccountDeletion,
     Mining,
     Transaction,
     SwagBlocking,
