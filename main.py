@@ -34,6 +34,7 @@ swag_module = SwagClient(client)
 modules = [
     swag_module,
     JukeboxClient(client),
+    Bobbycall(client),
     MaintenanceClient(client, swag_module),
 ]
 
