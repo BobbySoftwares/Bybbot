@@ -173,8 +173,9 @@ class CagnotteCommand(commands.Cog):
         await interaction.response.send_message(
             "Transaction effectuée avec succès !",
             embed=TransactionEmbed.from_transaction_block(
-                block,self.swag_client.discord_client)
-            )
+                block, self.swag_client.discord_client
+            ),
+        )
 
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
@@ -321,7 +322,6 @@ class CagnotteCommand(commands.Cog):
         interaction: disnake.ApplicationCommandInteraction,
         identifiant: str,
     ):
-
         """
         👑 Enlève tout les participants de la €agnotte de sa liste des participants.
 
@@ -395,7 +395,6 @@ class CagnotteCommand(commands.Cog):
         montant: str,
         monnaie: Currency,
     ):
-
         """
         Envoie un montant d'une monnaie à la €agnotte.
 
@@ -413,16 +412,18 @@ class CagnotteCommand(commands.Cog):
             issuer_id=UserId(interaction.author.id),
             giver_id=UserId(interaction.author.id),
             recipient_id=cagnotte_id,
-            amount=get_money_class(monnaie).from_human_readable(montant)
-         )
+            amount=get_money_class(monnaie).from_human_readable(montant),
+        )
 
         await self.swag_client.swagchain.append(block)
 
         await interaction.response.send_message(
             "Transaction effectuée avec succès !",
-            embed=TransactionEmbed.from_transaction_block(block, self.swag__client.discord_client)
+            embed=TransactionEmbed.from_transaction_block(
+                block, self.swag_client.discord_client
+            ),
         )
-        
+
         await update_forbes_classement(
             interaction.guild, self.swag_client, self.swag_client.discord_client
         )
