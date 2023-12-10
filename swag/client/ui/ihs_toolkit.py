@@ -34,7 +34,7 @@ def forbes_to_select_options(swag_client: "SwagClient", exclude=[]):
 
     def get_user_name(user_id):
         if (member := guild.get_member(user_id.id)) is not None:
-            return user_name.display_name
+            return member.display_name
         elif (
             user_name := swag_client.discord_client.get_user(user_id.id).display_name
         ) is not None:
