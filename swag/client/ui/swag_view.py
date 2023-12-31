@@ -1,4 +1,5 @@
 import json
+from math import inf
 import random
 import requests
 from arrow import Arrow
@@ -156,6 +157,16 @@ class TransactionEmbed(disnake.Embed):
         return disnake.Embed.from_dict(transaction_dict)
 
 
+DEFAULT_GIF = "https://tenor.com/fr/view/gladstone-gander-ducktales-ducktales2017-house-of-the-lucky-gander-scrooge-mcduck-gif-21467818"
+MINING_KEYWORDS = [
+    (50000, ["bad", "poor", "awfull", "empty", "desert", "no money"]),
+    (100000, ["sad", "unhappy", "not good", "cringe", "awkward"]),
+    (200000, ["ok", "cool", "why not ?", "smile"]),
+    (1000000, ["nice", "wonderfull", "happy", "mining"]),
+    (inf, ["rich", "super happy", "hyped", "picsou", "dollars", "raining money"]),
+]
+
+
 class MiningEmbed(disnake.Embed):
     @classmethod
     def from_mining_block(cls, block: Mining, bot: disnake.Client):
@@ -202,45 +213,21 @@ class MiningEmbed(disnake.Embed):
     @classmethod
     def search_gif_from_mining(cls, block: Mining) -> str:
         result = ""
-        keyword_by_mining = {
-            10000: [
-                "bad",
-                "poor",
-                "awfull",
-                "empty",
-                "desert",
-                "no money",
-            ],
-            50000: ["sad", "unhappy", "not good", "cringe", "awkward"],
-            100000: ["ok", "cool", "why not ?", "smile"],
-            200000: ["nice", "wonderfull", "happy", "mining"],
-            1000000: [
-                "rich",
-                "super happy",
-                "hyped",
-                "picsou",
-                "dollars",
-                "raining money",
-            ],
-        }
 
-        keywords = list(keyword_by_mining.values())[-1]
-
-        for k, v in keyword_by_mining.items():
+        for k, v in MINING_KEYWORDS:
             if block.amount.value < k:
                 keywords = v
                 break
 
         # get the top 8 GIFs for the search term
-        r = requests.get(
-            "https://tenor.googleapis.com/v2/search?q=%s&key=%s&client_key=%s&limit=%s"
-            % (random.choice(keywords), TENOR_API_KEY, "Bybbot", 50)
-        )
-
-        print(
-            "https://tenor.googleapis.com/v2/search?q=%s&key=%s&client_key=%s&limit=%s"
-            % (random.choice(keywords), TENOR_API_KEY, "Bybbot", 50)
-        )
+        try:
+            r = requests.get(
+                "https://tenor.googleapis.com/v2/search?q=%s&key=%s&client_key=%s&limit=%s"
+                % (random.choice(keywords), TENOR_API_KEY, "Bybbot", 50),
+                timeout=2,
+            )
+        except requests.exceptions.Timeout:
+            return DEFAULT_GIF
 
         if r.status_code == 200:
             # load the GIFs using the urls for the smaller GIF sizes
@@ -248,6 +235,6 @@ class MiningEmbed(disnake.Embed):
                 "gif"
             ]["url"]
         else:
-            print("erreur API tenor")
+            result = DEFAULT_GIF
 
         return result
