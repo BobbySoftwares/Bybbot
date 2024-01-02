@@ -224,7 +224,7 @@ class MiningEmbed(disnake.Embed):
             r = requests.get(
                 "https://tenor.googleapis.com/v2/search?q=%s&key=%s&client_key=%s&limit=%s"
                 % (random.choice(keywords), TENOR_API_KEY, "Bybbot", 50),
-                timeout=2,
+                timeout=1,
             )
         except requests.exceptions.Timeout:
             return DEFAULT_GIF
