@@ -13,18 +13,15 @@ import json
 from arrow import Arrow
 
 from swag.artefacts.accounts import Accounts
-from swag.artefacts.assets import AssetDict
 from swag.artefacts.guild import GuildDict
 from swag.blockchain.blockchain_parser import unstructure_block
 from swag.blocks.swag_blocks import Transaction
-from swag.blocks.system_blocks import AssetUploadBlock
 from swag.blocks.yfu_blocks import YfuGenerationBlock
 
 from swag.currencies import Style, Swag
 from swag.id import CagnotteId, UserId, YfuId
 from swag.powers.power import Active
 from swag.yfu import Yfu, YfuDict
-from utils import randomly_distribute
 
 from ..artefacts import Guild
 from ..stylog import unit_style_generation
@@ -68,10 +65,10 @@ def json_converter(o):
 @attrs
 class SwagChain:
     _chain: List[Block] = attrib()
+    _assets: List[str] = attrib()
     _accounts: Accounts = attrib(init=False, factory=Accounts)
     _guilds: Dict[int, Guild] = attrib(init=False, factory=GuildDict)
     _yfus: Dict[YfuId, Yfu] = attrib(init=False, factory=YfuDict)
-    _assets: Dict[str, str] = attrib(init=False, factory=AssetDict)
 
     def __attrs_post_init__(self):
         for block in self._chain:
@@ -332,27 +329,9 @@ class SwagChain:
 
     async def generate_yfu(self, author: UserId):
         # Recherche du fichier de l'avatar
-        avatar_local_folder = "ressources/Yfu/avatars/GEN_1"
-        avatar_file = random.choice(
-            [
-                os.path.join(avatar_local_folder, file)
-                for file in os.listdir(avatar_local_folder)
-            ]
-        )
+        avatar_url = random.choice(self._assets)
 
         new_yfu_id = YfuId(self.next_yfu_id)
-
-        # Upload de l'avatar par un AssetUploadBlock
-        avatar_asset_block = AssetUploadBlock(
-            issuer_id=author, asset_key=f"{new_yfu_id}_avatar", local_path=avatar_file
-        )
-
-        await self.append(avatar_asset_block)
-
-        # Déplacement de l'image pour pas qu'elle soit une nouvelle fois utilisé par la suite
-        used_avatar_local_folder = avatar_local_folder + "/used"
-        os.makedirs(used_avatar_local_folder, exist_ok=True)
-        shutil.move(avatar_file, used_avatar_local_folder)
 
         # Powerpoint rolling
         power_points_roll = int(self._accounts.users[author].bonuses(self).unit_roll())
@@ -364,7 +343,7 @@ class SwagChain:
             issuer_id=author,
             user_id=author,
             yfu_id=new_yfu_id,
-            avatar_asset_key=avatar_asset_block.asset_key,
+            avatar_asset_key=avatar_url,
             power_points=yfu_powerpoints,
             power=power,
             initial_activation_cost=cost,

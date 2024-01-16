@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Any, Dict, Type, Union
 from swag import powers
+from arrow import Arrow, get
 
 from swag.currencies import Style, Swag
 from swag.id import AccountId, CagnotteId, GenericId, UserId, YfuId, get_id_from_str
@@ -37,6 +38,14 @@ def unstructure_decimal(obj: Decimal) -> str:
     return str(obj)
 
 
+def structure_arrow(obj: Any, cls: Type) -> Arrow:
+    return get(str(obj))
+
+
+def unstructure_arrow(obj: Arrow) -> str:
+    return str(obj)
+
+
 available_power = {
     name: cls for name, cls in powers.__dict__.items() if isinstance(cls, type)
 }
@@ -53,6 +62,9 @@ def unstructure_power(obj: Power) -> str:
 
 converter.register_structure_hook(Decimal, structure_decimal)
 converter.register_unstructure_hook(Decimal, unstructure_decimal)
+
+converter.register_structure_hook(Arrow, structure_arrow)
+converter.register_unstructure_hook(Arrow, unstructure_arrow)
 
 converter.register_structure_hook(Power, structure_power)
 converter.register_unstructure_hook(Power, unstructure_power)

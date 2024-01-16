@@ -1,5 +1,6 @@
 import disnake
 from disnake.ext import commands
+from swag.blockchain.git_blockchain import GitSwagChain
 from swag.client.swagdmin import SwagminCommand
 from swag.client.cagnotte import CagnotteCommand
 from swag.client.swag import SwagCommand
@@ -58,13 +59,18 @@ if TYPE_CHECKING:
 
 
 class SwagClient(Module):
-    def __init__(self, discord_client) -> None:
+    def __init__(
+        self, discord_client, swagchain_path, yfu_assets_url, repo_path=None
+    ) -> None:
         self.discord_client: "Bot" = discord_client
         print("Initialisation de la $wagChain...\n")
         self.guilds = {}
         self.the_swaggest = None
         self.last_update = None
         self.last_backup = None
+        self.swagchain_path = swagchain_path
+        self.yfu_assets_url = yfu_assets_url
+        self.repo_path = repo_path
 
     def register_commands(self):
         self.discord_client.add_cog(SwagCommand(self))
@@ -74,9 +80,11 @@ class SwagClient(Module):
         self.discord_client.add_cog(ClientError())
 
     async def setup(self):
-        self.swagchain = await SyncedSwagChain.from_channel(
+        self.swagchain = await GitSwagChain.from_file(
             self.discord_client.user.id,
-            self.discord_client.get_channel(SWAGCHAIN_CHANNEL_ID),
+            self.swagchain_path,
+            self.yfu_assets_url,
+            self.repo_path,
         )
         print("Mise à jour du classement et des bonus de blocage\n\n")
         await update_forbes_classement(

@@ -59,13 +59,14 @@ class YfuGenerationBlock(Block):
 
     def execute(self, db: SwagChain):
         db._accounts[self.user_id].yfu_wallet.add(self.yfu_id)
+        db._assets.remove(self.avatar_asset_key)
         db._yfus[self.yfu_id] = Yfu(
             owner_id=self.user_id,
             id=self.yfu_id,
             first_name=self.first_name,
             last_name=self.last_name,
             clan=self.clan,
-            avatar_url=db._assets[self.avatar_asset_key],
+            avatar_url=self.avatar_asset_key,
             generation_date=self.timestamp,
             timezone=db._accounts[self.user_id].timezone,
             power_points=self.power_points,

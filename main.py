@@ -29,7 +29,12 @@ intents.message_content = True
 # Création du client
 client = Bot(intents=intents)
 
-swag_module = SwagClient(client)
+swag_module = SwagClient(
+    client,
+    client_config["swagchain_path"],
+    client_config["yfu_assets_url"],
+    client_config.get("repo_path"),
+)
 
 modules = [
     swag_module,
