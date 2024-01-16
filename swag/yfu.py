@@ -41,6 +41,7 @@ class Yfu:
 
 
 class YfuColor(Enum):
+    DISAPPOINTING = (0, int("0xad97c0", base=16))
     COMMON = (1, int("0xffffff", base=16))
     UNCOMMON = (2, int("0x1eff00", base=16))
     RARE = (3, int("0x0070dd", base=16))
@@ -57,17 +58,19 @@ class YfuRarity:
 
     @classmethod
     def from_power_point(cls, power_points):
-        if power_points < 500:  # stylog(1) / 2
+        if power_points < 50:
+            return cls(0, YfuColor.DISAPPOINTING)
+        if power_points < 250:
             return cls(1, YfuColor.COMMON)
-        if power_points < 1_000:  # stylog(1)
+        if power_points < 1_000:
             return cls(2, YfuColor.UNCOMMON)
-        if power_points < 4_000:  # stylog(2)
+        if power_points < 4_000:
             return cls(3, YfuColor.RARE)
-        if power_points < 16_000:  # stylog(3)
+        if power_points < 16_000:
             return cls(4, YfuColor.EPIC)
-        if power_points < 64_000:  # stylog(4)
+        if power_points < 64_000:
             return cls(5, YfuColor.MYTHIC)
-        if power_points < 256_000:  # stylog(5)
+        if power_points < 256_000:
             return cls(6, YfuColor.LEGENDARY)
         stars = int(log2(power_points / 1_000)) + 3
         return cls(stars, YfuColor.UNREAL)

@@ -517,5 +517,7 @@ class YfuEmbed(disnake.Embed):
     def get_star_icons(cls, number_of_stars: int) -> str:
         if 20 < number_of_stars:
             return "e̷̳̪ȓ̸̰͚ŗ̸̭̣ǫ̴̰̻r̸͖̟"
+        elif number_of_stars == 0:
+            return "∅"
         else:
             return ("☆" * (int(number_of_stars / 5))) + ("★" * (number_of_stars % 5))
