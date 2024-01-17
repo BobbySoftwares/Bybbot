@@ -102,7 +102,7 @@ class AssetLoss(Active):
 
     @property
     def _x_value(self):
-        return Swag(styxp(0.004 * sqrt(self._raw_x / 100)))
+        return Swag(styxp(0.006 * sqrt(self._raw_x / 100)))
 
     def _activation(
         self, chain: "SwagChain", owner_id: AccountId, targets: List[UserId]
