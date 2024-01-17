@@ -21,7 +21,7 @@ class SwagAccountEmbed(disnake.Embed):
         if member.accent_color != None:
             color = member.accent_color.value
         else:
-            color = int("0xffffff", base=16)
+            color = int("0x8d8e90", base=16)
 
         if swag_account.unblocking_date != None:
             unblocking_date = Arrow.fromdatetime(
@@ -143,7 +143,7 @@ class TransactionEmbed(disnake.Embed):
 
         transaction_dict = {
             "title": f"{block.amount}",
-            "color": int("0x0054e6", base=16),
+            "color": int("0x8d8e90", base=16),
             "author": {
                 "name": issuer.display_name,
                 "icon_url": issuer.display_avatar.url,
@@ -199,7 +199,7 @@ class MiningEmbed(disnake.Embed):
 
         mining_dict = {
             # Pas d'utilisation du titre car le titre ne supporte pas les mention sur desktop à ce jour
-            "color": int("0xd1b671", base=16),
+            "color": int("0x8d8e90", base=16),
             "thumbnail": {
                 "url": user.display_avatar.url,
             },
