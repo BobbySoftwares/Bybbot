@@ -16,19 +16,16 @@ from .actives.user_actives import (
     BankingBan,
 )
 
-from .actives.cagnotte_actives import (
-    Embezzlement,
-    DishonestJointVenture
-)
+from .actives.cagnotte_actives import Embezzlement, DishonestJointVenture
 
-from .actives.yfu_actives import (
-    Kidnapping,
-    # Resurrection # Pas necessaire pour le moment car pas possibilite de tuer
-    # UltimateResurrection # idem
-    # Cloning # On va laisser quelques Yfu existé avant d'ajouter ce pouvoir
-    # Copy #idem
-    # Clone #idem
-)
+# from .actives.yfu_actives import (
+#     Kidnapping,
+#     # Resurrection # Pas necessaire pour le moment car pas possibilite de tuer
+#     # UltimateResurrection # idem
+#     # Cloning # On va laisser quelques Yfu existé avant d'ajouter ce pouvoir
+#     # Copy #idem
+#     # Clone #idem
+# )
 
 from .actives.multitargetted_actives import (
     AfricanPrince,
@@ -36,7 +33,7 @@ from .actives.multitargetted_actives import (
 )
 
 from .actives.untargetted_actives import (
-    #Looting, # Trop complexe et puissant pour le moment
+    # Looting, # Trop complexe et puissant pour le moment
     FiredampCryptoExplosion,
     # TaxEvasion # Trop puissant pour le moment
 )
