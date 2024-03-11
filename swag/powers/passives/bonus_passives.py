@@ -40,7 +40,7 @@ class MauritiusCommercialBank(Passive):
 
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x / 4))
+        return int(stylog(self._raw_x / 8))
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.minings += self._x_value
@@ -54,7 +54,7 @@ class StockPortfolio(Passive):
 
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x) * SWAG_LUCK)
+        return int(stylog(self._raw_x * 5) / 5 * SWAG_LUCK)
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.luck += self._x_value
@@ -68,7 +68,7 @@ class StockMarketMastery(Passive):
 
     @property
     def _x_value(self):
-        return int(stylog(self._raw_x) * SWAG_LUCK)
+        return int(stylog(self._raw_x * 5) / 5 * SWAG_LUCK)
 
     def add_bonus(self, bonuses: Bonuses):
         bonuses.base += self._x_value
@@ -82,7 +82,7 @@ class StateGuardianship(Passive):
 
     @property
     def _x_value(self):
-        return Decimal(stylog(self._raw_x / 3) * 100).quantize(
+        return Decimal(stylog(self._raw_x * 3) * 3 / 8 * 100).quantize(
             Decimal(".01"), rounding=ROUND_HALF_UP
         )
 
