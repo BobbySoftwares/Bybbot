@@ -443,8 +443,19 @@ class YfuSacrifice(disnake.ui.View):
     async def dropdown_target(
         self, select: disnake.ui.StringSelect, interaction: disnake.MessageInteraction
     ):
-        # On attends que l'utilisateur appuie sur confirmé
-        await interaction.response.defer()
+        # On affiche une preview de l'amélioration de la Yfu selectionnee
+
+        yfu_to_upgrade = self.nav_view.swag_client.swagchain._yfus[
+            YfuId(self.dropdown_target.values[0])
+        ]
+
+        yfu_preview = deepcopy(yfu_to_upgrade)
+        yfu_preview.upgrade(self.nav_view.selected_yfu.power_point_effective)
+
+        await interaction.response.edit_message(
+            f"Vous vous apprétez à sacrifier **{self.nav_view.selected_yfu.first_name} {self.nav_view.selected_yfu.last_name}** ({self.nav_view.selected_yfu.power.title}, {self.nav_view.selected_yfu.power_point_effective}₱₱).",
+            embed=YfuEmbed.from_delta_yfu(yfu_to_upgrade, yfu_preview),
+        )
 
     @disnake.ui.button(
         label="Page précédente", emoji="⬅", style=disnake.ButtonStyle.blurple, row=1
@@ -640,22 +651,31 @@ class YfuEmbed(disnake.Embed):
         return disnake.Embed.from_dict(yfu_dict)
 
     @classmethod
-    def from_delta_yfu(cls, yfu_state_one: Yfu, yfu_state_two: Yfu):
-        yfu_delta_dict = cls.from_yfu(yfu_state_two).to_dict()
+    def from_delta_yfu(cls, yfu_1: Yfu, yfu_2: Yfu):
+        yfu_delta_dict = cls.from_yfu(yfu_2).to_dict()
 
-        if hasattr(yfu_state_one.power, "_x_value"):
-            yfu_delta_dict["fields"][0]["value"] = yfu_state_one.power.effect.format(
-                f"{yfu_state_one.power._x_value} ⭢ **{yfu_state_two.power._x_value}**"
+        star_1 = YfuRarity.from_yfu(yfu_1).get_number_of_star()
+        star_2 = YfuRarity.from_yfu(yfu_2).get_number_of_star()
+
+        if star_1 != star_2:
+            yfu_delta_dict["title"] = (
+                f"{yfu_2.clan} {yfu_2.first_name} {yfu_2.last_name} {cls.get_star_icons(star_1)} ➤ {cls.get_star_icons(star_2)}"
             )
 
-        if issubclass(yfu_state_one.power.__class__, Active):
+        if hasattr(yfu_1.power, "_x_value"):
+            print_value = hasattr(yfu_1.power._x_value, "value")
+            yfu_delta_dict["fields"][0]["value"] = yfu_1.power.effect.format(
+                f"{format_number(yfu_1.power._x_value.value) if print_value else yfu_1.power._x_value} ➤ **{yfu_2.power._x_value}**"
+            )
+
+        if issubclass(yfu_1.power.__class__, Active):
             yfu_delta_dict["fields"][1][
                 "value"
-            ] = f"{yfu_state_one.cost} ⭢ **{yfu_state_two.cost}**"
+            ] = f"{format_number(yfu_1.cost.value)} ➤ **{yfu_2.cost}**"
 
         yfu_delta_dict["footer"][
             "text"
-        ] = f"{yfu_state_two.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {format_number(yfu_state_one.power_point_effective)} ⭢ {format_number(yfu_state_two.power_point_effective)}₱₱ - {yfu_state_two.id}"
+        ] = f"{yfu_2.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {format_number(yfu_1.power_point_effective)} ➤ {format_number(yfu_2.power_point_effective)}₱₱ - {yfu_2.id}"
 
         return disnake.Embed.from_dict(yfu_delta_dict)
 
