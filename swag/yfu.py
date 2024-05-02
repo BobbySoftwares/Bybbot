@@ -107,6 +107,10 @@ class YfuRarity:
         stars = int(log2(power_points / 1_000)) + 3
         return cls(stars, YfuColor.UNREAL)
 
+    @classmethod
+    def from_yfu(cls, yfu: Yfu):
+        return cls.from_power_point(yfu.power_point_effective)
+
     def get_number_of_star(self):
         return self.stars
 

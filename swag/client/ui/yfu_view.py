@@ -499,6 +499,16 @@ class YfuSacrifice(disnake.ui.View):
             view=disnake.ui.View(),
         )
 
+        star_win = (
+            YfuRarity.from_yfu(yfu_after_upgrade).get_number_of_star()
+            - YfuRarity.from_yfu(yfu_before_upgrade).get_number_of_star()
+        )
+
+        if star_win != 0:
+            await interaction.send(
+                f"Bravo {UserId(self.nav_view.user_id)} ! Suite à ce sacrifice, **{yfu_after_upgrade.first_name} {yfu_after_upgrade.last_name}** a gagné {star_win} étoile{'s'*(star_win>1)} 🥳 !",
+            )
+
     @disnake.ui.button(
         label="Annuler", emoji="❌", style=disnake.ButtonStyle.red, row=2
     )
