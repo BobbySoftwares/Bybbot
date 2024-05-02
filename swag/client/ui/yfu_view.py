@@ -643,17 +643,17 @@ class YfuEmbed(disnake.Embed):
 
         if hasattr(yfu_state_one.power, "_x_value"):
             yfu_delta_dict["fields"][0]["value"] = yfu_state_one.power.effect.format(
-                f"{yfu_state_one.power._x_value} -> **{yfu_state_two.power._x_value}**"
+                f"{yfu_state_one.power._x_value} ⭢ **{yfu_state_two.power._x_value}**"
             )
 
         if issubclass(yfu_state_one.power.__class__, Active):
             yfu_delta_dict["fields"][1][
                 "value"
-            ] = f"{yfu_state_one.cost} -> **{yfu_state_two.cost}**"
+            ] = f"{yfu_state_one.cost} ⭢ **{yfu_state_two.cost}**"
 
         yfu_delta_dict["footer"][
             "text"
-        ] = f"{yfu_state_two.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {format_number(yfu_state_one.power_point_effective)} -> {format_number(yfu_state_two.power_point_effective)}₱₱ - {yfu_state_two.id}"
+        ] = f"{yfu_state_two.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {format_number(yfu_state_one.power_point_effective)} ⭢ {format_number(yfu_state_two.power_point_effective)}₱₱ - {yfu_state_two.id}"
 
         return disnake.Embed.from_dict(yfu_delta_dict)
 
