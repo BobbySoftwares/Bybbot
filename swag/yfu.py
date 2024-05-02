@@ -39,7 +39,7 @@ class Yfu:
         return max(
             Style("0.002"),
             Style(4 * self.dampening * sqrt(self.power_point_effective / 100)),
-        )
+        ) * Style(self.power.cost_factor)
 
     @property
     def power_point_effective(self):
