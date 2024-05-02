@@ -16,6 +16,7 @@ from swag.blocks.yfu_blocks import (
     TokenTransactionBlock,
     YfuPowerActivation,
 )
+from utils import format_number
 
 from .ihs_toolkit import *
 
@@ -603,7 +604,7 @@ class YfuEmbed(disnake.Embed):
                 },
             ],
             "footer": {
-                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {yfu.power_point_effective}₱₱ - {yfu.id}"
+                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {format_number(yfu.power_point_effective)}₱₱ - {yfu.id}"
             },
         }
 
@@ -639,6 +640,10 @@ class YfuEmbed(disnake.Embed):
             yfu_delta_dict["fields"][1][
                 "value"
             ] = f"{yfu_state_one.cost} -> **{yfu_state_two.cost}**"
+
+        yfu_delta_dict["footer"][
+            "text"
+        ] = f"{yfu_state_two.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {format_number(yfu_state_one.power_point_effective)} -> {format_number(yfu_state_two.power_point_effective)}₱₱ - {yfu_state_two.id}"
 
         return disnake.Embed.from_dict(yfu_delta_dict)
 
