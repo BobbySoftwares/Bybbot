@@ -431,7 +431,9 @@ class YfuSacrifice(disnake.ui.View):
         super().__init__(timeout=None)
         self.nav_view = navigation_view
 
-        options = yfus_to_select_options(self.nav_view.yfus)  # yfus de l'utilisateur
+        options = yfus_to_select_options(
+            self.nav_view.yfus, exclude=[self.nav_view.selected_yfu.id]
+        )
 
         self.dropdown_target.set_options(options)
 

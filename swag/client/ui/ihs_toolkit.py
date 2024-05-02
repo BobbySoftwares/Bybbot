@@ -16,7 +16,7 @@ def sort_yfu_ids(yfu_set):
     return sorted(list(yfu_set), key=lambda yfu: int(yfu.id[1:]))
 
 
-def yfus_to_select_options(yfus: List["Yfu"]):
+def yfus_to_select_options(yfus: List["Yfu"], exclude=[]):
     return [
         SelectOption(
             label=f"{yfu.first_name} {yfu.last_name}",
@@ -25,6 +25,7 @@ def yfus_to_select_options(yfus: List["Yfu"]):
             value=yfu.id.id,
         )
         for yfu in yfus
+        if yfu.id not in exclude
     ]
 
 
