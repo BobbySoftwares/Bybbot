@@ -126,3 +126,24 @@ class RenameYfuBlock(Block):
     def execute(self, db: SwagChain):
         db._yfus[self.yfu_id].first_name = self.new_first_name
         db._yfus[self.yfu_id].is_baptized = True
+
+
+@attrs(frozen=True, kw_only=True)
+class SacrificeYfuBlock(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+    sacrified_yfu_id = attrib(type=YfuId, converter=YfuId)
+    upgraded_yfu_id = attrib(type=YfuId, converter=YfuId)
+
+    def validate(self, db: SwagChain):
+        if self.user_id != db._yfus[self.sacrified_yfu_id].owner_id:
+            raise BadOwnership(self.user_id, self.sacrified_yfu_id)
+
+        if self.user_id != db._yfus[self.upgraded_yfu_id].owner_id:
+            raise BadOwnership(self.user_id, self.upgraded_yfu_id)
+
+    def execute(self, db: SwagChain):
+        db._yfus[self.upgraded_yfu_id].upgrade(
+            db._yfus[self.sacrified_yfu_id].power_point_effective
+        )
+        db._accounts[self.user_id].yfu_wallet.remove(self.sacrified_yfu_id)
+        db._yfus[self.sacrified_yfu_id].owner_id = None

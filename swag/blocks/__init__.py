@@ -21,6 +21,7 @@ from .yfu_blocks import (
     RenameYfuBlock,
     TokenTransactionBlock,
     YfuPowerActivation,
+    SacrificeYfuBlock,
 )
 
 from .system_blocks import (

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from math import sqrt
 from typing import Union
 from arrow.arrow import Arrow
 import disnake
@@ -8,6 +9,7 @@ from attr import attrib, attrs
 from enum import Enum
 from swag.currencies import Style
 from swag.id import CagnotteId, UserId, YfuId
+from swag.stylog import stylog
 from .powers.power import Active, Passive, Power
 
 from swag.assert_timezone import assert_timezone
@@ -24,20 +26,50 @@ class Yfu:
     generation_date: Arrow
     timezone: str = attrib(validator=assert_timezone)
 
-    power_points: int
-    initial_activation_cost: Style
+    power_points: int  # Power point initiaux
+    initial_activation_cost: Style  # ne sert plus, mais on doit le laisser pour une raison de compatibilite :)
     power: Power
     last_activation_date: Arrow = attrib(default=Arrow.min)
 
     is_baptized: bool = attrib(default=False)
+    experience: int = attrib(default=0)
 
     @property
     def cost(self):
-        return self.initial_activation_cost * Style(self.power.cost_factor)
+        return max(
+            Style("0.002"),
+            Style(4 * self.dampening * sqrt(self.power_point_effective / 100)),
+        )
+
+    @property
+    def power_point_effective(self):
+        return int(
+            self.power_points
+            * (1 + stylog(self.experience / self.power_points * 1_000_000))
+        )
+
+    @property
+    def dampening(self):
+
+        # le dampening est initialement calculé à la generation de Yfu
+        # cependant, celui ci n'est pas enregistré lors de la création de la Yfu (c'est dommage!)
+        # on peut le recalculer en regardant la proportion des pp de la yfu et du pouvoir
+
+        return (
+            self.power.power_points / self.power_point_effective
+        ) * self.power._correct_dampening()
 
     def activate(self, db, targets, activation_date):
         self.power._activation(db, self.owner_id, targets)
         self.last_activation_date = activation_date
+
+    def upgrade(self, experience_received):
+        # enregistrement du dampening avant l'ajout de l'experience
+        actual_dampening = self.dampening
+        self.experience += experience_received  # Ajout de l'experience
+
+        # update des pp du pouvoir, avec le même dampening que precedement
+        self.power.power_points = self.power_point_effective * actual_dampening
 
 
 class YfuColor(Enum):

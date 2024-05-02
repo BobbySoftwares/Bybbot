@@ -1,4 +1,5 @@
 import asyncio
+from copy import deepcopy
 from arrow import Arrow, utcnow
 import disnake
 
@@ -11,6 +12,7 @@ from swag.utils import update_forbes_classement
 from swag.yfu import Yfu, YfuRarity
 from swag.blocks.yfu_blocks import (
     RenameYfuBlock,
+    SacrificeYfuBlock,
     TokenTransactionBlock,
     YfuPowerActivation,
 )
@@ -166,6 +168,17 @@ class YfuNavigation(disnake.ui.View):
             view=YfuExchange(self.swag_client, self.user_id, self.selected_yfu),
         )
 
+    @disnake.ui.button(
+        label="Sacrifier", emoji="🗡️", style=disnake.ButtonStyle.red, row=2
+    )
+    async def sacrifice_button(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        await interaction.response.edit_message(
+            embed=YfuEmbed.from_yfu(self.selected_yfu),
+            view=YfuSacrifice(self),
+        )
+
     def update_view(self):
         self.selected_yfu = self.swag_client.swagchain.yfu(YfuId(self.selected_yfu_id))
 
@@ -276,7 +289,9 @@ class YfuExchange(disnake.ui.View):
             ),
         )
 
-    @disnake.ui.button(label="Annuler", emoji="❌", style=disnake.ButtonStyle.red, row=2)
+    @disnake.ui.button(
+        label="Annuler", emoji="❌", style=disnake.ButtonStyle.red, row=2
+    )
     async def cancel(
         self, cancel_button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
@@ -387,7 +402,105 @@ class YfuTarget(disnake.ui.View):
 
             await interaction.delete_original_message()
 
-    @disnake.ui.button(label="Annuler", emoji="❌", style=disnake.ButtonStyle.red, row=2)
+    @disnake.ui.button(
+        label="Annuler", emoji="❌", style=disnake.ButtonStyle.red, row=2
+    )
+    async def cancel(
+        self, cancel_button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        # On revient sur la vu précédente
+        await interaction.response.edit_message(
+            embed=YfuEmbed.from_yfu(
+                self.nav_view.swag_client.swagchain.yfu(self.nav_view.selected_yfu.id)
+            ),
+            view=self.nav_view,
+        )
+
+    def update_view(self):
+        # Previous/next button
+        self.previous_page.disabled = self.dropdown_yfu.is_first_page()
+        self.next_page.disabled = self.dropdown_yfu.is_last_page()
+
+    async def send_view(self, interaction: disnake.MessageInteraction):
+        await interaction.response.edit_message(view=self)
+
+
+class YfuSacrifice(disnake.ui.View):
+    def __init__(self, navigation_view: YfuNavigation):
+        super().__init__(timeout=None)
+        self.nav_view = navigation_view
+
+        options = yfus_to_select_options(self.nav_view.yfus)  # yfus de l'utilisateur
+
+        self.dropdown_target.set_options(options)
+
+    @disnake.ui.string_select(
+        UnlimitedSelectMenu, arg_placeholder="Choisis la Yfu a améliorer", arg_row=0
+    )
+    async def dropdown_target(
+        self, select: disnake.ui.StringSelect, interaction: disnake.MessageInteraction
+    ):
+        # On attends que l'utilisateur appuie sur confirmé
+        await interaction.response.defer()
+
+    @disnake.ui.button(
+        label="Page précédente", emoji="⬅", style=disnake.ButtonStyle.blurple, row=1
+    )
+    async def previous_page(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        self.dropdown_target.go_previous_page()
+
+        self.update_view()
+
+        await self.send_view(interaction)
+
+    @disnake.ui.button(
+        label="Page suivante", emoji="➡", style=disnake.ButtonStyle.blurple, row=1
+    )
+    async def next_page(
+        self, button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+        self.dropdown_target.go_next_page()
+
+        self.update_view()
+
+        await self.send_view(interaction)
+
+    @disnake.ui.button(
+        label="Confirmer", emoji="✅", style=disnake.ButtonStyle.green, row=2
+    )
+    async def confirm(
+        self, confirm_button: disnake.ui.Button, interaction: disnake.MessageInteraction
+    ):
+
+        upgraded_yfu_id = YfuId(self.dropdown_target.values[0])
+        yfu_before_upgrade = deepcopy(
+            self.nav_view.swag_client.swagchain._yfus[upgraded_yfu_id]
+        )
+
+        sacrified_yfu = self.nav_view.selected_yfu
+
+        # block de sacrifice
+        sacrifice_block = SacrificeYfuBlock(
+            issuer_id=self.nav_view.user_id,
+            user_id=self.nav_view.user_id,
+            sacrified_yfu_id=sacrified_yfu.id,
+            upgraded_yfu_id=upgraded_yfu_id,
+        )
+
+        yfu_after_upgrade = self.nav_view.swag_client.swagchain._yfus[upgraded_yfu_id]
+
+        await self.nav_view.swag_client.swagchain.append(sacrifice_block)
+        await interaction.send(
+            f"{UserId(self.nav_view.user_id)} sacrifie **{sacrified_yfu.first_name} {sacrified_yfu.last_name}** ({sacrified_yfu.power.title}, {sacrified_yfu.power_point_effective}₱₱) pour améliorer **{yfu_after_upgrade.first_name} {yfu_after_upgrade.last_name}** ⏫!",
+            embed=YfuEmbed.from_delta_yfu(yfu_before_upgrade, yfu_after_upgrade),
+            view=disnake.ui.View(),
+        )
+
+    @disnake.ui.button(
+        label="Annuler", emoji="❌", style=disnake.ButtonStyle.red, row=2
+    )
     async def cancel(
         self, cancel_button: disnake.ui.Button, interaction: disnake.MessageInteraction
     ):
@@ -476,7 +589,7 @@ class YfuRename(disnake.ui.Modal):
 class YfuEmbed(disnake.Embed):
     @classmethod
     def from_yfu(cls, yfu: Yfu):
-        rarity = YfuRarity.from_power_point(yfu.power_points)
+        rarity = YfuRarity.from_power_point(yfu.power_point_effective)
 
         yfu_dict = {
             "title": f"{yfu.clan} {yfu.first_name} {yfu.last_name} {cls.get_star_icons(rarity.get_number_of_star())}",
@@ -490,7 +603,7 @@ class YfuEmbed(disnake.Embed):
                 },
             ],
             "footer": {
-                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {yfu.power_points}₱₱ - {yfu.id}"
+                "text": f"{yfu.generation_date.format('YYYY-MM-DD')} \t\t\t\t\t\t {yfu.power_point_effective}₱₱ - {yfu.id}"
             },
         }
 
@@ -512,6 +625,22 @@ class YfuEmbed(disnake.Embed):
             )
 
         return disnake.Embed.from_dict(yfu_dict)
+
+    @classmethod
+    def from_delta_yfu(cls, yfu_state_one: Yfu, yfu_state_two: Yfu):
+        yfu_delta_dict = cls.from_yfu(yfu_state_two).to_dict()
+
+        if hasattr(yfu_state_one.power, "_x_value"):
+            yfu_delta_dict["fields"][0]["value"] = yfu_state_one.power.effect.format(
+                f"{yfu_state_one.power._x_value} -> **{yfu_state_two.power._x_value}**"
+            )
+
+        if issubclass(yfu_state_one.power.__class__, Active):
+            yfu_delta_dict["fields"][1][
+                "value"
+            ] = f"{yfu_state_one.cost} -> **{yfu_state_two.cost}**"
+
+        return disnake.Embed.from_dict(yfu_delta_dict)
 
     @classmethod
     def get_star_icons(cls, number_of_stars: int) -> str:
