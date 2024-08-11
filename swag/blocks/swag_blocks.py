@@ -91,7 +91,7 @@ class Mining(Block):
             raise AlreadyMineToday
 
         if self.amount is Uncomputed:
-            rolls = [bonuses.roll() for _ in range(bonuses.minings)]
+            rolls = sorted(bonuses.roll() for _ in range(bonuses.minings))
             self.__dict__["amount"] = Swag(sum([roll["result"] for roll in rolls]))
             self.__dict__["harvest"] = rolls
 
