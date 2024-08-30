@@ -24,6 +24,7 @@ from ..errors import (
     AlreadyCagnotteManager,
     AlreadyMineToday,
     BadOwnership,
+    BadRankService,
     CantUseYfuPower,
     InvalidCagnotteId,
     InvalidSwagValue,
@@ -254,6 +255,11 @@ class ClientError(commands.Cog):
             await interaction.response.send_message(
                 f"{interaction.author.mention}, il manque l'identifiant de la €agnotte"
                 " dans la commande (€3 par exemple) afin de pouvoir faire l'action que tu demandes.",
+                ephemeral=True,
+            )
+        elif type(error.original) is BadRankService:
+            await interaction.response.send_message(
+                f"{interaction.author.mention}, tu ne possèdes pas un rang compatible avec l'utilisation de ce service",
                 ephemeral=True,
             )
         elif type(error.original) is NoReceiver:

@@ -2,6 +2,7 @@ from decimal import Decimal
 from typing import Any, Dict, Type, Union
 from swag import powers
 
+from swag.artefacts.services import Service
 from swag.currencies import Style, Swag
 from swag.id import AccountId, CagnotteId, GenericId, UserId, YfuId, get_id_from_str
 from swag.powers.power import Power
@@ -51,11 +52,28 @@ def unstructure_power(obj: Power) -> str:
     return [type(obj).__name__, str(obj.power_points)]
 
 
+available_service = {
+    service_subclasses.__name__: service_subclasses
+    for service_subclasses in Service.__subclasses__()
+    if isinstance(service_subclasses, type)
+}
+
+
+def structure_service(obj: Any, cls: Type) -> Service:
+    service_class = available_service[obj[0]]
+    return service_class(int(obj[1]))
+
+
+def unstructure_service(obj: Service) -> str:
+    return [type(obj).__name__, str(obj)]
+
+
 converter.register_structure_hook(Decimal, structure_decimal)
 converter.register_unstructure_hook(Decimal, unstructure_decimal)
 
 converter.register_structure_hook(Power, structure_power)
 converter.register_unstructure_hook(Power, unstructure_power)
+
 
 converter.register_unstructure_hook(Swag, unstructure_money)
 converter.register_unstructure_hook(Style, unstructure_money)
@@ -74,6 +92,7 @@ converter.register_structure_hook(CagnotteId, lambda o, _: CagnotteId(o))
 converter.register_structure_hook(YfuId, lambda o, _: YfuId(o))
 converter.register_structure_hook(AccountId, structure_id)
 converter.register_structure_hook(GenericId, structure_id)
+
 
 block_types = {
     name: cls for name, cls in blocks.__dict__.items() if isinstance(cls, type)

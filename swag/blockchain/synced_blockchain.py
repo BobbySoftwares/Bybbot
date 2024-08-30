@@ -39,8 +39,8 @@ class SyncedSwagChain(SwagChain):
                     # Mise à jour de la bibliothèque des assets
                     asset_url = message.attachments[0].url
                     synced_chain._assets[block.asset_key] = asset_url
-            except:
-                print("\n\n\033[91mERREUR SUR LA BLOCKCHAIN\033[0m\n\n")
+            except Exception as e:
+                print(f"\n\n\033[91mERREUR SUR LA BLOCKCHAIN\033[0m : {e}\n\n")
         return synced_chain
 
     async def append(self, block):
@@ -59,6 +59,7 @@ class SyncedSwagChain(SwagChain):
             message = await self._channel.send(
                 json.dumps(unstructure_block(block), default=json_converter)
             )
+            pass
 
         self._messages[block.timestamp] = message.id
         # try:

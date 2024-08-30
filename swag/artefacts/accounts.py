@@ -5,9 +5,10 @@ import arrow
 from arrow import Arrow
 from itertools import chain
 from swag.artefacts.bonuses import Bonuses
+from swag.artefacts.services import Service, PassiveYfuRenting
 from swag.cauchy import roll
 
-from swag.id import CagnotteId, UserId, YfuId
+from swag.id import AccountId, CagnotteId, UserId, YfuId
 from swag.powers.power import Passive
 from swag.assert_timezone import assert_timezone
 from swag.yfu import Yfu
@@ -30,6 +31,7 @@ class Account:
     swag_balance: Swag = attrib(init=False, default=Swag(0))
     style_balance: Style = attrib(init=False, default=Style(0))
     yfu_wallet: Set[YfuId] = attrib(init=False, factory=set)
+    subscribed_services: Set[Service] = attrib(init=False, factory=set)
 
     def __iadd__(self, value: Union[Swag, Style]):
         if type(value) is Swag:
@@ -83,11 +85,24 @@ class Account:
 
     def bonuses(self, chain, **kwargs):
         bonuses = Bonuses(**kwargs)
-        for yfu_id in self.yfu_wallet:
+
+        # De base, récupère les yfu du compte
+        all_yfu_id = self.yfu_wallet.copy()
+
+        # récupération des yfu venant des services de location
+        for service in self.subscribed_services:
+            if isinstance(service, PassiveYfuRenting):
+                all_yfu_id |= chain._accounts[service.cagnotte_id].yfu_wallet
+
+        for yfu_id in all_yfu_id:
             if issubclass(type(chain._yfus[yfu_id].power), Passive):
                 chain._yfus[yfu_id].power.add_bonus(bonuses)
 
         return bonuses
+
+    def handle_services_payments(self, chain, block):
+        for service in self.subscribed_services:
+            service.handle_payments(chain, block)
 
 
 # ------------------------------------#
@@ -119,13 +134,35 @@ class SwagAccountDict(dict):
 
 
 @attrs(auto_attribs=True)
+class CagnotteRank:
+    name: str
+    description: str
+    emoji: str
+    members: List[AccountId] = attrib(init=False, default=[])
+
+
+@attrs(auto_attribs=True)
 class CagnotteAccount(Account):
     name: str
     managers: List[UserId]
+    services: List[Service] = attrib(init=False, default=[])
+    accounts_ranking: Dict[str, CagnotteRank] = attrib(init=False, default={})
+
     participants: Set[UserId] = Factory(set)
 
     def register(self, participant: UserId):
         self.participants.add(participant)
+
+    def getRanklist(self, ranks: List[str]):
+        return list(
+            chain(
+                *(
+                    self.accounts_ranking[rank].members
+                    for rank in ranks
+                    if rank in self.accounts_ranking.keys()
+                )
+            )
+        )
 
 
 class CagnotteAccountDict(dict):
