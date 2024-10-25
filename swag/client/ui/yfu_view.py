@@ -419,8 +419,8 @@ class YfuTarget(disnake.ui.View):
 
     def update_view(self):
         # Previous/next button
-        self.previous_page.disabled = self.dropdown_yfu.is_first_page()
-        self.next_page.disabled = self.dropdown_yfu.is_last_page()
+        self.previous_page.disabled = self.dropdown_target.is_first_page()
+        self.next_page.disabled = self.dropdown_target.is_last_page()
 
     async def send_view(self, interaction: disnake.MessageInteraction):
         await interaction.response.edit_message(view=self)
