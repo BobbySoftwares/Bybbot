@@ -135,9 +135,9 @@ class InsiderTrading(Active):
         target = chain._accounts[targets[0]]
         target.check_immunity(self)
         try:
-            target.style_balance -= self._x_value
+            target.pending_style -= self._x_value
         except NotEnoughStyleInBalance:
-            target.style_balance = Style(0)
+            target.pending_style = Style(0)
 
 
 class DryLoss(Active):
