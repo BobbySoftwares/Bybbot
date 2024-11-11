@@ -122,6 +122,7 @@ class CagnotteServicesView(disnake.ui.View):
                 custom_id="service_dropdown",
             )
             self.service_dropdown.callback = self.service_dropdown_callback
+            self.add_item(self.service_dropdown)
 
         # Boutons
         self.use_button = disnake.ui.Button(
@@ -187,7 +188,6 @@ class CagnotteServicesView(disnake.ui.View):
         self.delete_button.callback = self.delete_button_callback
         self.delete_button.disabled = selected_service is None
 
-        self.add_item(self.service_dropdown)
         self.add_item(self.use_button)  # Ajouter le bouton à la vue
         self.add_item(self.cancel_button)
         self.add_item(self.return_button)
