@@ -1,3 +1,4 @@
+from __future__ import annotations
 import disnake
 from disnake.ext import commands
 from swag.client.swagdmin import SwagminCommand
@@ -24,6 +25,7 @@ from ..errors import (
     AlreadyCagnotteManager,
     AlreadyMineToday,
     BadOwnership,
+    BadRankService,
     CantUseYfuPower,
     InvalidCagnotteId,
     InvalidSwagValue,
@@ -45,6 +47,7 @@ from ..utils import (
 )
 
 from utils import (
+    COMMAND_CHANNEL_ID,
     GUILD_ID,
     LOG_CHANNEL_ID,
     SWAGCHAIN_CHANNEL_ID,
@@ -55,6 +58,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from disnake.ext.commands import Bot
+    from swag.block import Block
+    from swag.id import AccountId
 
 
 class SwagClient(Module):
@@ -106,6 +111,37 @@ class SwagClient(Module):
         scheduler.add_job(style_job, CronTrigger(hour="*"))
         # Sauvegarde de la swagchain en local tout les jours à 4h du matin
         scheduler.add_job(backup_job, CronTrigger(day="*", hour="4"))
+
+    async def handle_services_payments_interaction(
+        self,
+        block: Block,
+        account_id: AccountId,
+        interaction: disnake.ApplicationCommandInteraction = None,
+    ):
+
+        from swag.client.ui.swag_view import TransactionEmbed
+
+        swag_account = self.swagchain._accounts[account_id]
+
+        service_transactions = await swag_account.handle_services_payments(
+            self.swagchain, block, account_id
+        )
+
+        for service_transaction in service_transactions:
+            if interaction is not None:
+                await interaction.followup.send(
+                    f"{service_transaction}",
+                    embed=TransactionEmbed.from_transaction_block(
+                        service_transaction.transaction, self.discord_client
+                    ),
+                )
+            else:
+                await self.discord_client.get_channel(COMMAND_CHANNEL_ID).send(
+                    f"{service_transaction}",
+                    embed=TransactionEmbed.from_transaction_block(
+                        service_transaction.transaction, self.discord_client
+                    ),
+                )
 
 
 ##TODO : Possible amélioration
@@ -254,6 +290,11 @@ class ClientError(commands.Cog):
             await interaction.response.send_message(
                 f"{interaction.author.mention}, il manque l'identifiant de la €agnotte"
                 " dans la commande (€3 par exemple) afin de pouvoir faire l'action que tu demandes.",
+                ephemeral=True,
+            )
+        elif type(error.original) is BadRankService:
+            await interaction.response.send_message(
+                f"{interaction.author.mention}, tu ne possèdes pas un rang compatible avec l'utilisation de ce service",
                 ephemeral=True,
             )
         elif type(error.original) is NoReceiver:

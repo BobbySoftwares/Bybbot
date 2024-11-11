@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, List
 from disnake import SelectOption
 import disnake
 
+from swag.id import AccountId, CagnotteId, UserId
 from utils import GUILD_ID, get_guild_member_name
 
 if TYPE_CHECKING:
@@ -30,10 +31,18 @@ def yfus_to_select_options(yfus: List["Yfu"], exclude=[]):
 
 
 def forbes_to_select_options(swag_client: "SwagClient", exclude=[]):
-    guild = swag_client.discord_client.get_guild(GUILD_ID)
     forbes = swag_client.swagchain.forbes
 
+    return [
+        user_to_select_option(user_id, swag_client)
+        for user_id, account in forbes
+        if user_id not in exclude
+    ]
+
+
+def user_to_select_option(user_id: "UserId", swag_client: "SwagClient") -> SelectOption:
     def get_user_name(user_id):
+        guild = swag_client.discord_client.get_guild(GUILD_ID)
         if (member := guild.get_member(user_id.id)) is not None:
             return member.display_name
         elif (
@@ -43,29 +52,40 @@ def forbes_to_select_options(swag_client: "SwagClient", exclude=[]):
         else:
             return f"INVALID USER {user_id.id}"
 
-    return [
-        SelectOption(
-            label=get_user_name(user_id),
-            description=f"{account.swag_balance} -- {account.style_balance} -- {len(account.yfu_wallet)} ¥fu(s)",
-            emoji="💰",
-            value=user_id.id,
-        )
-        for user_id, account in forbes
-        if user_id not in exclude
-    ]
+    account = swag_client.swagchain.account(user_id)
+    return SelectOption(
+        label=get_user_name(user_id),
+        description=f"{account.swag_balance} -- {account.style_balance} -- {len(account.yfu_wallet)} ¥fu(s)",
+        emoji="💰",
+        value=user_id.id,
+    )
 
 
 def cagnottes_to_select_options(swag_client: "SwagClient"):
     cagnottes = swag_client.swagchain.cagnottes
     return [
-        SelectOption(
-            label=f"{cagnotte_id} {cagnotte.name}",
-            description=f"{cagnotte.swag_balance} -- {cagnotte.style_balance} -- {len(cagnotte.yfu_wallet)} ¥fu(s)",
-            emoji="🪙",
-            value=cagnotte_id.id,
-        )
+        cagnotte_to_select_option(cagnotte_id, swag_client)
         for cagnotte_id, cagnotte in cagnottes
     ]
+
+
+def cagnotte_to_select_option(
+    cagnotte_id: "CagnotteId", swag_client: "SwagClient"
+) -> SelectOption:
+    cagnotte = swag_client.swagchain.cagnotte(cagnotte_id)
+    return SelectOption(
+        label=f"{cagnotte_id} {cagnotte.name}",
+        description=f"{cagnotte.swag_balance} -- {cagnotte.style_balance} -- {len(cagnotte.yfu_wallet)} ¥fu(s)",
+        emoji="🪙",
+        value=cagnotte_id.id,
+    )
+
+
+def account_to_select_option(account_id: "AccountId", swag_client: "SwagClient"):
+    if isinstance(account_id, UserId):
+        return user_to_select_option(account_id, swag_client)
+    elif isinstance(account_id, CagnotteId):
+        return cagnotte_to_select_option(account_id, swag_client)
 
 
 class UnlimitedSelectMenu(disnake.ui.StringSelect):

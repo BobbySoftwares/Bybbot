@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING, Union
 
 from disnake import User
 
-from swag.id import CagnotteId, UserId
+from swag.artefacts.accounts import CagnotteRank
+from swag.artefacts.services import Service
+from swag.id import AccountId, CagnotteId, UserId, get_id_from_str
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain
@@ -17,6 +19,7 @@ from ..block import Block
 
 from ..errors import (
     AlreadyCagnotteManager,
+    BadRankService,
     CagnotteDestructionForbidden,
     CagnotteNameAlreadyExist,
     NotCagnotteManager,
@@ -113,7 +116,7 @@ class CagnotteAddManagerBlock(Block):
         cagnotte = db._accounts[self.cagnotte_id]
 
         if self.issuer_id not in cagnotte.managers:
-            raise NotCagnotteManager(self.issuer_id)
+            -(self.issuer_id)
 
         if self.new_manager in cagnotte.managers:
             raise AlreadyCagnotteManager(self.new_manager)
@@ -144,3 +147,140 @@ class CagnotteRevokeManagerBlock(Block):
             raise OrphanCagnotte
 
         db._accounts[self.cagnotte_id].managers.remove(self.manager_id)
+
+
+@attrs(frozen=True, kw_only=True)
+class CagnotteAddRankBlock(Block):
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    user_id = attrib(type=UserId, converter=UserId)
+    rank = attrib(type=CagnotteRank)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+
+        if self.user_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.user_id)
+
+        cagnotte.accounts_ranking[self.rank.name] = self.rank
+
+
+@attrs(frozen=True, kw_only=True)
+class CagnotteAddAccountToRankBlock(Block):
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    user_id = attrib(type=UserId, converter=UserId)
+    rank_name = attrib(type=str)
+    account_to_add = attrib(type=AccountId)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+
+        if self.user_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.user_id)
+
+        cagnotte.accounts_ranking[self.rank_name].members.append(self.account_to_add)
+
+
+@attrs(frozen=True, kw_only=True)
+class CagnotteRemoveAccountToRankBlock(Block):
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    user_id = attrib(type=UserId, converter=UserId)
+    rank_name = attrib(type=str)
+    account_to_remove = attrib(type=AccountId)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+
+        if self.user_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.user_id)
+
+        cagnotte.accounts_ranking[self.rank_name].members.remove(self.account_to_remove)
+
+
+@attrs(frozen=True, kw_only=True)
+class CagnotteRemoveRankBlock(Block):
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    user_id = attrib(type=UserId, converter=UserId)
+    rank_name = attrib(type=str)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+
+        if self.user_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.user_id)
+
+        cagnotte.accounts_ranking.pop(self.rank_name)
+
+        for service in cagnotte.services:
+            if service.authorized_rank is not None:
+                service.authorized_rank.remove(self.rank_name)
+
+
+@attrs(frozen=True, kw_only=True)
+class ServiceCreation(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    service = attrib(type=Service)
+
+    def execute(self, db: SwagChain):
+
+        cagnotte = db._accounts[self.cagnotte_id]
+
+        if self.issuer_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.issuer_id)
+
+        cagnotte.services.append(self.service)
+
+
+@attrs(frozen=True, kw_only=True)
+class UseService(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    service_id = attrib(type=int)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+        service = cagnotte.services[self.service_id]
+
+        # Si il y a une liste fermé de compte on check
+        if service.authorized_rank is not None:
+            if (
+                self.user_id not in cagnotte.get_rank_list(service.authorized_rank)
+                and self.user_id
+                not in cagnotte.managers  # les managers font ce qu'ils veulent
+            ):
+                raise BadRankService(self.user_id)
+
+        service.execute(db, self.user_id)
+
+
+@attrs(frozen=True, kw_only=True)
+class CancelService(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    service_id = attrib(type=int)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+        service = cagnotte.services[self.service_id]
+
+        service.cancel(db, self.user_id)
+
+
+@attrs(frozen=True, kw_only=True)
+class ServiceDelation(Block):
+    user_id = attrib(type=UserId, converter=UserId)
+    cagnotte_id = attrib(type=CagnotteId, converter=CagnotteId)
+    service_id = attrib(type=int)
+
+    def execute(self, db: SwagChain):
+        cagnotte = db._accounts[self.cagnotte_id]
+        service = cagnotte.services[self.service_id]
+
+        if self.user_id not in cagnotte.managers:
+            raise NotCagnotteManager(self.user_id)
+
+        for account_id, account in db._accounts.items():
+            if service in account.subscribed_services:
+                account.subscribed_services.remove(service)
+
+        cagnotte.services.remove(service)

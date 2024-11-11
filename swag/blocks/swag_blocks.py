@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Union
 
-from swag.id import CagnotteId, UserId, YfuId
+from swag.id import CagnotteId, UserId
 from swag.assert_timezone import assert_timezone
-from swag.yfu import Yfu
 
 if TYPE_CHECKING:
     from ..blockchain import SwagChain

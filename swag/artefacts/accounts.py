@@ -1,3 +1,4 @@
+from __future__ import annotations
 from decimal import Decimal
 from typing import Any, Dict, Optional, Union, List, Set
 from attr import Factory, attrs, attrib
@@ -24,12 +25,22 @@ from ..errors import (
 )
 from ..currencies import Money, Swag, Style
 
+from swag.artefacts.services import PassiveYfuRenting
+
+from typing import TYPE_CHECKING
+
+from swag.id import AccountId
+
+if TYPE_CHECKING:
+    from swag.artefacts.services import Service, ServiceTransaction
+
 
 @attrs(auto_attribs=True)
 class Account:
     swag_balance: Swag = attrib(init=False, default=Swag(0))
     style_balance: Style = attrib(init=False, default=Style(0))
     yfu_wallet: Set[YfuId] = attrib(init=False, factory=set)
+    subscribed_services: Set[Service] = attrib(init=False, factory=set)
 
     def __iadd__(self, value: Union[Swag, Style]):
         if type(value) is Swag:
@@ -83,11 +94,31 @@ class Account:
 
     def bonuses(self, chain, **kwargs):
         bonuses = Bonuses(**kwargs)
-        for yfu_id in self.yfu_wallet:
+
+        # De base, récupère les yfu du compte
+        all_yfu_id = self.yfu_wallet.copy()
+
+        # récupération des yfu venant des services de location
+        for service in self.subscribed_services:
+            if isinstance(service, PassiveYfuRenting):
+                all_yfu_id |= chain._accounts[service.cagnotte_id].yfu_wallet
+
+        for yfu_id in all_yfu_id:
             if issubclass(type(chain._yfus[yfu_id].power), Passive):
                 chain._yfus[yfu_id].power.add_bonus(bonuses)
 
         return bonuses
+
+    async def handle_services_payments(
+        self, chain, block, account_id
+    ) -> List[ServiceTransaction]:
+
+        transactions = []
+
+        for service in self.subscribed_services.copy():
+            transactions.extend(await service.handle_payments(chain, block, account_id))
+
+        return transactions
 
 
 # ------------------------------------#
@@ -118,14 +149,36 @@ class SwagAccountDict(dict):
 # ------------------------------------#
 
 
+@attrs(kw_only=True)
+class CagnotteRank:
+    name: str = attrib(default="")
+    description: str = attrib(default="")
+    emoji: str = attrib(default="")
+    members: List[AccountId] = attrib(factory=list)
+
+
 @attrs(auto_attribs=True)
 class CagnotteAccount(Account):
     name: str
     managers: List[UserId]
+    services: List[Service] = attrib(init=False, factory=list)
+    accounts_ranking: Dict[str, CagnotteRank] = attrib(init=False, factory=dict)
+
     participants: Set[UserId] = Factory(set)
 
     def register(self, participant: UserId):
         self.participants.add(participant)
+
+    def get_rank_list(self, ranks: List[str]):
+        return list(
+            chain(
+                *(
+                    self.accounts_ranking[rank].members
+                    for rank in ranks
+                    if rank in self.accounts_ranking.keys()
+                )
+            )
+        )
 
 
 class CagnotteAccountDict(dict):

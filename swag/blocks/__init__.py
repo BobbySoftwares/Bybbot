@@ -5,6 +5,14 @@ from .cagnotte_blocks import (
     CagnotteDeletion,
     CagnotteAddManagerBlock,
     CagnotteRevokeManagerBlock,
+    CagnotteAddRankBlock,
+    CagnotteAddAccountToRankBlock,
+    CagnotteRemoveAccountToRankBlock,
+    CagnotteRemoveRankBlock,
+    ServiceCreation,
+    UseService,
+    CancelService,
+    ServiceDelation,
 )
 from .swag_blocks import (
     AccountCreation,

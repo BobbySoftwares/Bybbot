@@ -119,6 +119,20 @@ class SwagAccountEmbed(disnake.Embed):
                     "value": f"{len(swag_account.yfu_wallet)}",
                     "inline": True,
                 },
+                {
+                    "name": "📋 Services inscrits",
+                    "value": (
+                        "\n".join(
+                            [
+                                str(service)
+                                for service in swag_account.subscribed_services
+                            ]
+                        )
+                        if swag_account.subscribed_services
+                        else "Aucun"
+                    ),
+                    "inline": False,
+                },
             ],
             "footer": {"text": f"Timezone du compte : {swag_account.timezone}"},
         }
