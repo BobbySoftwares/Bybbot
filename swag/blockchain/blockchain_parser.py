@@ -1,7 +1,9 @@
 from decimal import Decimal
-from typing import Any, Dict, Type, Union
+from typing import Any, Dict, List, Type, Union
 from swag import powers
 
+from swag.artefacts.accounts import CagnotteRank
+from swag.artefacts.services import Payment, Service
 from swag.currencies import Style, Swag
 from swag.id import AccountId, CagnotteId, GenericId, UserId, YfuId, get_id_from_str
 from swag.powers.power import Power
@@ -74,6 +76,68 @@ converter.register_structure_hook(CagnotteId, lambda o, _: CagnotteId(o))
 converter.register_structure_hook(YfuId, lambda o, _: YfuId(o))
 converter.register_structure_hook(AccountId, structure_id)
 converter.register_structure_hook(GenericId, structure_id)
+
+
+available_payment = {
+    payment_subclasses.__name__: payment_subclasses
+    for payment_subclasses in Payment.__subclasses__()
+    if isinstance(payment_subclasses, type)
+}
+
+
+def structure_payment(obj: Any, cls: Type) -> Payment:
+    payment_class = available_payment[obj[0]]
+
+    payment = payment_class(**obj[1])
+
+    # Structure all the money if attribut name is amount
+    if hasattr(payment, "amount"):
+        payment.amount = converter.structure(payment.amount, Union[Swag, Style])
+
+    return payment
+
+
+def unstructure_payment(obj: Payment) -> str:
+    return [type(obj).__name__, converter.unstructure(obj.__dict__)]
+
+
+available_service = {
+    service_subclasses.__name__: service_subclasses
+    for service_subclasses in Service.__subclasses__()
+    if isinstance(service_subclasses, type)
+}
+
+
+def structure_service(obj: Any, cls: Type) -> Service:
+    service_class = available_service[obj[0]]
+    service = service_class(**obj[1])
+
+    # Structure all the costs
+    service.costs = [converter.structure(cost, Payment) for cost in service.costs]
+
+    return service
+
+
+def unstructure_service(obj: Service) -> str:
+    return [type(obj).__name__, converter.unstructure(obj.__dict__)]
+
+
+converter.register_unstructure_hook(Payment, unstructure_payment)
+converter.register_structure_hook(Payment, structure_payment)
+converter.register_unstructure_hook(Service, unstructure_service)
+converter.register_structure_hook(Service, structure_service)
+
+
+def unstructure_cagnotte_rank(obj: CagnotteRank) -> Dict:
+    return obj.__dict__
+
+
+def structure_cagnotte_rank(obj: Dict, cls: Type) -> CagnotteRank:
+    return CagnotteRank(**obj)
+
+
+converter.register_unstructure_hook(CagnotteRank, unstructure_cagnotte_rank)
+converter.register_structure_hook(CagnotteRank, structure_cagnotte_rank)
 
 block_types = {
     name: cls for name, cls in blocks.__dict__.items() if isinstance(cls, type)

@@ -130,3 +130,12 @@ def get_money_class(currency_str):
         return Style
     else:
         return ValueError
+
+
+def get_money_from_input(input: str):
+    if Swag._CURRENCY in input:
+        return Swag.from_human_readable(input.replace(Swag._CURRENCY, ""))
+    elif Style._CURRENCY in input:
+        return Style.from_human_readable(input.replace(Style._CURRENCY, ""))
+    else:
+        raise ValueError

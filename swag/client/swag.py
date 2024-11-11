@@ -15,13 +15,18 @@ from ..stylog import BLOCKING_TIME
 from ..utils import update_forbes_classement
 
 from utils import GUILD_ID, format_number
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from swag.client import SwagClient
+
 
 YFU_GENERATION_MINING_THRESHOLD = Swag(15000)
 
 
 class SwagCommand(commands.Cog):
     def __init__(self, swag_client):
-        self.swag_client = swag_client
+        self.swag_client: SwagClient = swag_client
 
     @commands.slash_command(name="swag", guild_ids=[GUILD_ID])
     async def swag(self, interaction: disnake.ApplicationCommandInteraction):
@@ -71,6 +76,11 @@ class SwagCommand(commands.Cog):
                     "Utilise la commande `/yfu menu` pour en savoir plus !",
                     embed=YfuEmbed.from_yfu(new_yfu),
                 )
+
+        # Paiement des services
+        await self.swag_client.handle_services_payments_interaction(
+            block, UserId(interaction.author.id), interaction
+        )
 
         # Update classement
         await update_forbes_classement(
@@ -187,8 +197,7 @@ class SwagCommand(commands.Cog):
             issuer_id=interaction.author.id,
             giver_id=UserId(interaction.author.id),
             recipient_id=UserId(destinataire.id),
-            amount=amount_to_send
-
+            amount=amount_to_send,
         )
         await self.swag_client.swagchain.append(block)
 
@@ -225,8 +234,7 @@ class SwagCommand(commands.Cog):
             f"Ta timezone est désormais {timezone} !\n"
             "Pour des raisons de sécurité, tu ne pourras plus changer celle-ci "
             f"avant {block.lock_date}. Merci de ta compréhension.",
-            ephemeral=True
-
+            ephemeral=True,
         )
 
 

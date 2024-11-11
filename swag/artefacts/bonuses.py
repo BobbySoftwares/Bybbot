@@ -27,3 +27,21 @@ class Bonuses:
 
     def unit_roll(self):
         return roll(self.base, self.luck)
+
+    def __str__(self) -> str:
+        result = ""
+        if self.base != 0:
+            result += f"- $wagBase : {self.base}\n"
+        if self.luck != 0:
+            result += f"- $wagLuck : {self.luck}\n"
+        if self.minings != 0:
+            result += f"- Nombre de minage : {self.minings}\n"
+        if self.avantage != 0:
+            result += f"- Avantage au minage : {self.avantage}\n"
+        if self.multiplier != 0:
+            result += f"- Multiplicateur de minage : x{self.multiplier}\n"
+        if self.blocking_bonus != 0:
+            result += f"- Bonus de blocage : {self.blocking_bonus}%\n"
+        if self.lottery_luck != 0:
+            result += f"- Lottery Luck : {self.lottery_luck}"
+        return result

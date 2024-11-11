@@ -9,7 +9,7 @@ from swag.blocks.cagnotte_blocks import (
     CagnotteRevokeManagerBlock,
 )
 from swag.blocks.swag_blocks import Transaction
-from swag.client.ui.cagnotte_view import CagnotteAccountEmbed
+from swag.client.ui.cagnotte_view import CagnotteAccountEmbed, CagnotteMenuView
 from swag.client.ui.swag_view import TransactionEmbed
 from swag.currencies import Currency, get_money_class
 from swag.id import CagnotteId, UserId
@@ -129,6 +129,9 @@ class CagnotteCommand(commands.Cog):
             for participant in cagnotte_info.participants
         ]
         await interaction.response.send_message(
+            view=CagnotteMenuView(
+                cagnotte_id, UserId(interaction.user.id), self.swag_client
+            ),
             embed=CagnotteAccountEmbed.from_cagnotte_account(
                 cagnotte_id, cagnotte_info, self.swag_client.discord_client
             ),

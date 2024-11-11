@@ -16,6 +16,8 @@ from ..block import Block
 
 from ..errors import (
     InvalidTimeZone,
+    NotEnoughStyleInBalance,
+    NotEnoughSwagInBalance,
     TimeZoneFieldLocked,
 )
 
@@ -89,3 +91,16 @@ class AssetUploadBlock(Block):
 
     def execute(self, db: SwagChain):
         pass
+
+
+@attrs(frozen=True, kw_only=True)
+class NewDayBlock(Block):
+
+    def execute(self, db: SwagChain):
+        for id, account in db._accounts.items():
+            try:
+                account.handle_services_payments(db, self)
+            except (NotEnoughSwagInBalance, NotEnoughStyleInBalance) as e:
+                # TODO envoyer un message à l'utilisateur via discord
+                # Que lors de la création du block
+                pass
