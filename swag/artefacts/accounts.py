@@ -180,6 +180,11 @@ class CagnotteAccount(Account):
             )
         )
 
+    def is_account_has_authorised_rank(self, account_id: AccountId, service: Service):
+        if service.authorized_rank is None or account_id in self.managers:
+            return True
+        return account_id in self.get_rank_list(service.authorized_rank)
+
 
 class CagnotteAccountDict(dict):
     def __missing__(self, key):

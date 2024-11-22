@@ -241,14 +241,9 @@ class UseService(Block):
         cagnotte = db._accounts[self.cagnotte_id]
         service = cagnotte.services[self.service_id]
 
-        # Si il y a une liste fermé de compte on check
-        if service.authorized_rank is not None:
-            if (
-                self.user_id not in cagnotte.get_rank_list(service.authorized_rank)
-                and self.user_id
-                not in cagnotte.managers  # les managers font ce qu'ils veulent
-            ):
-                raise BadRankService(self.user_id)
+        # On check si l'utilisateur a le droit d'utiliser le service
+        if not cagnotte.is_account_has_authorised_rank(self.user_id, service):
+            raise BadRankService(self.user_id)
 
         service.execute(db, self.user_id)
 

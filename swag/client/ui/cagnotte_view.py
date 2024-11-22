@@ -141,8 +141,9 @@ class CagnotteServicesView(disnake.ui.View):
             selected_service
             in swag_client.swagchain._accounts[user_id].subscribed_services
             or selected_service is None
-            or self.user_id
-            not in cagnotte_account.get_rank_list(selected_service.authorized_rank)
+            or not cagnotte_account.is_account_has_authorised_rank(
+                self.user_id, selected_service
+            )
         )
 
         self.cancel_button = disnake.ui.Button(
