@@ -184,7 +184,7 @@ async def update_forbes_classement(guild, swag_client, client):
             le moment)
     """
 
-    line_in_message = 15  # Chaque message du $wag forbes ne contient que 15 places
+    line_in_message = 10  # Chaque message du $wag forbes ne contient que 15 places
 
     # Récupération du canal #$wag-forbes
     channel_forbes = guild.get_channel(FORBES_CHANNEL_ID)
